@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { reportService, getDepartmentById, getReportTypeById } from '../services/reportService';
 import ReportUpload from '../components/reports/ReportUpload';
+import ReportDataTable from '../components/reports/ReportDataTable';
 import StatusBadge from '../components/common/StatusBadge';
-import { FiArrowLeft, FiUpload, FiRefreshCw, FiFileText } from 'react-icons/fi';
+import { FiArrowLeft, FiUpload, FiRefreshCw, FiFileText, FiInfo } from 'react-icons/fi';
 
 const DepartmentReportPage = () => {
   const { deptId, reportTypeId } = useParams();
@@ -12,11 +13,9 @@ const DepartmentReportPage = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Get department and report type from hardcoded data
   const department = getDepartmentById(deptId);
   const reportType = getReportTypeById(deptId, reportTypeId);
 
-  // Fetch reports for this department and report type
   const { data: reports, isLoading: reportsLoading, refetch } = useQuery({
     queryKey: ['reports', deptId, reportTypeId, refreshKey],
     queryFn: () => reportService.getReports({ 
@@ -110,19 +109,19 @@ const DepartmentReportPage = () => {
         <div className="bg-white p-4 rounded-lg shadow">
           <p className="text-sm text-gray-500">Pending</p>
           <p className="text-2xl font-bold text-yellow-600">
-            {reports?.filter(r => r.status === 'pending').length || 0}
+            {reports?.filter(r => r.status === 'PENDING').length || 0}
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <p className="text-sm text-gray-500">Approved</p>
           <p className="text-2xl font-bold text-green-600">
-            {reports?.filter(r => r.status === 'approved').length || 0}
+            {reports?.filter(r => r.status === 'APPROVED').length || 0}
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <p className="text-sm text-gray-500">Rejected</p>
           <p className="text-2xl font-bold text-red-600">
-            {reports?.filter(r => r.status === 'rejected').length || 0}
+            {reports?.filter(r => r.status === 'REJECTED').length || 0}
           </p>
         </div>
       </div>
@@ -154,25 +153,21 @@ const DepartmentReportPage = () => {
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
                       <p className="text-sm font-medium text-blue-600">
-                        {report.title || 'Single Currency Exposure Report'}
+                        {report.metadata?.reportTitle || report.reportTypeName || 'Daily Foreign Currency Exposure Report'}
                       </p>
                       <StatusBadge status={report.status} />
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                      <span>{report.type}</span>
+                      <span>{report.reportCode || 'OP001'}</span>
                       <span>•</span>
-                      <span>Period: {report.period}</span>
-                      {report.institutionCode && (
-                        <>
-                          <span>•</span>
-                          <span>Code: {report.institutionCode}</span>
-                        </>
-                      )}
+                      <span>Institution: {report.metadata?.institutionCode || 'N/A'}</span>
+                      <span>•</span>
+                      <span>Year: {report.metadata?.financialYear || 'N/A'}</span>
                     </div>
                     <div className="mt-1 flex items-center space-x-4 text-xs text-gray-400">
-                      <span>Uploaded by: {report.uploadedBy}</span>
+                      <span>Uploaded by: {report.createdBy || 'N/A'}</span>
                       <span>•</span>
-                      <span>{new Date(report.uploadedAt).toLocaleString()}</span>
+                      <span>{report.createdAt ? new Date(report.createdAt).toLocaleString() : 'N/A'}</span>
                     </div>
                   </div>
                   <div className="ml-4 flex-shrink-0">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 
-const ReportDataTable = ({ data, currencies }) => {
+const ReportDataTable = ({ data, currencies, showSNo = true }) => {
   const [expandedRows, setExpandedRows] = useState({});
 
   const toggleRow = (id) => {
@@ -14,11 +14,27 @@ const ReportDataTable = ({ data, currencies }) => {
   const renderRow = (node, level = 0) => {
     const hasChildren = node.children && node.children.length > 0;
     const isExpanded = expandedRows[node.id];
-    const hasValues = node.values && Object.values(node.values).some(v => v !== null && v !== undefined);
+    const isSectionHeader = node.isSectionHeader;
+    const isTotalRow = node.isTotalRow;
+
+    // Determine row styling
+    let rowClass = 'hover:bg-gray-50';
+    if (isSectionHeader) {
+      rowClass = 'bg-blue-50 hover:bg-blue-100 font-semibold';
+    } else if (isTotalRow) {
+      rowClass = 'bg-yellow-50 hover:bg-yellow-100 font-bold';
+    } else if (level === 0) {
+      rowClass = 'bg-gray-50 hover:bg-gray-100 font-medium';
+    }
 
     return (
       <React.Fragment key={node.id}>
-        <tr className={level === 0 ? 'bg-gray-50' : ''}>
+        <tr className={`${rowClass} transition-colors`}>
+          {showSNo && (
+            <td className="px-3 py-2 text-sm text-gray-600 text-center font-mono">
+              {node.sNo || '-'}
+            </td>
+          )}
           <td className="px-4 py-2 text-sm">
             <div 
               className="flex items-center cursor-pointer hover:text-blue-600"
@@ -26,19 +42,22 @@ const ReportDataTable = ({ data, currencies }) => {
               onClick={() => hasChildren && toggleRow(node.id)}
             >
               {hasChildren && (
-                <span className="mr-2 text-gray-400">
+                <span className="mr-2 text-gray-400 hover:text-blue-500 transition-colors">
                   {isExpanded ? <FiChevronDown className="w-4 h-4" /> : <FiChevronRight className="w-4 h-4" />}
                 </span>
               )}
-              <span className={level === 0 ? 'font-semibold' : ''}>
+              {!hasChildren && level > 0 && (
+                <span className="mr-2 w-4"></span>
+              )}
+              <span className={`${isSectionHeader ? 'text-blue-700' : ''} ${isTotalRow ? 'text-yellow-700' : ''}`}>
                 {node.label}
               </span>
             </div>
           </td>
           {currencies.map(currency => (
-            <td key={currency} className="px-4 py-2 text-sm text-right">
+            <td key={currency} className="px-4 py-2 text-sm text-right font-mono">
               {node.values && node.values[currency] !== null && node.values[currency] !== undefined ? (
-                <span className={level === 0 ? 'font-semibold' : ''}>
+                <span className={`${isTotalRow ? 'font-bold text-yellow-700' : ''}`}>
                   {node.values[currency].toLocaleString()}
                 </span>
               ) : (
@@ -57,22 +76,35 @@ const ReportDataTable = ({ data, currencies }) => {
   };
 
   return (
-    <div className="overflow-x-auto border rounded-lg">
+    <div className="overflow-x-auto border rounded-lg shadow-sm">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-100">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {showSNo && (
+              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200">
+                S/No
+              </th>
+            )}
+            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Particulars
             </th>
             {currencies.map(currency => (
-              <th key={currency} className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th key={currency} className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
                 {currency}
               </th>
             ))}
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {data.map(node => renderRow(node, 0))}
+          {data.length > 0 ? (
+            data.map(node => renderRow(node, 0))
+          ) : (
+            <tr>
+              <td colSpan={currencies.length + 2} className="px-4 py-8 text-center text-gray-500">
+                No data available
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

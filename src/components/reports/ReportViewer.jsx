@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { reportService } from '../../services/reportService';
 import StatusBadge from '../common/StatusBadge';
 import ReportDataTable from './ReportDataTable';
-import { FiArrowLeft, FiDownload, FiCheck, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiDownload, FiCheck, FiX, FiFileText, FiCalendar, FiHash, FiPhoneCall } from 'react-icons/fi';
 
 const ReportViewer = () => {
   const { reportId } = useParams();
@@ -73,96 +73,153 @@ const ReportViewer = () => {
 
   const currencies = report.currencies || ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK', 'SEK', 'SAR', 'CAD', 'AED', 'AUD', 'CNY', 'NOK', 'KWD'];
   const reportData = report.data || [];
+  const metadata = report.metadata || {};
 
   return (
     <div className="max-w-7xl mx-auto">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
+        className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
       >
         <FiArrowLeft className="w-4 h-4 mr-2" />
-        Back
+        Back to Reports
       </button>
 
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6 border-b">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {report.reportTypeName || 'Daily Foreign Currency Exposure Report'}
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {report.departmentName || 'Treasury Department'} • {report.reportCode || 'OP001'}
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Report ID: {report.id} • File: {report.fileName}
-              </p>
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Report Header with Title */}
+        <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex flex-wrap justify-between items-start gap-4">
+            <div className="flex-1">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <FiFileText className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {metadata.reportTitle || report.reportTypeName || 'Daily Foreign Currency Exposure Reports'}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {report.departmentName || 'Treasury Department'} • {report.reportCode || 'OP001'}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                <span>Report ID: {report.id}</span>
+                <span className="w-px h-4 bg-gray-300"></span>
+                <span>File: {report.fileName}</span>
+                <span className="w-px h-4 bg-gray-300"></span>
+                <span>Version: 1.0</span>
+              </div>
             </div>
-            <StatusBadge status={report.status} />
+            <div className="flex items-center space-x-3">
+              <StatusBadge status={report.status} />
+            </div>
           </div>
         </div>
 
         <div className="p-6">
-          {/* Metadata Section */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-md mb-6">
+          {/* Institution Information Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center space-x-2 mb-1">
+                <FiPhoneCall className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Institution Code</p>
+              </div>
+              <p className="text-lg font-bold text-gray-900">{metadata.institutionCode || 'N/A'}</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center space-x-2 mb-1">
+                <FiHash className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Financial Year</p>
+              </div>
+              <p className="text-lg font-bold text-gray-900">{metadata.financialYear || 'N/A'}</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center space-x-2 mb-1">
+                <FiCalendar className="w-4 h-4 text-purple-500" />
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Start Date</p>
+              </div>
+              <p className="text-lg font-bold text-gray-900">
+                {metadata.startDate ? new Date(metadata.startDate).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                }) : 'N/A'}
+              </p>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center space-x-2 mb-1">
+                <FiCalendar className="w-4 h-4 text-red-500" />
+                <p className="text-xs text-gray-500 uppercase tracking-wider">End Date</p>
+              </div>
+              <p className="text-lg font-bold text-gray-900">
+                {metadata.endDate ? new Date(metadata.endDate).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                }) : 'N/A'}
+              </p>
+            </div>
+          </div>
+
+          {/* Additional Metadata */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 p-4 bg-gray-50 rounded-lg mb-6">
             <div>
-              <p className="text-sm text-gray-500">Institution Code</p>
-              <p className="font-medium">{report.metadata?.institutionCode || 'N/A'}</p>
+              <p className="text-xs text-gray-500">Unit</p>
+              <p className="text-sm font-medium text-gray-700">{metadata.unit || 'In Thousands'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Financial Year</p>
-              <p className="font-medium">{report.metadata?.financialYear || 'N/A'}</p>
+              <p className="text-xs text-gray-500">Template ID</p>
+              <p className="text-sm font-medium text-gray-700">{metadata.templateId || 'OP001'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Start Date</p>
-              <p className="font-medium">{report.metadata?.startDate ? new Date(report.metadata.startDate).toLocaleDateString() : 'N/A'}</p>
+              <p className="text-xs text-gray-500">Report Type</p>
+              <p className="text-sm font-medium text-gray-700">{report.reportTypeId || 'daily-forex-exposure'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">End Date</p>
-              <p className="font-medium">{report.metadata?.endDate ? new Date(report.metadata.endDate).toLocaleDateString() : 'N/A'}</p>
+              <p className="text-xs text-gray-500">Uploaded By</p>
+              <p className="text-sm font-medium text-gray-700">{report.createdBy || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Unit</p>
-              <p className="font-medium">{report.metadata?.unit || 'In Thousands'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Uploaded By</p>
-              <p className="font-medium">{report.createdBy || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Uploaded At</p>
-              <p className="font-medium">{report.createdAt ? new Date(report.createdAt).toLocaleString() : 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Status</p>
-              <p className="font-medium capitalize">{report.status || 'PENDING'}</p>
+              <p className="text-xs text-gray-500">Uploaded At</p>
+              <p className="text-sm font-medium text-gray-700">
+                {report.createdAt ? new Date(report.createdAt).toLocaleString() : 'N/A'}
+              </p>
             </div>
           </div>
 
           {/* Data Table */}
           {reportData.length > 0 && (
             <div className="mb-6">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-medium">Report Data</h3>
-                <button className="flex items-center text-sm text-blue-600 hover:text-blue-800">
-                  <FiDownload className="w-4 h-4 mr-1" />
-                  Export
-                </button>
+              <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Report Data</h3>
+                  <p className="text-xs text-gray-500">Click on rows with arrow icons to expand/collapse nested data</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-400">
+                    {reportData.length} sections • {currencies.length} currencies
+                  </span>
+                  <button className="flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50">
+                    <FiDownload className="w-4 h-4 mr-1" />
+                    Export
+                  </button>
+                </div>
               </div>
-              <ReportDataTable data={reportData} currencies={currencies} />
+              <ReportDataTable data={reportData} currencies={currencies} showSNo={true} />
             </div>
           )}
 
           {/* Approval Actions */}
           {report.status === 'PENDING' && (
-            <div className="border-t pt-6">
+            <div className="border-t pt-6 mt-4">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   {report.role === 'checker' ? 'Review Comment' : 'Approval Comment'}
                 </label>
                 <textarea
                   rows={3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="Add your comments..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -175,18 +232,18 @@ const ReportViewer = () => {
                     <button
                       onClick={handleApprove}
                       disabled={approveMutation.isLoading}
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+                      className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
                     >
                       <FiCheck className="w-4 h-4" />
-                      <span>{approveMutation.isLoading ? 'Approving...' : 'Approve'}</span>
+                      <span>{approveMutation.isLoading ? 'Approving...' : 'Approve Report'}</span>
                     </button>
                     <button
                       onClick={handleReject}
                       disabled={rejectMutation.isLoading}
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2"
+                      className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
                     >
                       <FiX className="w-4 h-4" />
-                      <span>{rejectMutation.isLoading ? 'Rejecting...' : 'Reject'}</span>
+                      <span>{rejectMutation.isLoading ? 'Rejecting...' : 'Reject Report'}</span>
                     </button>
                   </>
                 )}
@@ -196,9 +253,9 @@ const ReportViewer = () => {
 
           {/* Status Messages */}
           {report.status === 'APPROVED' && (
-            <div className="border-t pt-6">
-              <div className="bg-green-50 p-4 rounded-md">
-                <p className="text-green-700">
+            <div className="border-t pt-6 mt-4">
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p className="text-green-700 font-medium">
                   ✓ Approved by {report.approvedBy} on {new Date(report.approvedAt).toLocaleString()}
                 </p>
                 {report.comment && (
@@ -209,9 +266,9 @@ const ReportViewer = () => {
           )}
 
           {report.status === 'REJECTED' && (
-            <div className="border-t pt-6">
-              <div className="bg-red-50 p-4 rounded-md">
-                <p className="text-red-700">
+            <div className="border-t pt-6 mt-4">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <p className="text-red-700 font-medium">
                   ✗ Rejected by {report.rejectedBy} on {new Date(report.rejectedAt).toLocaleString()}
                 </p>
                 {report.comment && (
@@ -227,244 +284,3 @@ const ReportViewer = () => {
 };
 
 export default ReportViewer;
-
-
-// import React, { useState } from 'react';
-// import { useParams, useNavigate } from 'react-router-dom';
-// import { useQuery, useMutation } from '@tanstack/react-query';
-// import toast from 'react-hot-toast';
-// import { reportService } from '../../services/reportService';
-// import StatusBadge from '../common/StatusBadge';
-// import { FiArrowLeft, FiDownload, FiCheck, FiX } from 'react-icons/fi';
-
-// const ReportViewer = () => {
-//   const { reportId } = useParams();
-//   const navigate = useNavigate();
-//   const [comment, setComment] = useState('');
-
-//   const { data: report, refetch, isLoading } = useQuery({
-//     queryKey: ['report', reportId],
-//     queryFn: () => reportService.getReport(reportId),
-//   });
-
-//   const approveMutation = useMutation({
-//     mutationFn: (data) => reportService.approveReport(reportId, data),
-//     onSuccess: () => {
-//       toast.success('Report approved successfully!');
-//       refetch();
-//     },
-//     onError: (error) => {
-//       toast.error(error.response?.data?.message || 'Failed to approve report');
-//     },
-//   });
-
-//   const rejectMutation = useMutation({
-//     mutationFn: (data) => reportService.rejectReport(reportId, data),
-//     onSuccess: () => {
-//       toast.success('Report rejected');
-//       refetch();
-//     },
-//     onError: (error) => {
-//       toast.error(error.response?.data?.message || 'Failed to reject report');
-//     },
-//   });
-
-//   const handleApprove = () => {
-//     if (!comment.trim()) {
-//       toast.error('Please add a comment');
-//       return;
-//     }
-//     approveMutation.mutate({ comment });
-//   };
-
-//   const handleReject = () => {
-//     if (!comment.trim()) {
-//       toast.error('Please provide reason for rejection');
-//       return;
-//     }
-//     rejectMutation.mutate({ comment });
-//   };
-
-//   if (isLoading) {
-//     return (
-//       <div className="flex justify-center items-center h-64">
-//         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-//       </div>
-//     );
-//   }
-
-//   if (!report) {
-//     return (
-//       <div className="text-center py-12">
-//         <h3 className="text-lg font-medium text-gray-900">Report not found</h3>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="max-w-6xl mx-auto">
-//       <button
-//         onClick={() => navigate(-1)}
-//         className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-//       >
-//         <FiArrowLeft className="w-4 h-4 mr-2" />
-//         Back
-//       </button>
-
-//       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-//         <div className="p-6 border-b">
-//           <div className="flex justify-between items-start">
-//             <div>
-//               <h2 className="text-2xl font-bold text-gray-900">
-//                 {report.title || 'Single Currency Exposure Report'}
-//               </h2>
-//               <p className="text-sm text-gray-500 mt-1">
-//                 {report.department} • {report.type}
-//               </p>
-//             </div>
-//             <StatusBadge status={report.status} />
-//           </div>
-//         </div>
-
-//         <div className="p-6">
-//           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-md mb-6">
-//             <div>
-//               <p className="text-sm text-gray-500">Institution Code</p>
-//               <p className="font-medium">{report.institutionCode || 'N/A'}</p>
-//             </div>
-//             <div>
-//               <p className="text-sm text-gray-500">Financial Year</p>
-//               <p className="font-medium">{report.financialYear || 'N/A'}</p>
-//             </div>
-//             <div>
-//               <p className="text-sm text-gray-500">Period</p>
-//               <p className="font-medium">{report.period || 'N/A'}</p>
-//             </div>
-//             <div>
-//               <p className="text-sm text-gray-500">Uploaded By</p>
-//               <p className="font-medium">{report.uploadedBy}</p>
-//             </div>
-//           </div>
-
-//           {report.data && (
-//             <div className="mb-6">
-//               <div className="flex justify-between items-center mb-3">
-//                 <h3 className="text-lg font-medium">Report Data</h3>
-//                 <button className="flex items-center text-sm text-blue-600 hover:text-blue-800">
-//                   <FiDownload className="w-4 h-4 mr-1" />
-//                   Export
-//                 </button>
-//               </div>
-//               <div className="overflow-x-auto border rounded-md max-h-96 overflow-y-auto">
-//                 <table className="min-w-full divide-y divide-gray-200">
-//                   <thead className="bg-gray-50 sticky top-0">
-//                     <tr>
-//                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                         Particulars
-//                       </th>
-//                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                         USD
-//                       </th>
-//                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                         EUR
-//                       </th>
-//                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                         Others
-//                       </th>
-//                     </tr>
-//                   </thead>
-//                   <tbody className="bg-white divide-y divide-gray-200">
-//                     {Object.entries(report.data).slice(0, 15).map(([key, values]) => (
-//                       <tr key={key} className="hover:bg-gray-50">
-//                         <td className="px-6 py-4 text-sm text-gray-900 capitalize">
-//                           {key.replace(/_/g, ' ')}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-900">
-//                           {values.USD || 0}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-900">
-//                           {values.EUR || 0}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-900">
-//                           {values.overallExposure || 0}
-//                         </td>
-//                       </tr>
-//                     ))}
-//                   </tbody>
-//                 </table>
-//               </div>
-//             </div>
-//           )}
-
-//           {report.status === 'pending' && (
-//             <div className="border-t pt-6">
-//               <div className="mb-4">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   {report.role === 'checker' ? 'Review Comment' : 'Approval Comment'}
-//                 </label>
-//                 <textarea
-//                   rows={3}
-//                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-//                   placeholder="Add your comments..."
-//                   value={comment}
-//                   onChange={(e) => setComment(e.target.value)}
-//                 />
-//               </div>
-
-//               <div className="flex justify-end space-x-3">
-//                 {(report.role === 'checker' || report.role === 'approver') && (
-//                   <>
-//                     <button
-//                       onClick={handleApprove}
-//                       disabled={approveMutation.isLoading}
-//                       className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
-//                     >
-//                       <FiCheck className="w-4 h-4" />
-//                       <span>{approveMutation.isLoading ? 'Approving...' : 'Approve'}</span>
-//                     </button>
-//                     <button
-//                       onClick={handleReject}
-//                       disabled={rejectMutation.isLoading}
-//                       className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2"
-//                     >
-//                       <FiX className="w-4 h-4" />
-//                       <span>{rejectMutation.isLoading ? 'Rejecting...' : 'Reject'}</span>
-//                     </button>
-//                   </>
-//                 )}
-//               </div>
-//             </div>
-//           )}
-
-//           {report.status === 'approved' && (
-//             <div className="border-t pt-6">
-//               <div className="bg-green-50 p-4 rounded-md">
-//                 <p className="text-green-700">
-//                   ✓ Approved by {report.approvedBy} on {new Date(report.approvedAt).toLocaleString()}
-//                 </p>
-//                 {report.comment && (
-//                   <p className="text-sm text-green-600 mt-1">Comment: {report.comment}</p>
-//                 )}
-//               </div>
-//             </div>
-//           )}
-
-//           {report.status === 'rejected' && (
-//             <div className="border-t pt-6">
-//               <div className="bg-red-50 p-4 rounded-md">
-//                 <p className="text-red-700">
-//                   ✗ Rejected by {report.rejectedBy} on {new Date(report.rejectedAt).toLocaleString()}
-//                 </p>
-//                 {report.comment && (
-//                   <p className="text-sm text-red-600 mt-1">Reason: {report.comment}</p>
-//                 )}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ReportViewer;
