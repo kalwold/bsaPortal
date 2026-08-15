@@ -21,7 +21,7 @@ const DEPARTMENT_DATA = [
     name: 'IBD',
     icon: FiTrendingUp,
     reportTypes: [
-      { id: 'daily-forex-exposure', name: 'Daily Foreign Currency Exposure' },
+      { id: 'ibd-daily', name: 'Daily Foreign Currency Exposure' },
       { id: 'foreign_exchange_position', name: 'Foreign Exchange Position' },
       // { id: 'liquidity_coverage_ratio', name: 'Liquidity Coverage Ratio' },
       // { id: 'interest_rate_risk', name: 'Interest Rate Risk' },

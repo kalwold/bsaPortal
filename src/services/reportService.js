@@ -6,7 +6,7 @@ export const DEPARTMENT_DATA = [
     id: 'ibd',
     name: 'IBD',
     reportTypes: [
-      { id: 'daily-forex-exposure', name: 'Daily Foreign Currency Exposure' },
+      { id: 'ibd-daily', name: 'Daily Foreign Currency Exposure' },
       { id: 'foreign_exchange_position', name: 'Foreign Exchange Position' },
       
     ]
@@ -100,12 +100,12 @@ return api.post('/ibd-daily/post', formData, {
     return api.get(`/reports/${reportId}`).then(res => res.data);
   },
 
-  approveReport: (reportId, data) => {
-    return api.post(`/reports/${reportId}/approve`).then(res => res.data);
+  approveReport: (reportType, data) => {
+    return api.post(`/${reportType}/approve`, data).then(res => res.data);
   },
 
-  rejectReport: (reportId, data) => {
-    return api.post(`/reports/${reportId}/reject`, data).then(res => res.data);
+  rejectReport: (reportType, data) => {
+    return api.post(`/${reportType}/reject`, data).then(res => res.data);
   },
 
   // Department Management (using hardcoded data)

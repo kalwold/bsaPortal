@@ -28,7 +28,11 @@ const ReportViewer = () => {
   const report = locationReport || fetchedReport;
 
   const approveMutation = useMutation({
-    mutationFn: (data) => reportService.approveReport(reportId, data),
+       mutationFn: (data) => {
+      // Use report type from the report data
+      const reportType = report?.reportTypeId || report?.metadata?.reportType || 'ibd-daily';
+      return reportService.approveReport(reportType, data);
+    },
     onSuccess: () => {
       toast.success('Report approved successfully!');
       refetch();
@@ -39,7 +43,11 @@ const ReportViewer = () => {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (data) => reportService.rejectReport(reportId, data),
+       mutationFn: (data) => {
+      // Use report type from the report data
+      const reportType = report?.reportTypeId || report?.metadata?.reportType || 'daily-forex-exposure';
+      return reportService.rejectReport(reportType, data);
+    },
     onSuccess: () => {
       toast.success('Report rejected');
       refetch();
@@ -50,19 +58,32 @@ const ReportViewer = () => {
   });
 
   const handleApprove = () => {
-    if (!comment.trim()) {
-      toast.error('Please add a comment');
-      return;
-    }
-    approveMutation.mutate({ comment });
+     const approver = "system";
+        const approvalData = {
+      id: report.id || reportId,
+      approver: approver
+    };
+
+    console.log('Approval Data:', approvalData);
+    console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
+    approveMutation.mutate({ approvalData });
   };
 
   const handleReject = () => {
+     const approver = "system";
     if (!comment.trim()) {
       toast.error('Please provide reason for rejection');
       return;
     }
-    rejectMutation.mutate({ comment });
+     const rejectionData = {
+      id: report.id || reportId,
+      approver: approver,
+      rejectReason: comment.trim()
+    };
+
+    console.log('Rejection Data:', rejectionData);
+    console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
+    rejectMutation.mutate(rejectionData);
   };
 
   // Show loading only if we don't have location data and are fetching
@@ -196,7 +217,7 @@ const ReportViewer = () => {
             </div>
             <div>
               <p className="text-xs text-gray-500">Report Type</p>
-              <p className="text-sm font-medium text-gray-700">{report.reportTypeId || 'daily-forex-exposure'}</p>
+              <p className="text-sm font-medium text-gray-700">{report.reportTypeId || 'ibd-daily'}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Uploaded By</p>
@@ -242,12 +263,13 @@ const ReportViewer = () => {
             <div className="border-t pt-6 mt-4">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {report.role === 'checker' ? 'Review Comment' : 'Approval Comment'}
+                  {/* {report.role === 'checker' ? 'Review Comment' : 'Approval Comment'} */}
+                  Reject Reason
                 </label>
                 <textarea
                   rows={3}
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Add your comments..."
+                  placeholder="Add your reason..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 />
