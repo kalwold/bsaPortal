@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser();
+      console.log('user:', user); // Debugging line to check user data
     } else {
       setLoading(false);
     }
@@ -19,7 +20,20 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await api.get('/auth/me');
+      //const response = await api.get('/auth/me');
+      const response = {
+  "success": true,
+  "data": {
+    "id": "usr_001",
+    "name": "John Doe",
+    "email": "admin@example.com",
+    "role": "admin",
+    "departmentId": "treasury",
+    "departmentName": "Treasury Department",
+    "permissions": ["upload", "review", "approve", "manage_users"]
+  }
+}
+console.log('Fetched user data:', response.data); // Debugging line to check fetched user data
       setUser(response.data);
     } catch (error) {
       localStorage.removeItem('token');
@@ -30,8 +44,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
-    const { token, user } = response.data;
+    //const response = await api.post('/auth/login', { email, password });
+    //const { token, user } = response.data;
+    const { token, user } = {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "usr_001",
+      "name": "John Doe",
+      "email": "admin@example.com",
+      "role": "admin",
+      "departmentId": "treasury",
+      "departmentName": "Treasury Department",
+      "permissions": ["upload", "review", "approve", "manage_users"]
+    
+  }
+}
+
     localStorage.setItem('token', token);
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(user);

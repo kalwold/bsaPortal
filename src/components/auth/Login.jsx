@@ -13,8 +13,8 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-     //   await login(data.email, data.password);
-     //   toast.success('Login successful!');
+       await login(data.email, data.password);
+       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');

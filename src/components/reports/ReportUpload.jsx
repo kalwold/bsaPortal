@@ -74,6 +74,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
     
     const reportData = prepareReportForSubmission(parsedData);
     formData.append('reportData', JSON.stringify(reportData));
+    const reportJson = JSON.stringify(reportData);
 
     const interval = setInterval(() => {
       setUploadProgress(prev => {
@@ -85,12 +86,35 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
       });
     }, 200);
 
-    uploadMutation.mutate(formData, {
-      onSettled: () => {
+    try{
+      await reportService.uploadReport(reportJson)
+      .then((response) => {
         clearInterval(interval);
         setUploadProgress(100);
-      },
-    });
+        toast.success('Report uploaded successfully!');
+        setSelectedFile(null);
+        setParsedData(null);
+        setValidationErrors([]);
+        if (onSuccess) onSuccess(response);
+      })
+      .catch((error) => {
+        clearInterval(interval);
+        setUploadProgress(0);
+        toast.error(error.response?.data?.message || 'Failed to upload report');
+      });
+    }
+    catch(error){
+      clearInterval(interval);
+      setUploadProgress(0);
+      toast.error(error.response?.data?.message || 'Failed to upload report');
+    }
+
+    // uploadMutation.mutate(formData, {
+    //   onSettled: () => {
+    //     clearInterval(interval);
+    //     setUploadProgress(100);
+    //   },
+    // });
   };
 
   const onDragOver = (e) => {
@@ -241,13 +265,13 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
               <div>
                 <p className="text-xs text-gray-500">Start Date</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {metadata.startDate ? new Date(metadata.startDate).toLocaleDateString() : 'N/A'}
+                  {metadata.startDate || 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">End Date</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {metadata.endDate ? new Date(metadata.endDate).toLocaleDateString() : 'N/A'}
+                  {metadata.endDate || 'N/A'}
                 </p>
               </div>
               <div>

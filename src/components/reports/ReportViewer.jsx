@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { reportService } from '../../services/reportService';
 import StatusBadge from '../common/StatusBadge';
 import ReportDataTable from './ReportDataTable';
-import { FiArrowLeft, FiDownload, FiCheck, FiX, FiFileText, FiCalendar, FiHash, FiPhoneCall } from 'react-icons/fi';
+import { FiArrowLeft, FiDownload, FiCheck, FiX, FiFileText, FiCalendar, FiHash } from 'react-icons/fi';
+import { BsFillBuildingFill } from 'react-icons/bs';
 
 const ReportViewer = () => {
   const { reportId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [comment, setComment] = useState('');
 
-  const { data: report, refetch, isLoading } = useQuery({
+  // Try to get report from location state (passed from navigation)
+  const locationReport = location.state?.report;
+
+  // If report is not in location state, fetch it from API
+  const { data: fetchedReport, refetch, isLoading } = useQuery({
     queryKey: ['report', reportId],
     queryFn: () => reportService.getReport(reportId),
+    enabled: !locationReport, // Only fetch if not passed via location
   });
+
+  // Use location report if available, otherwise use fetched report
+  const report = locationReport || fetchedReport;
 
   const approveMutation = useMutation({
     mutationFn: (data) => reportService.approveReport(reportId, data),
@@ -55,7 +65,8 @@ const ReportViewer = () => {
     rejectMutation.mutate({ comment });
   };
 
-  if (isLoading) {
+  // Show loading only if we don't have location data and are fetching
+  if (isLoading && !locationReport) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -67,6 +78,12 @@ const ReportViewer = () => {
     return (
       <div className="text-center py-12">
         <h3 className="text-lg font-medium text-gray-900">Report not found</h3>
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-4 text-blue-600 hover:text-blue-800"
+        >
+          Go Back
+        </button>
       </div>
     );
   }
@@ -109,6 +126,11 @@ const ReportViewer = () => {
                 <span>File: {report.fileName}</span>
                 <span className="w-px h-4 bg-gray-300"></span>
                 <span>Version: 1.0</span>
+                {locationReport && (
+                  <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                    Cached
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -122,7 +144,7 @@ const ReportViewer = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-2 mb-1">
-                <FiPhoneCall className="w-4 h-4 text-blue-500" />
+                <BsFillBuildingFill className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-gray-500 uppercase tracking-wider">Institution Code</p>
               </div>
               <p className="text-lg font-bold text-gray-900">{metadata.institutionCode || 'N/A'}</p>
@@ -206,7 +228,12 @@ const ReportViewer = () => {
                   </button>
                 </div>
               </div>
-              <ReportDataTable data={reportData} currencies={currencies} showSNo={true} />
+              <ReportDataTable 
+  data={reportData} 
+  currencies={currencies} 
+  additionalColumns={report.additionalColumns || ['O1', 'O2', 'O3', 'OVERALL_EXPOSURE']}
+  showSNo={true} 
+/>
             </div>
           )}
 
@@ -227,7 +254,7 @@ const ReportViewer = () => {
               </div>
 
               <div className="flex justify-end space-x-3">
-                {(report.role === 'checker' || report.role === 'approver') && (
+                {/* {(report.role === 'checker' || report.role === 'approver') && ( */}
                   <>
                     <button
                       onClick={handleApprove}
@@ -246,7 +273,7 @@ const ReportViewer = () => {
                       <span>{rejectMutation.isLoading ? 'Rejecting...' : 'Reject Report'}</span>
                     </button>
                   </>
-                )}
+                {/* )} */}
               </div>
             </div>
           )}

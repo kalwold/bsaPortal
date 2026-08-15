@@ -17,27 +17,27 @@ import {
 // Hardcoded department and report types data
 const DEPARTMENT_DATA = [
   {
-    id: 'treasury',
-    name: 'Treasury',
+    id: 'ibd',
+    name: 'IBD',
     icon: FiTrendingUp,
     reportTypes: [
       { id: 'daily-forex-exposure', name: 'Daily Foreign Currency Exposure' },
       { id: 'foreign_exchange_position', name: 'Foreign Exchange Position' },
-      { id: 'liquidity_coverage_ratio', name: 'Liquidity Coverage Ratio' },
-      { id: 'interest_rate_risk', name: 'Interest Rate Risk' },
+      // { id: 'liquidity_coverage_ratio', name: 'Liquidity Coverage Ratio' },
+      // { id: 'interest_rate_risk', name: 'Interest Rate Risk' },
     ]
   },
-  {
-    id: 'risk_management',
-    name: 'Risk Management',
-    icon: FiBarChart2,
-    reportTypes: [
-      { id: 'credit_risk_exposure', name: 'Credit Risk Exposure' },
-      { id: 'market_risk_var', name: 'Market Risk VaR' },
-      { id: 'operational_risk', name: 'Operational Risk' },
-      { id: 'stress_testing', name: 'Stress Testing' },
-    ]
-  },
+  // {
+  //   id: 'risk_management',
+  //   name: 'Risk Management',
+  //   icon: FiBarChart2,
+  //   reportTypes: [
+  //     { id: 'credit_risk_exposure', name: 'Credit Risk Exposure' },
+  //     { id: 'market_risk_var', name: 'Market Risk VaR' },
+  //     { id: 'operational_risk', name: 'Operational Risk' },
+  //     { id: 'stress_testing', name: 'Stress Testing' },
+  //   ]
+  // },
   {
     id: 'finance',
     name: 'Finance',
@@ -71,21 +71,23 @@ const DEPARTMENT_DATA = [
       { id: 'operational_efficiency', name: 'Operational Efficiency' },
     ]
   },
-  {
-    id: 'internal_audit',
-    name: 'Internal Audit',
-    icon: FiBarChart2,
-    reportTypes: [
-      { id: 'audit_findings', name: 'Audit Findings' },
-      { id: 'internal_controls', name: 'Internal Controls' },
-      { id: 'compliance_audit', name: 'Compliance Audit' },
-      { id: 'risk_assessment', name: 'Risk Assessment' },
-    ]
-  }
+  // {
+  //   id: 'internal_audit',
+  //   name: 'Internal Audit',
+  //   icon: FiBarChart2,
+  //   reportTypes: [
+  //     { id: 'audit_findings', name: 'Audit Findings' },
+  //     { id: 'internal_controls', name: 'Internal Controls' },
+  //     { id: 'compliance_audit', name: 'Compliance Audit' },
+  //     { id: 'risk_assessment', name: 'Risk Assessment' },
+  //   ]
+  // }
 ];
 
 const Sidebar = () => {
+
   const { user, logout } = useAuth();
+  console.log('Sidebar user:', user); // Debugging line to check user data
   const navigate = useNavigate();
   const [expandedDepartments, setExpandedDepartments] = useState({});
 
@@ -195,7 +197,7 @@ const Sidebar = () => {
         <div className="flex items-center">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'Guest'}</p>
-            <p className="text-xs text-gray-500 capitalize">{user?.role || 'Viewer'}</p>
+            <p className="text-xs text-gray-500 capitalize">{user?.role|| 'Viewer'}</p>
           </div>
           <button
             onClick={handleLogout}

@@ -11,12 +11,14 @@ const ReportsPage = () => {
   const [statusFilter, setStatusFilter] = useState('');
 
   const { data: reports, isLoading } = useQuery({
+    //queryKey: ['reports', user?.departmentId, statusFilter],
     queryKey: ['reports', user?.departmentId, statusFilter],
-    queryFn: () => reportService.getReports({
-      departmentId: user?.departmentId,
-      status: statusFilter || undefined,
-    }),
-    enabled: !!user,
+    // queryFn: () => reportService.getReports({
+    //   departmentId: user?.departmentId,
+    //   status: statusFilter || undefined,
+    // }),
+    queryFn: () => reportService.getReports(),
+    //enabled: !!user,
   });
 
   const filteredReports = reports?.filter(report => 
@@ -63,7 +65,7 @@ const ReportsPage = () => {
           </div>
         </div>
 
-        <ReportList reports={filteredReports} loading={isLoading} />
+        <ReportList reports={reports} loading={isLoading} />
       </div>
     </div>
   );
