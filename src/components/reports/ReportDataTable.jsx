@@ -79,7 +79,7 @@ const ReportDataTable = ({
               {node.values && node.values[currency] !== null && node.values[currency] !== undefined ? (
                 <span className={`${isTotalRow ? 'font-bold text-yellow-700' : ''}`}>
                   {node.values[currency].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  {node.values[currency].toLocaleString()}
+                  
                 </span>
               ) : (
                 <span className="text-gray-300">-</span>
