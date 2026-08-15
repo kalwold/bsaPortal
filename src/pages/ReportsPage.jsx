@@ -17,7 +17,9 @@ const ReportsPage = () => {
     //   departmentId: user?.departmentId,
     //   status: statusFilter || undefined,
     // }),
-    queryFn: () => reportService.getReports(),
+    queryFn: () =>  reportService.getReports({
+            reportType: reports.id
+          }),
     //enabled: !!user,
   });
 

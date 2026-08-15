@@ -33,9 +33,12 @@ const DepartmentReportPage = () => {
   } = useQuery({
     queryKey: ["reports", deptId, reportTypeId, refreshKey],
     queryFn: () =>
-      reportService.getReports({
-        departmentId: deptId,
-        typeId: reportTypeId,
+      // reportService.getReports({
+      //   departmentId: deptId,
+      //   typeId: reportTypeId,
+      // }),
+       reportService.getReports({
+        reportType: reportTypeId,
       }),
   });
 

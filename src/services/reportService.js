@@ -87,13 +87,14 @@ return api.post('/ibd-daily/post', formData, {
     }).then(res => res.data);
   },
 
-  getReports: (params = {}) => {
+ // getReports: (params = {}) => {
     // const queryParams = new URLSearchParams();
     // Object.entries(params).forEach(([key, value]) => {
     //   if (value) queryParams.append(key, value);
     // });
     // return api.get(`/reports?${queryParams.toString()}`).then(res => res.data);
-    return api.get('/ibd-daily/getall').then(res => res.data);
+    getReports: (reportType) =>{
+    return api.get(`/${reportType}/getall`.then(res => res.data);
   },
 
   getReport: (reportId) => {
