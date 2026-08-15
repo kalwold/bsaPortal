@@ -27,7 +27,7 @@ export const parseExcelReport = (file) => {
           id: `RPT-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
           departmentId: 'ibd',
           departmentName: 'IBD',
-          reportTypeId: 'daily-forex-exposure',
+          reportTypeId: 'ibd-daily',
           reportTypeName: 'Daily Foreign Currency Exposure',
           ReturnKey: metadata.ReturnKey,
           fileName: file.name,
@@ -340,6 +340,7 @@ const extractHierarchicalData = (data) => {
         }
         if (colIndex < row.length) {
           const value = parseFloat(row[colIndex]);
+          
           if (!isNaN(value) && value !== 0) {
             values[CURRENCIES[j]] = value;
           } else {
