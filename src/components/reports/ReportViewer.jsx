@@ -18,14 +18,15 @@ const ReportViewer = () => {
   const locationReport = location.state?.report;
 
   // If report is not in location state, fetch it from API
-  const { data: fetchedReport, refetch, isLoading } = useQuery({
-    queryKey: ['report', reportId],
-    queryFn: () => reportService.getReport(reportId),
-    enabled: !locationReport, // Only fetch if not passed via location
-  });
+  // const { data: fetchedReport, refetch, isLoading } = useQuery({
+  //   queryKey: ['report', reportId],
+  //   queryFn: () => reportService.getReport(reportId),
+  //   enabled: !locationReport, // Only fetch if not passed via location
+  // });
 
   // Use location report if available, otherwise use fetched report
-  const report = locationReport || fetchedReport;
+  // const report = locationReport || fetchedReport;
+  const report = locationReport;
 
   const approveMutation = useMutation({
        mutationFn: (data) => {
@@ -35,7 +36,8 @@ const ReportViewer = () => {
     },
     onSuccess: () => {
       toast.success('Report approved successfully!');
-      refetch();
+      navigate(-1)
+      // refetch();
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to approve report');
@@ -45,12 +47,13 @@ const ReportViewer = () => {
   const rejectMutation = useMutation({
        mutationFn: (data) => {
       // Use report type from the report data
-      const reportType = report?.reportTypeId || report?.metadata?.reportType || 'daily-forex-exposure';
+      const reportType = report?.reportTypeId || report?.metadata?.reportType ;
       return reportService.rejectReport(reportType, data);
     },
     onSuccess: () => {
       toast.success('Report rejected');
-      refetch();
+      navigate(-1)
+      // refetch();
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to reject report');
@@ -59,14 +62,17 @@ const ReportViewer = () => {
 
   const handleApprove = () => {
      const approver = "system";
-        const approvalData = {
+    const approvalData = {
       id: report.id || reportId,
       approver: approver
     };
 
     console.log('Approval Data:', approvalData);
     console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
-    approveMutation.mutate({ approvalData });
+    approveMutation.mutate({ 
+      id: report.id || reportId,
+      approver: approver
+     });
   };
 
   const handleReject = () => {
@@ -87,13 +93,13 @@ const ReportViewer = () => {
   };
 
   // Show loading only if we don't have location data and are fetching
-  if (isLoading && !locationReport) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  // if (isLoading && !locationReport) {
+  //   return (
+  //     <div className="flex justify-center items-center h-64">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  //     </div>
+  //   );
+  // }
 
   if (!report) {
     return (
@@ -101,7 +107,7 @@ const ReportViewer = () => {
         <h3 className="text-lg font-medium text-gray-900">Report not found</h3>
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 text-blue-600 hover:text-blue-800"
+          className="mt-4 text-[#48198B] hover:text-blue-800"
         >
           Go Back
         </button>
@@ -130,7 +136,7 @@ const ReportViewer = () => {
             <div className="flex-1">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
-                  <FiFileText className="w-6 h-6 text-blue-600" />
+                  <FiFileText className="w-6 h-6 text-[#48198B]" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
@@ -243,7 +249,7 @@ const ReportViewer = () => {
                   <span className="text-xs text-gray-400">
                     {reportData.length} sections • {currencies.length} currencies
                   </span>
-                  <button className="flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50">
+                  <button className="flex items-center text-sm text-[#48198B] hover:text-blue-800 transition-colors px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50">
                     <FiDownload className="w-4 h-4 mr-1" />
                     Export
                   </button>
@@ -252,7 +258,7 @@ const ReportViewer = () => {
               <ReportDataTable 
   data={reportData} 
   currencies={currencies} 
-  additionalColumns={report.additionalColumns || ['O1', 'O2', 'O3', 'OVERALL_EXPOSURE']}
+  additionalColumns={report.additionalColumns}
   showSNo={true} 
 />
             </div>
@@ -305,7 +311,7 @@ const ReportViewer = () => {
             <div className="border-t pt-6 mt-4">
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <p className="text-green-700 font-medium">
-                  ✓ Approved by {report.approvedBy} on {new Date(report.approvedAt).toLocaleString()}
+                  ✓ Approved by {report.approvedBy} 
                 </p>
                 {report.comment && (
                   <p className="text-sm text-green-600 mt-1">Comment: {report.comment}</p>
@@ -318,7 +324,7 @@ const ReportViewer = () => {
             <div className="border-t pt-6 mt-4">
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                 <p className="text-red-700 font-medium">
-                  ✗ Rejected by {report.rejectedBy} on {new Date(report.rejectedAt).toLocaleString()}
+                  ✗ Rejected by {report.rejectedBy} 
                 </p>
                 {report.comment && (
                   <p className="text-sm text-red-600 mt-1">Reason: {report.comment}</p>

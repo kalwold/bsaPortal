@@ -110,14 +110,14 @@ const Sidebar = () => {
   const mainNavItems = [
     { to: '/dashboard', icon: FiHome, label: 'Dashboard' },
     { to: '/upload', icon: FiUpload, label: 'Upload Report' },
-    { to: '/review', icon: FiCheckCircle, label: 'Review' },
+    // { to: '/review', icon: FiCheckCircle, label: 'Review' },
     { to: '/reports', icon: FiFileText, label: 'All Reports' },
   ];
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <h1 className="text-xl font-bold text-blue-600">Report Portal</h1>
+        <h1 className="text-xl font-bold text-[#48198B]">GBB BSA Report</h1>
         <p className="text-xs text-gray-400 mt-0.5">v1.0.0</p>
       </div>
       
@@ -131,12 +131,12 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 `flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-blue-50 text-blue-700 font-medium'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-blue-50 text-[#412985] font-medium'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-[#412985]'
                 }`
               }
             >
-              <item.icon className={`w-5 h-5 mr-3 ${({ isActive }) => isActive ? 'text-blue-500' : 'text-gray-400'}`} />
+              <item.icon className={`w-5 h-5 mr-3 ${({ isActive }) => isActive ? 'text-[#412985]' : 'text-gray-400'}`} />
               {item.label}
             </NavLink>
           ))}
@@ -179,7 +179,7 @@ const Sidebar = () => {
                       <button
                         key={type.id}
                         onClick={() => navigateToReportType(dept.id, type.id)}
-                        className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors truncate"
+                        className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:text-[#412985] hover:bg-blue-50 rounded transition-colors truncate"
                       >
                         {type.name}
                       </button>

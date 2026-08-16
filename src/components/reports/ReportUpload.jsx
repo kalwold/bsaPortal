@@ -17,8 +17,10 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState([]);
 
+  console.log('ReportUpload props:', { departmentId, reportType });
+
   const uploadMutation = useMutation({
-    mutationFn: (formData) => reportService.uploadReport(formData),
+   mutationFn: ({ reportType, reportJson }) => reportService.uploadReport(reportType ,reportJson),
     onSuccess: (data) => {
       toast.success('Report uploaded successfully!');
       setSelectedFile(null);
@@ -85,36 +87,14 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
         return prev + 10;
       });
     }, 200);
-
-    try{
-      await reportService.uploadReport(reportJson)
-      .then((response) => {
+ console.log('Submitting report:', { reportType, reportJson });
+  
+    uploadMutation.mutate({ reportType, reportJson }, {
+      onSettled: () => {
         clearInterval(interval);
         setUploadProgress(100);
-        toast.success('Report uploaded successfully!');
-        setSelectedFile(null);
-        setParsedData(null);
-        setValidationErrors([]);
-        if (onSuccess) onSuccess(response);
-      })
-      .catch((error) => {
-        clearInterval(interval);
-        setUploadProgress(0);
-        toast.error(error.response?.data?.message || 'Failed to upload report');
-      });
-    }
-    catch(error){
-      clearInterval(interval);
-      setUploadProgress(0);
-      toast.error(error.response?.data?.message || 'Failed to upload report');
-    }
-
-    // uploadMutation.mutate(formData, {
-    //   onSettled: () => {
-    //     clearInterval(interval);
-    //     setUploadProgress(100);
-    //   },
-    // });
+      },
+    });
   };
 
   const onDragOver = (e) => {
@@ -150,7 +130,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <FiInfo className="w-5 h-5 text-blue-600" />
+                <FiInfo className="w-5 h-5 text-[#48198B]" />
               </div>
               <div>
                 <p className="text-xs text-gray-500">Department</p>
@@ -199,7 +179,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
             </div>
             <div>
               <label htmlFor="file-upload" className="cursor-pointer">
-                <span className="mt-2 block text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                <span className="mt-2 block text-sm font-medium text-[#48198B] hover:text-blue-900 transition-colors">
                   {isDragging ? 'Drop your file here' : 'Upload Excel File'}
                 </span>
                 <input
@@ -312,7 +292,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
               <div 
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                className="bg-[#412985] h-2.5 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
@@ -335,7 +315,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
           <button
             onClick={handleSubmit}
             disabled={!selectedFile || uploadMutation.isLoading || validationErrors.length > 0}
-            className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-colors"
+            className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#412985] hover:bg-[#472f92] disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-colors"
           >
             {uploadMutation.isLoading ? (
               <>
