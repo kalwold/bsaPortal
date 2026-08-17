@@ -50,7 +50,7 @@ console.log('Fetched user data:', response.data); // Debugging line to check fet
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
       "id": "usr_001",
-      "name": "John Doe",
+      "name": "Admin User",
       "email": "admin@example.com",
       "role": "admin",
       "departmentId": "treasury",

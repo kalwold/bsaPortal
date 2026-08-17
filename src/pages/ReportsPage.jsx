@@ -24,11 +24,12 @@ const ReportsPage = () => {
   });
 
 
-  
+  console.log("reports:", reports);
   const filteredReports = reports?.filter(report => 
-    report.reportTypeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.reportTypeId?.toLowerCase().includes(searchTerm.toLowerCase())
+    report.reportTypeName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    report.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    report.reportTypeId?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    report.status?.toLowerCase().includes(statusFilter.toLowerCase())
   );
 
   console.log("reports:", reports);
@@ -65,7 +66,6 @@ console.log("filteredReports:", filteredReports);
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>
-              <option value="review">In Review</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>

@@ -6,6 +6,7 @@ const CURRENCIES = ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK
 export const parseExcelReport = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
@@ -232,6 +233,8 @@ const extractHierarchicalData = (data) => {
                             label.includes('Foreign Exhange Position') ||
                             label.includes('Overall Foreign Exhange Position'));
 
+
+   
     // Extract values for ALL columns
     const values = {};
     
@@ -246,7 +249,7 @@ const extractHierarchicalData = (data) => {
       }
       // Skip if this column is in the "Others" range
       if (colIndex >= othersStartIndex && colIndex < othersStartIndex + 3) {
-        values[CURRENCIES[j]] = null;
+        values[CURRENCIES[j]] = '0';
         continue;
       }
       if (colIndex < row.length) {
@@ -254,10 +257,10 @@ const extractHierarchicalData = (data) => {
         if (!isNaN(value) && value !== 0) {
           values[CURRENCIES[j]] = value;
         } else {
-          values[CURRENCIES[j]] = null;
+          values[CURRENCIES[j]] = '0';
         }
       } else {
-        values[CURRENCIES[j]] = null;
+        values[CURRENCIES[j]] = '0';
       }
     }
 
@@ -276,10 +279,10 @@ const extractHierarchicalData = (data) => {
         if (!isNaN(value) && value !== 0) {
           values[otherColumns[j]] = value;
         } else {
-          values[otherColumns[j]] = null;
+          values[otherColumns[j]] = '0';
         }
       } else {
-        values[otherColumns[j]] = null;
+        values[otherColumns[j]] = '0';
       }
     }
 
@@ -335,7 +338,7 @@ const extractHierarchicalData = (data) => {
           continue;
         }
         if (colIndex >= othersStartIndex && colIndex < othersStartIndex + 3) {
-          values[CURRENCIES[j]] = null;
+          values[CURRENCIES[j]] = '0';
           continue;
         }
         if (colIndex < row.length) {
@@ -344,10 +347,10 @@ const extractHierarchicalData = (data) => {
           if (!isNaN(value) && value !== 0) {
             values[CURRENCIES[j]] = value;
           } else {
-            values[CURRENCIES[j]] = null;
+            values[CURRENCIES[j]] = '0';
           }
         } else {
-          values[CURRENCIES[j]] = null;
+          values[CURRENCIES[j]] = '0';
         }
       }
 
@@ -364,10 +367,10 @@ const extractHierarchicalData = (data) => {
           if (!isNaN(value) && value !== 0) {
             values[otherColumns[j]] = value;
           } else {
-            values[otherColumns[j]] = null;
+            values[otherColumns[j]] = '0';
           }
         } else {
-          values[otherColumns[j]] = null;
+          values[otherColumns[j]] = '0';
         }
       }
 

@@ -249,10 +249,10 @@ const ReportViewer = () => {
                   <span className="text-xs text-gray-400">
                     {reportData.length} sections • {currencies.length} currencies
                   </span>
-                  <button className="flex items-center text-sm text-[#48198B] hover:text-blue-800 transition-colors px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50">
+                  {/* <button className="flex items-center text-sm text-[#48198B] hover:text-blue-800 transition-colors px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50">
                     <FiDownload className="w-4 h-4 mr-1" />
                     Export
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <ReportDataTable 
