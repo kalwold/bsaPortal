@@ -94,7 +94,7 @@ return api.post('/ibd-daily/post', formData, {
     // });
     // return api.get(`/reports?${queryParams.toString()}`).then(res => res.data);
     getReports: (reportType) =>{
-    return api.get(`/${reportType}/getall`.then(res => res.data);
+    return api.get(`/${reportType}/getall`).then(res => res.data);
   },
 
   getReport: (reportId) => {

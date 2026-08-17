@@ -25,6 +25,7 @@ const DepartmentReportPage = () => {
 
   const department = getDepartmentById(deptId);
   const reportType = getReportTypeById(deptId, reportTypeId);
+  console.log("report type", reportTypeId)
 
   const {
     data: reports,
@@ -37,9 +38,9 @@ const DepartmentReportPage = () => {
       //   departmentId: deptId,
       //   typeId: reportTypeId,
       // }),
-       reportService.getReports({
-        reportType: reportTypeId,
-      }),
+       reportService.getReports(
+       reportTypeId
+      ),
   });
 
   const handleRefresh = () => {

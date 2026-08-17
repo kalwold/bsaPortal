@@ -1,11 +1,18 @@
 import * as XLSX from 'xlsx';
 
-// Currency columns in the report
+// Currency columns for foreign currency exposure report
 const CURRENCIES = ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK', 'SEK', 'SAR', 'CAD', 'AED', 'AUD', 'CNY', 'NOK', 'KWD'];
+	
+const REPORT_TYPES = {
+  DAILY_FOREX: 'daily-forex-exposure',
+  MONTHLY_BALANCE: 'monthly-balance-sheet',
+  LIQUIDITY_REQUIREMENT: 'liquidity-requirement'
+};
 
 export const parseExcelReport = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
@@ -15,20 +22,49 @@ export const parseExcelReport = (file) => {
 
         console.log('Raw Excel Data:', jsonData);
 
+          const reportType = detectReportType(jsonData);
+        console.log('Detected Report Type:', reportType);
+
         const metadata = extractMetadata(jsonData);
         console.log('Extracted Metadata:', metadata);
 
-        const hierarchicalData = extractHierarchicalData(jsonData);
+         let hierarchicalData = [];
+        let currencies = [];
+        let additionalColumns = [];
+
+        if (reportType === REPORT_TYPES.DAILY_FOREX) {
+          // const result = extractForexData(jsonData);
+          // hierarchicalData = result.hierarchicalData;
+          hierarchicalData = result.hierarchicalData;
+        const result = extractHierarchicalForexData(jsonData);
+          currencies = result.currencies;
         console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
+          additionalColumns = result.additionalColumns;
+        } else if (reportType === REPORT_TYPES.MONTHLY_BALANCE) {
+          const result = extractBalanceSheetData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          currencies = result.currencies;
+          additionalColumns = result.additionalColumns;
+        } else if (reportType === REPORT_TYPES.LIQUIDITY_REQUIREMENT) {
+          const result = extractLiquidityRequirementData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          currencies = result.currencies;
+          additionalColumns = result.additionalColumns;
+        } else {
+          throw new Error(`Unsupported report type: ${reportType}`);
+        }
+
+        // const hierarchicalData = extractHierarchicalData(jsonData);
+        // console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
 
         const flatData = flattenData(hierarchicalData);
 
         const report = {
           id: `RPT-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
-          departmentId: 'ibd',
-          departmentName: 'IBD',
-          reportTypeId: 'ibd-daily',
-          reportTypeName: 'Daily Foreign Currency Exposure',
+          departmentId: metadata.departmentId,
+          departmentName: metadata.departmentName,
+          reportTypeId: metadata.reportType,
+          reportTypeName: metadata.reportTitle,
           ReturnKey: metadata.ReturnKey,
           fileName: file.name,
           status: 'PENDING',
@@ -36,7 +72,7 @@ export const parseExcelReport = (file) => {
           createdBy: 'current-user',
           metadata: metadata,
           currencies: CURRENCIES,
-          additionalColumns: ['O1', 'O2', 'O3', 'OVERALL_EXPOSURE'],
+          additionalColumns: additionalColumns,
           data: hierarchicalData,
           flatData: flatData,
           validations: [],
@@ -63,7 +99,9 @@ const extractMetadata = (data) => {
     startDate: '',
     endDate: '',
     reportType: '',
-    unit: ''
+    unit: '',
+    departmentId: '', 
+    departmentName: ''
   };
 
   for (let i = 0; i < data.length; i++) {
@@ -76,6 +114,8 @@ const extractMetadata = (data) => {
 
     console.log(`Row ${i + 1}:`, { firstCell, secondCell, thirdCell, i });
 
+
+
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       console.log('Found Return Key:', metadata.ReturnKey);
@@ -83,6 +123,17 @@ const extractMetadata = (data) => {
       if (firstCell.includes('SINGLE CURRENCY')) {
         metadata.reportType = 'single-currency-exposure';
         console.log('Found Report Type:', metadata.reportType);
+      metadata.departmentId = 'ibd';
+        console.log('Found Report Type:', metadata.reportType);
+        metadata.departmentName = 'IBD';
+      } else if (firstCell.includes('MB001')) {
+        metadata.reportType = 'monthly-balance-sheet';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance Department';
+      } else if (firstCell.includes('ZS001') || firstCell.includes('LSR-Statutory ZS001')) {
+        metadata.reportType = 'liquidity-requirement';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance Department';
       }
     }
 
@@ -120,7 +171,50 @@ const extractMetadata = (data) => {
   return metadata;
 };
 
-const extractHierarchicalData = (data) => {
+
+const detectReportType = (data) => {
+  if (!data || data.length === 0) return null;
+
+  // Check first row for ReturnKey
+  const firstRow = data[0];
+  if (firstRow && firstRow.length > 0) {
+    const firstCell = String(firstRow[0] || '').trim();
+    
+    if (firstCell && firstCell.includes('SINGLE CURRENCY')) {
+      return REPORT_TYPES.DAILY_FOREX;
+    }
+    if (firstCell && firstCell.includes('MB001')) {
+      return REPORT_TYPES.MONTHLY_BALANCE;
+    }
+    if (firstCell && (firstCell.includes('ZS001') || firstCell.includes('LSR-Statutory ZS001'))) {
+      return REPORT_TYPES.LIQUIDITY_REQUIREMENT;
+    }
+  }
+
+  // // Check other rows for report type indicators
+  // for (let i = 0; i < Math.min(data.length, 10); i++) {
+  //   const row = data[i];
+  //   if (!row) continue;
+    
+  //   for (let j = 0; j < Math.min(row.length, 3); j++) {
+  //     const cell = String(row[j] || '').trim();
+  //     if (cell && cell.includes('Daily Foreign Currency Exposure')) {
+  //       return REPORT_TYPES.DAILY_FOREX;
+  //     }
+  //     if (cell && (cell.includes('Monthy Balance Sheet') || cell.includes('Balance Sheet'))) {
+  //       return REPORT_TYPES.MONTHLY_BALANCE;
+  //     }
+  //     if (cell && (cell.includes('Liquidity Requirement Report') || cell.includes('LSR-Statutory'))) {
+  //       return REPORT_TYPES.LIQUIDITY_REQUIREMENT;
+  //     }
+  //   }
+  // }
+
+  return null;
+};
+
+
+const extractHierarchicalForexData = (data) => {
   const result = [];
   let dataTableStart = -1;
 
@@ -232,6 +326,8 @@ const extractHierarchicalData = (data) => {
                             label.includes('Foreign Exhange Position') ||
                             label.includes('Overall Foreign Exhange Position'));
 
+
+   
     // Extract values for ALL columns
     const values = {};
     
@@ -246,24 +342,24 @@ const extractHierarchicalData = (data) => {
       }
       // Skip if this column is in the "Others" range
       if (colIndex >= othersStartIndex && colIndex < othersStartIndex + 3) {
-        values[CURRENCIES[j]] = null;
+        values[CURRENCIES[j]] = '0';
         continue;
       }
       if (colIndex < row.length) {
-        const value = parseFloat(row[colIndex]);
+        const value = parseFloat(row[colIndex]).toFixed(2);
         if (!isNaN(value) && value !== 0) {
           values[CURRENCIES[j]] = value;
         } else {
-          values[CURRENCIES[j]] = null;
+          values[CURRENCIES[j]] = '0';
         }
       } else {
-        values[CURRENCIES[j]] = null;
+        values[CURRENCIES[j]] = '0';
       }
     }
 
-    // 2. Extract "Others in Single Currency" columns (O1, O2, O3)
+    // 2. Extract "Others in Single Currency" columns (OTHER1, OTHER2, OTHER3)
     // These are at positions othersStartIndex, othersStartIndex+1, othersStartIndex+2
-    const otherColumns = ['O1', 'O2', 'O3'];
+    const otherColumns = ['OTHER1', 'OTHER2', 'OTHER3'];
     for (let j = 0; j < otherColumns.length; j++) {
       const colIndex = othersStartIndex + j;
       // Skip if this column is the Overall Exposure column
@@ -272,20 +368,20 @@ const extractHierarchicalData = (data) => {
         continue;
       }
       if (colIndex < row.length) {
-        const value = parseFloat(row[colIndex]);
+        const value = parseFloat(row[colIndex]).toFixed(2);
         if (!isNaN(value) && value !== 0) {
           values[otherColumns[j]] = value;
         } else {
-          values[otherColumns[j]] = null;
+          values[otherColumns[j]] = '0';
         }
       } else {
-        values[otherColumns[j]] = null;
+        values[otherColumns[j]] = '0';
       }
     }
 
     // 3. Extract "Overall Exposure" - ONLY from the Overall Exposure column
     if (overallExposureIndex !== -1 && overallExposureIndex < row.length) {
-      const overallValue = parseFloat(row[overallExposureIndex]);
+      const overallValue = parseFloat(row[overallExposureIndex]).toFixed(2);
       if (!isNaN(overallValue) && overallValue !== 0) {
         values.OVERALL_EXPOSURE = overallValue;
       } else {
@@ -335,24 +431,24 @@ const extractHierarchicalData = (data) => {
           continue;
         }
         if (colIndex >= othersStartIndex && colIndex < othersStartIndex + 3) {
-          values[CURRENCIES[j]] = null;
+          values[CURRENCIES[j]] = '0';
           continue;
         }
         if (colIndex < row.length) {
-          const value = parseFloat(row[colIndex]);
+          const value = parseFloat(row[colIndex]).toFixed(2);
           
           if (!isNaN(value) && value !== 0) {
             values[CURRENCIES[j]] = value;
           } else {
-            values[CURRENCIES[j]] = null;
+            values[CURRENCIES[j]] = '0';
           }
         } else {
-          values[CURRENCIES[j]] = null;
+          values[CURRENCIES[j]] = '0';
         }
       }
 
       // 2. Extract Others columns
-      const otherColumns = ['O1', 'O2', 'O3'];
+      const otherColumns = ['OTHER1', 'OTHER2', 'OTHER3'];
       for (let j = 0; j < otherColumns.length; j++) {
         const colIndex = othersStartIndex + j;
         if (colIndex === overallExposureIndex) {
@@ -360,20 +456,20 @@ const extractHierarchicalData = (data) => {
           continue;
         }
         if (colIndex < row.length) {
-          const value = parseFloat(row[colIndex]);
+          const value = parseFloat(row[colIndex]).toFixed(2);
           if (!isNaN(value) && value !== 0) {
             values[otherColumns[j]] = value;
           } else {
-            values[otherColumns[j]] = null;
+            values[otherColumns[j]] = '0';
           }
         } else {
-          values[otherColumns[j]] = null;
+          values[otherColumns[j]] = '0';
         }
       }
 
       // 3. Extract Overall Exposure
       if (overallExposureIndex !== -1 && overallExposureIndex < row.length) {
-        const overallValue = parseFloat(row[overallExposureIndex]);
+        const overallValue = parseFloat(row[overallExposureIndex]).toFixed(2);
         if (!isNaN(overallValue) && overallValue !== 0) {
           values.OVERALL_EXPOSURE = overallValue;
         } else {
@@ -383,9 +479,9 @@ const extractHierarchicalData = (data) => {
         values.OVERALL_EXPOSURE = null;
       }
 
-      const entryId = label.includes('Assets') ? 'total-assets' : 'total-liabilities';
-      const entry = {
-        id: entryId,
+     // const entryId = label.includes('Assets') ? 'total-assets' : 'total-liabilities';
+       const entry = {
+        id: '',
         sNo: '',
         label: label,
         values: values,
@@ -402,7 +498,7 @@ const extractHierarchicalData = (data) => {
         parent.children.push(entry);
         console.log(`Added total row "${label}" to parent "${parentId}"`);
       } else {
-        nodeMap.set(entryId, entry);
+        nodeMap.set(entry.id, entry);
       }
     }
   }
@@ -425,14 +521,14 @@ const extractHierarchicalData = (data) => {
           values[CURRENCIES[j]] = null;
         }
         
-        // O1, O2, O3 are null
-        values['O1'] = null;
-        values['O2'] = null;
-        values['O3'] = null;
+        // OTHER1, OTHER2, OTHER3 are null
+        values['OTHER1'] = null;
+        values['OTHER2'] = null;
+        values['OTHER3'] = null;
         
         // Get the Overall Exposure value
         if (overallExposureIndex !== -1 && overallExposureIndex < row.length) {
-          const overallValue = parseFloat(row[overallExposureIndex]);
+          const overallValue = parseFloat(row[overallExposureIndex]).toFixed(2);
           if (!isNaN(overallValue) && overallValue !== 0) {
             values.OVERALL_EXPOSURE = overallValue;
           } else {
@@ -454,10 +550,10 @@ const extractHierarchicalData = (data) => {
           children: []
         };
 
-        if (!nodeMap.has(sNo)) {
-          nodeMap.set(sNo, entry);
-          console.log(`Added special node ${sNo}: ${label} with OVERALL_EXPOSURE:`, values.OVERALL_EXPOSURE);
-        }
+        // if (!nodeMap.has(sNo)) {
+        //   nodeMap.set(sNo, entry);
+        //   console.log(`Added special node ${sNo}: ${label} with OVERALL_EXPOSURE:`, values.OVERALL_EXPOSURE);
+        // }
       }
     }
   }
@@ -477,9 +573,9 @@ const extractHierarchicalData = (data) => {
         values[CURRENCIES[j]] = null;
       }
       
-      values['O1'] = null;
-      values['O2'] = null;
-      values['O3'] = null;
+      values['OTHER1'] = null;
+      values['OTHER2'] = null;
+      values['OTHER3'] = null;
       values.OVERALL_EXPOSURE = null;
 
       const entry = {
@@ -494,10 +590,10 @@ const extractHierarchicalData = (data) => {
         children: []
       };
 
-      if (!nodeMap.has('8')) {
-        nodeMap.set('8', entry);
-        console.log(`Added section node 8: ${label}`);
-      }
+      // if (!nodeMap.has('8')) {
+      //   nodeMap.set('8', entry);
+      //   console.log(`Added section node 8: ${label}`);
+      // }
     }
   }
 
@@ -589,6 +685,449 @@ const extractHierarchicalData = (data) => {
   
   return topLevelNodes;
 };
+const extractBalanceSheetData = (data) => {
+  const hierarchicalData = [];
+  let dataTableStart = -1;
+
+  // Find the data table start
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    const firstCell = String(row[0] || '').trim();
+    const secondCell = String(row[1] || '').trim();
+    if (firstCell === 'Code' || secondCell === 'Description') {
+      dataTableStart = i + 1;
+      break;
+    }
+  }
+
+  if (dataTableStart === -1) {
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (!row || row.length === 0) continue;
+      const firstCell = String(row[0] || '').trim();
+      if (firstCell === 'ASSETS') {
+        dataTableStart = i + 1;
+        break;
+      }
+    }
+  }
+
+  if (dataTableStart === -1) {
+    return { hierarchicalData: [], currencies: ['Current Month'], additionalColumns: [] };
+  }
+
+  const topLevelNodes = [];
+  const nodeMap = new Map();
+  let currentParent = null;
+
+  // Find value column
+  let valueColumnIndex = -1;
+  const headerRow = data[dataTableStart - 1];
+  for (let i = 0; i < headerRow.length; i++) {
+    const cell = String(headerRow[i] || '').trim();
+    if (cell === 'Current Month' || cell === 'Current Month ' || cell.includes('Current')) {
+      valueColumnIndex = i;
+      break;
+    }
+  }
+  if (valueColumnIndex === -1) valueColumnIndex = 2;
+
+  // Parse the data
+  for (let i = dataTableStart; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const code = String(row[0] || '').trim();
+    const description = String(row[1] || '').trim();
+
+    if (!description) continue;
+
+    const isSectionHeader = description === 'ASSETS' || 
+                           description === 'LIABILITIES & CAPITAL' ||
+                           description === 'LIABILITIES' ||
+                           description === 'CAPITAL & RESER. A/C';
+
+    const isTotalRow = description.includes('TOTAL ASSETS') || 
+                       description.includes('TOTAL LIABILITIES') ||
+                       description.includes('TOTAL LIABILITIES AND NET WORTH');
+
+    // Extract value
+    let value = null;
+    if (valueColumnIndex < row.length) {
+      const rawValue = parseFloat(row[valueColumnIndex]);
+      if (!isNaN(rawValue) && rawValue !== 0) {
+        value = rawValue;
+      }
+    }
+
+    // Determine level
+    let level = 0;
+    if (code && code !== '') {
+      const codeParts = code.split('.');
+      level = codeParts.length;
+    } else if (isSectionHeader) {
+      level = 0;
+    } else if (isTotalRow) {
+      level = 0;
+    }
+
+    const entry = {
+      id: code || `row-${i}`,
+      sNo: code || '',
+      label: description,
+      values: {
+        'Current Month': value !== null ? value.toFixed(2) : '0'
+      },
+      rowNumber: i + 1,
+      level: level,
+      isTotalRow: isTotalRow || false,
+      isSectionHeader: isSectionHeader || false,
+      children: []
+    };
+
+    if (code) {
+      nodeMap.set(code, entry);
+    }
+
+    if (!code) {
+      if (isSectionHeader) {
+        topLevelNodes.push(entry);
+        currentParent = entry;
+      } else if (isTotalRow) {
+        if (description.includes('TOTAL ASSETS')) {
+          const assetParent = topLevelNodes.find(n => n.label === 'ASSETS');
+          if (assetParent) assetParent.children.push(entry);
+          else topLevelNodes.push(entry);
+        } else if (description.includes('TOTAL LIABILITIES')) {
+          const liabilityParent = topLevelNodes.find(n => n.label === 'LIABILITIES');
+          if (liabilityParent) liabilityParent.children.push(entry);
+          else topLevelNodes.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      } else {
+        if (currentParent && !currentParent.isSectionHeader) {
+          currentParent.children.push(entry);
+        } else if (currentParent) {
+          currentParent.children.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      }
+    }
+  }
+
+  // Build hierarchy for nodes with codes
+  for (const [code, node] of nodeMap) {
+    const codeParts = code.split('.');
+    
+    if (codeParts.length === 1) {
+      const existing = topLevelNodes.find(n => n.id === code);
+      if (!existing) {
+        topLevelNodes.push(node);
+      }
+    } else if (codeParts.length > 1) {
+      const parentCode = codeParts.slice(0, -1).join('.');
+      const parent = nodeMap.get(parentCode);
+      
+      if (parent) {
+        const exists = parent.children.some(child => child.id === node.id);
+        if (!exists) {
+          parent.children.push(node);
+        }
+      } else {
+        const baseCode = codeParts[0];
+        const baseParent = nodeMap.get(baseCode);
+        if (baseParent) {
+          const exists = baseParent.children.some(child => child.id === node.id);
+          if (!exists) {
+            baseParent.children.push(node);
+          }
+        }
+      }
+    }
+  }
+
+  // Sort children
+  const sortChildren = (nodes) => {
+    nodes.sort((a, b) => {
+      if (a.isTotalRow && !b.isTotalRow) return 1;
+      if (!a.isTotalRow && b.isTotalRow) return -1;
+      
+      if (a.sNo && b.sNo) {
+        const aParts = a.sNo.split('.').map(Number);
+        const bParts = b.sNo.split('.').map(Number);
+        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+          if (aParts[i] !== bParts[i]) {
+            return aParts[i] - bParts[i];
+          }
+        }
+        return aParts.length - bParts.length;
+      }
+      return 0;
+    });
+
+    nodes.forEach(node => {
+      if (node.children && node.children.length > 0) {
+        sortChildren(node.children);
+      }
+    });
+  };
+
+  sortChildren(topLevelNodes);
+
+  const cleanData = (nodes) => {
+    nodes.forEach(node => {
+      if (node.children && node.children.length === 0) {
+        delete node.children;
+      } else if (node.children) {
+        cleanData(node.children);
+      }
+    });
+  };
+  cleanData(topLevelNodes);
+
+  return {
+    hierarchicalData: topLevelNodes,
+    currencies: ['Current Month'],
+    additionalColumns: []
+  };
+};
+
+const extractLiquidityRequirementData = (data) => {
+  const hierarchicalData = [];
+  let dataTableStart = -1;
+
+  // Find the data table start - look for "code" column
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    const firstCell = String(row[0] || '').trim();
+    const secondCell = String(row[1] || '').trim();
+    if (firstCell === 'code' || secondCell === 'Description') {
+      dataTableStart = i + 1;
+      break;
+    }
+  }
+
+  if (dataTableStart === -1) {
+    // Try to find the table by looking for "Required Liquid Assets"
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (!row || row.length === 0) continue;
+      const secondCell = String(row[1] || '').trim();
+      if (secondCell === 'Required Liquid Assets') {
+        dataTableStart = i;
+        break;
+      }
+    }
+  }
+
+  if (dataTableStart === -1) {
+    return { hierarchicalData: [], currencies: ['Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average'], additionalColumns: [] };
+  }
+
+  const topLevelNodes = [];
+  const nodeMap = new Map();
+  let currentParent = null;
+
+  // Get column headers (days of week)
+  const headerRow = data[dataTableStart - 1];
+  const dayColumns = [];
+  let dayStartIndex = -1;
+  
+  for (let i = 0; i < headerRow.length; i++) {
+    const cell = String(headerRow[i] || '').trim();
+    if (cell === 'Thu' || cell === 'Fri' || cell === 'Sat' || cell === 'Sun' || cell === 'Mon' || cell === 'Tue' || cell === 'Wed') {
+      if (dayStartIndex === -1) dayStartIndex = i;
+      dayColumns.push(cell);
+    }
+    if (cell === 'Weekly Average') {
+      dayColumns.push(cell);
+    }
+  }
+
+  // If we didn't find day columns, use default positions
+  if (dayColumns.length === 0) {
+    dayStartIndex = 2;
+    dayColumns.push('Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average');
+  }
+
+  console.log('Day columns:', dayColumns);
+  console.log('Day start index:', dayStartIndex);
+
+  // Parse the data
+  for (let i = dataTableStart; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const code = String(row[0] || '').trim();
+    const description = String(row[1] || '').trim();
+
+    // Skip rows without description or notes
+    if (!description) continue;
+    if (description.includes('Note:') || description.includes('_')) continue;
+
+    // Check if this is a section header
+    const isSectionHeader = description === 'Required Liquid Assets' || 
+                           description === 'Liquid Assets Held' ||
+                           description === 'Excess/deficit' ||
+                           description === 'Liquidity Ratio';
+
+    // Check if this is a total row
+    const isTotalRow = description.includes('Total liquid assets') || 
+                       description.includes('Excess/deficit') ||
+                       description.includes('Liquidity Ratio');
+
+    // Extract values for each day
+    const values = {};
+    let hasValues = false;
+
+    for (let j = 0; j < dayColumns.length; j++) {
+      const colIndex = dayStartIndex + j;
+      if (colIndex < row.length) {
+        const rawValue = parseFloat(row[colIndex]);
+        if (!isNaN(rawValue) && rawValue !== 0) {
+          values[dayColumns[j]] = rawValue.toFixed(2);
+          hasValues = true;
+        } else {
+          values[dayColumns[j]] = '0';
+        }
+      } else {
+        values[dayColumns[j]] = '0';
+      }
+    }
+
+    // Determine level
+    let level = 0;
+    if (code && code !== '') {
+      const codeParts = code.split('.');
+      level = codeParts.length;
+    } else if (isSectionHeader) {
+      level = 0;
+    } else if (isTotalRow) {
+      level = 1;
+    } else if (description && description.startsWith('  ')) {
+      level = 2;
+    }
+
+    const entry = {
+      id: code || `row-${i}`,
+      sNo: code || '',
+      label: description,
+      values: values,
+      rowNumber: i + 1,
+      level: level,
+      isTotalRow: isTotalRow || false,
+      isSectionHeader: isSectionHeader || false,
+      children: []
+    };
+
+    if (code) {
+      nodeMap.set(code, entry);
+    }
+
+    if (!code) {
+      if (isSectionHeader) {
+        topLevelNodes.push(entry);
+        currentParent = entry;
+      } else if (isTotalRow) {
+        // Total rows go to the current parent
+        if (currentParent) {
+          currentParent.children.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      } else {
+        // Other rows without code
+        if (currentParent && !currentParent.isSectionHeader) {
+          currentParent.children.push(entry);
+        } else if (currentParent) {
+          currentParent.children.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      }
+    }
+  }
+
+  // Build hierarchy for nodes with codes
+  for (const [code, node] of nodeMap) {
+    const codeParts = code.split('.');
+    
+    if (codeParts.length === 1) {
+      const existing = topLevelNodes.find(n => n.id === code);
+      if (!existing) {
+        topLevelNodes.push(node);
+      }
+    } else if (codeParts.length > 1) {
+      const parentCode = codeParts.slice(0, -1).join('.');
+      const parent = nodeMap.get(parentCode);
+      
+      if (parent) {
+        const exists = parent.children.some(child => child.id === node.id);
+        if (!exists) {
+          parent.children.push(node);
+        }
+      } else {
+        const baseCode = codeParts[0];
+        const baseParent = nodeMap.get(baseCode);
+        if (baseParent) {
+          const exists = baseParent.children.some(child => child.id === node.id);
+          if (!exists) {
+            baseParent.children.push(node);
+          }
+        }
+      }
+    }
+  }
+
+  // Sort children by code
+  const sortChildren = (nodes) => {
+    nodes.sort((a, b) => {
+      if (a.isTotalRow && !b.isTotalRow) return 1;
+      if (!a.isTotalRow && b.isTotalRow) return -1;
+      
+      if (a.sNo && b.sNo) {
+        const aParts = a.sNo.split('.').map(Number);
+        const bParts = b.sNo.split('.').map(Number);
+        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+          if (aParts[i] !== bParts[i]) {
+            return aParts[i] - bParts[i];
+          }
+        }
+        return aParts.length - bParts.length;
+      }
+      return 0;
+    });
+
+    nodes.forEach(node => {
+      if (node.children && node.children.length > 0) {
+        sortChildren(node.children);
+      }
+    });
+  };
+
+  sortChildren(topLevelNodes);
+
+  const cleanData = (nodes) => {
+    nodes.forEach(node => {
+      if (node.children && node.children.length === 0) {
+        delete node.children;
+      } else if (node.children) {
+        cleanData(node.children);
+      }
+    });
+  };
+  cleanData(topLevelNodes);
+
+  return {
+    hierarchicalData: topLevelNodes,
+    currencies: dayColumns,
+    additionalColumns: []
+  };
+};
 
 const flattenData = (nodes) => {
   const result = [];
@@ -656,8 +1195,8 @@ export const prepareReportForSubmission = (parsedData) => {
     createdAt: parsedData.createdAt || new Date().toISOString(),
     createdBy: parsedData.createdBy || 'current-user',
     metadata: parsedData.metadata,
-    currencies: parsedData.currencies || CURRENCIES,
-    additionalColumns: parsedData.additionalColumns || ['O1', 'O2', 'O3', 'OVERALL_EXPOSURE'],
+    currencies: parsedData.currencies || [],
+    additionalColumns: parsedData.additionalColumns|| [],
     data: parsedData.data,
     flatData: parsedData.flatData || flattenData(parsedData.data),
     validations: parsedData.validations || [],
@@ -668,744 +1207,3 @@ export const prepareReportForSubmission = (parsedData) => {
 
 
 
-
-// import * as XLSX from 'xlsx';
-
-// // Currency columns in the report
-// const CURRENCIES = ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK', 'SEK', 'SAR', 'CAD', 'AED', 'AUD', 'CNY', 'NOK', 'KWD'];
-// // Additional columns
-// const ADDITIONAL_COLUMNS = ['O1', 'O2', 'O3', 'OVERALL_EXPOSURE'];
-// // Total columns: 17 currencies + 3 "Others" + 1 "Overall Exposure"
-// const TOTAL_COLUMNS = 21;
-// export const parseExcelReport = (file) => {
-//   return new Promise((resolve, reject) => {
-//     const reader = new FileReader();
-//     reader.onload = (e) => {
-//       try {
-//         const data = new Uint8Array(e.target.result);
-//         const workbook = XLSX.read(data, { type: 'array' });
-//         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-//         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-//         console.log('Raw Excel Data:', jsonData);
-
-//         // Extract all metadata including title
-//         const metadata = extractMetadata(jsonData);
-//         console.log('Extracted Metadata:', metadata);
-
-//         // Extract hierarchical data with proper parent-child relationships
-//         const hierarchicalData = extractHierarchicalData(jsonData);
-//         console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
-
-//         // Build flat data for easy access
-//         const flatData = flattenData(hierarchicalData);
-
-//         // Build the complete report object
-//         const report = {
-//           id: `RPT1-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
-//           departmentId: 'ibd',
-//           departmentName: 'IBD',
-//           reportTypeId: 'daily-forex-exposure',
-//           reportTypeName: 'Daily Foreign Currency Exposure',
-//           ReturnKey: metadata.ReturnKey,
-//           fileName: file.name,
-//           status: 'PENDING',
-//           createdAt: new Date().toISOString(),
-//           createdBy: 'current-user',
-//           metadata: metadata,
-//           currencies: CURRENCIES,
-//           additionalColumns: ADDITIONAL_COLUMNS,
-//           data: hierarchicalData,
-//           flatData: flatData,
-//           validations: [],
-//           isValid: true
-//         };
-
-//         resolve(report);
-//       } catch (error) {
-//         console.error('Parse error:', error);
-//         reject(new Error(`Failed to parse Excel file: ${error.message}`));
-//       }
-//     };
-//     reader.onerror = () => reject(new Error('Failed to read file'));
-//     reader.readAsArrayBuffer(file);
-//   });
-// };
-
-// const extractMetadata = (data) => {
-//   const metadata = {
-//     reportTitle: '',
-//     ReturnKey: '',
-//     institutionCode: '',
-//     financialYear: '',
-//     startDate: '',
-//     endDate: '',
-//     reportType: '',
-//     unit: ''
-//   };
-
-//   for (let i = 0; i < data.length; i++) {
-//     const row = data[i];
-//     if (!row || row.length === 0) continue;
-
-//     const firstCell = String(row[0] || '').trim();
-//     const secondCell = String(row[1] || '').trim();
-//     const thirdCell = String(row[2] || '').trim();
-
-//     console.log(`Row ${i + 1}:`, { firstCell, secondCell, thirdCell, i });
-
-//     // if (firstCell.includes('Daily Foreign Currency Exposure') || 
-//     //     firstCell.includes('Foreign Currency Exposure')) {
-//     //   metadata.reportTitle = firstCell;
-//     // }
-
-//       if (i === 0 && firstCell) {
-//       // Extract the report code from "SINGLE CURRENCYOP001" -> "OP001"
-  
-//         metadata.ReturnKey = firstCell;
-      
-//         console.log('Found Return Key:', metadata.ReturnKey);
-
-      
-//       // Extract the report type
-//       if (firstCell.includes('SINGLE CURRENCY')) {
-        
-//         metadata.reportType = 'single-currency-exposure';
-//         console.log('Found Report Type:', metadata.reportType);
-//       }}
-    
-//  // Row 3: Report Title in second cell
-//     if (i === 3 && secondCell) {
-//       metadata.reportTitle = secondCell;
-//       console.log('Found Report Title:', metadata.reportTitle);
-//     }
-
-//     // Row 7: Institution Code
-//     if (i === 7 && secondCell.includes('Instiution Code')) {
-//       metadata.institutionCode = thirdCell || '';
-//       console.log('Found Institution Code:', metadata.institutionCode);
-//     }
-
-//     // Row 8: Financial Year
-//     if (i === 8 && secondCell.includes('Financial Year')) {
-//       metadata.financialYear =  thirdCell || '';
-//       console.log('Found Financial Year:', metadata.financialYear);
-//     }
-
-//     // Row 9: Start Date
-//     if (i === 9 && secondCell.includes('Start Date')) {
-//       metadata.startDate =  thirdCell || '';
-//       console.log('Found Start Date:', metadata.startDate);
-//     }
-
-//     // Row 10: End Date
-//     if (i === 10 && secondCell.includes('End Date')) {
-//       metadata.endDate =  thirdCell || '';
-//       console.log('Found End Date:', metadata.endDate);
-//     }
-
-//     // Row 12: Unit
-//     if (i === 12 && thirdCell === 'In Thousands') {
-//       metadata.unit = 'In Thousands';
-//       console.log('Found Unit:', metadata.unit);
-//     }
-  
-//   }
-
-
-
-//   return metadata;
-// };
-// const extractHierarchicalData = (data) => {
-//   const result = [];
-//   let dataTableStart = -1;
-
-//   console.log('=== Extracting Hierarchical Data ===');
-
-//   // Find the data table start - look for row with "S/No"
-//   for (let i = 0; i < data.length; i++) {
-//     const row = data[i];
-//     if (!row || row.length === 0) continue;
-//     const firstCell = String(row[0] || '').trim();
-//     if (firstCell === 'S/No') {
-//       dataTableStart = i + 1;
-//       console.log('Found data table at row:', dataTableStart);
-//       break;
-//     }
-//   }
-
-//   if (dataTableStart === -1) {
-//     console.log('Could not find data table');
-//     return result;
-//   }
-
-//   // Map to store nodes by their S/No for easy lookup
-//   const nodeMap = new Map();
-//   const topLevelNodes = [];
-
-//   // Get the currency columns from the header row
-//   const headerRow = data[dataTableStart - 1];
-//   let currencyStartIndex = 2; // Column C (0-based index 2)
-  
-//   // Find where the currency columns start
-//   for (let i = 0; i < headerRow.length; i++) {
-//     const cell = String(headerRow[i] || '').trim();
-//     if (cell === 'USD') {
-//       currencyStartIndex = i;
-//       break;
-//     }
-//   }
-
-//   console.log('Currency start index:', currencyStartIndex);
-//   console.log('Total columns in row:', headerRow.length);
-
-//   // First pass: Create all nodes with their S/No
-//   for (let i = dataTableStart; i < data.length; i++) {
-//     const row = data[i];
-//     if (!row || row.length === 0) continue;
-
-//     const sNo = String(row[0] || '').trim();
-//     const label = String(row[1] || '').trim();
-    
-//     // Skip rows without S/No or without label
-//     if (!sNo || !label) continue;
-
-//     // Check if this is a total row
-//     const isTotalRow = label.includes('Total Foreign Assets') || 
-//                        label.includes('Total Foreign Liabilities');
-
-//     // Extract values for ALL columns
-//     const values = {};
-    
-//     // 1. Extract 17 currency values
-//     for (let j = 0; j < CURRENCIES.length; j++) {
-//       const colIndex = currencyStartIndex + j;
-//       if (colIndex < row.length) {
-//         const value = parseFloat(row[colIndex]);
-//         if (!isNaN(value) && value !== 0) {
-//           values[CURRENCIES[j]] = value;
-//         } else {
-//           values[CURRENCIES[j]] = null;
-//         }
-//       } else {
-//         values[CURRENCIES[j]] = null;
-//       }
-//     }
-
-//     // 2. Extract "Others in Single Currency" columns (O1, O2, O3)
-//     // These are the 3 columns after the main currencies
-//     const othersStartIndex = currencyStartIndex + CURRENCIES.length;
-//     const otherColumns = ['O1', 'O2', 'O3'];
-//     for (let j = 0; j < otherColumns.length; j++) {
-//       const colIndex = othersStartIndex + j;
-//       if (colIndex < row.length) {
-//         const value = parseFloat(row[colIndex]);
-//         if (!isNaN(value) && value !== 0) {
-//           values[otherColumns[j]] = value;
-//         } else {
-//           values[otherColumns[j]] = null;
-//         }
-//       } else {
-//         values[otherColumns[j]] = null;
-//       }
-//     }
-
-//     // 3. Extract "Overall Exposure" (last column)
-//     const overallExposureIndex = row.length - 1;
-//     if (overallExposureIndex >= 0 && overallExposureIndex < row.length) {
-//       const overallValue = parseFloat(row[overallExposureIndex]);
-//       if (!isNaN(overallValue) && overallValue !== 0) {
-//         values.OVERALL_EXPOSURE = overallValue;
-//       } else {
-//         values.OVERALL_EXPOSURE = null;
-//       }
-//     }
-
-//     // Determine the level based on S/No format
-//     const parts = sNo.split('.');
-//     const level = parts.length;
-
-//     console.log(`Processing row ${i}: S/No=${sNo}, Label=${label}, Level=${level}`);
-
-//     const entry = {
-//       id: sNo,
-//       sNo: sNo,
-//       label: label,
-//       values: values,
-//       rowNumber: i + 1,
-//       level: level,
-//       isTotalRow: isTotalRow || false,
-//       children: []
-//     };
-
-//     nodeMap.set(sNo, entry);
-//   }
-
-//   // Handle total rows without S/No
-//   for (let i = dataTableStart; i < data.length; i++) {
-//     const row = data[i];
-//     if (!row || row.length === 0) continue;
-
-//     const sNo = String(row[0] || '').trim();
-//     const label = String(row[1] || '').trim();
-    
-//     if (!sNo && label && (label.includes('Total Foreign Assets') || label.includes('Total Foreign Liabilities'))) {
-//       // Extract values for ALL columns
-//       const values = {};
-      
-//       // 1. Extract 17 currency values
-//       for (let j = 0; j < CURRENCIES.length; j++) {
-//         const colIndex = currencyStartIndex + j;
-//         if (colIndex < row.length) {
-//           const value = parseFloat(row[colIndex]);
-//           if (!isNaN(value) && value !== 0) {
-//             values[CURRENCIES[j]] = value;
-//           } else {
-//             values[CURRENCIES[j]] = null;
-//           }
-//         } else {
-//           values[CURRENCIES[j]] = null;
-//         }
-//       }
-
-//       // 2. Extract "Others in Single Currency" columns
-//       const othersStartIndex = currencyStartIndex + CURRENCIES.length;
-//       const otherColumns = ['O1', 'O2', 'O3'];
-//       for (let j = 0; j < otherColumns.length; j++) {
-//         const colIndex = othersStartIndex + j;
-//         if (colIndex < row.length) {
-//           const value = parseFloat(row[colIndex]);
-//           if (!isNaN(value) && value !== 0) {
-//             values[otherColumns[j]] = value;
-//           } else {
-//             values[otherColumns[j]] = null;
-//           }
-//         } else {
-//           values[otherColumns[j]] = null;
-//         }
-//       }
-
-//       // 3. Extract "Overall Exposure"
-//       const overallExposureIndex = row.length - 1;
-//       if (overallExposureIndex >= 0 && overallExposureIndex < row.length) {
-//         const overallValue = parseFloat(row[overallExposureIndex]);
-//         if (!isNaN(overallValue) && overallValue !== 0) {
-//           values.OVERALL_EXPOSURE = overallValue;
-//         } else {
-//           values.OVERALL_EXPOSURE = null;
-//         }
-//       }
-
-//       const entryId = label.includes('Assets') ? 'total-assets' : 'total-liabilities';
-//       const entry = {
-//         id: entryId,
-//         sNo: '',
-//         label: label,
-//         values: values,
-//         rowNumber: i + 1,
-//         level: 0,
-//         isTotalRow: true,
-//         children: []
-//       };
-
-//       const parentId = label.includes('Assets') ? '1' : '2';
-//       const parent = nodeMap.get(parentId);
-//       if (parent) {
-//         parent.children.push(entry);
-//         console.log(`Added total row "${label}" to parent "${parentId}"`);
-//       } else {
-//         nodeMap.set(entryId, entry);
-//       }
-//     }
-//   }
-
-//   // Handle special rows: 8.1 to 8.6 - these only have Overall Exposure
-//   for (let i = dataTableStart; i < data.length; i++) {
-//     const row = data[i];
-//     if (!row || row.length === 0) continue;
-
-//     const sNo = String(row[0] || '').trim();
-//     const label = String(row[1] || '').trim();
-    
-//     if (sNo && sNo.startsWith('8.') && label) {
-//       const parts = sNo.split('.');
-//       if (parts.length === 2) {
-//         // These rows only have data in the Overall Exposure column
-//         const values = {};
-        
-//         // All currency values are null
-//         for (let j = 0; j < CURRENCIES.length; j++) {
-//           values[CURRENCIES[j]] = null;
-//         }
-        
-//         // O1, O2, O3 are null
-//         values['O1'] = null;
-//         values['O2'] = null;
-//         values['O3'] = null;
-        
-//         // Get the Overall Exposure value from the last column
-//         const overallExposureIndex = row.length - 1;
-//         if (overallExposureIndex >= 0 && overallExposureIndex < row.length) {
-//           const overallValue = parseFloat(row[overallExposureIndex]);
-//           if (!isNaN(overallValue) && overallValue !== 0) {
-//             values.OVERALL_EXPOSURE = overallValue;
-//           } else {
-//             values.OVERALL_EXPOSURE = null;
-//           }
-//         }
-
-//         const entry = {
-//           id: sNo,
-//           sNo: sNo,
-//           label: label,
-//           values: values,
-//           rowNumber: i + 1,
-//           level: 2,
-//           isTotalRow: false,
-//           children: []
-//         };
-
-//         if (!nodeMap.has(sNo)) {
-//           nodeMap.set(sNo, entry);
-//           console.log(`Added special node ${sNo}: ${label} with OVERALL_EXPOSURE:`, values.OVERALL_EXPOSURE);
-//         }
-//       }
-//     }
-//   }
-
-//   // Build the hierarchy
-//   for (const [sNo, node] of nodeMap) {
-//     if (node.isTotalRow && node.id !== 'total-assets' && node.id !== 'total-liabilities') {
-//       continue;
-//     }
-
-//     const parts = sNo.split('.');
-    
-//     if (parts.length === 1) {
-//       topLevelNodes.push(node);
-//       console.log(`Added top-level node: ${sNo} - ${node.label}`);
-//     } else if (parts.length > 1) {
-//       const parentSNo = parts.slice(0, -1).join('.');
-//       const parent = nodeMap.get(parentSNo);
-      
-//       if (parent) {
-//         const exists = parent.children.some(child => child.id === node.id);
-//         if (!exists) {
-//           parent.children.push(node);
-//           console.log(`Added node ${sNo} as child of ${parentSNo}`);
-//         }
-//       } else {
-//         const baseSNo = parts[0];
-//         const baseParent = nodeMap.get(baseSNo);
-//         if (baseParent) {
-//           const exists = baseParent.children.some(child => child.id === node.id);
-//           if (!exists) {
-//             baseParent.children.push(node);
-//             console.log(`Added node ${sNo} as child of ${baseSNo} (fallback)`);
-//           }
-//         } else {
-//           topLevelNodes.push(node);
-//           console.log(`Added node ${sNo} as top-level (no parent found)`);
-//         }
-//       }
-//     }
-//   }
-
-//   // Sort children by S/No
-//   const sortChildren = (nodes) => {
-//     nodes.sort((a, b) => {
-//       if (a.isTotalRow && !b.isTotalRow) return 1;
-//       if (!a.isTotalRow && b.isTotalRow) return -1;
-      
-//       if (a.sNo && b.sNo) {
-//         const aParts = a.sNo.split('.').map(Number);
-//         const bParts = b.sNo.split('.').map(Number);
-        
-//         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
-//           if (aParts[i] !== bParts[i]) {
-//             return aParts[i] - bParts[i];
-//           }
-//         }
-//         return aParts.length - bParts.length;
-//       }
-      
-//       if (a.sNo && !b.sNo) return -1;
-//       if (!a.sNo && b.sNo) return 1;
-      
-//       return 0;
-//     });
-
-//     nodes.forEach(node => {
-//       if (node.children && node.children.length > 0) {
-//         sortChildren(node.children);
-//       }
-//     });
-//   };
-
-//   sortChildren(topLevelNodes);
-
-//   // Clean up - remove empty children arrays
-//   const cleanData = (nodes) => {
-//     nodes.forEach(node => {
-//       if (node.children && node.children.length === 0) {
-//         delete node.children;
-//       } else if (node.children) {
-//         cleanData(node.children);
-//       }
-//     });
-//   };
-//   cleanData(topLevelNodes);
-
-//   console.log('Final top-level nodes:', topLevelNodes.length);
-//   return topLevelNodes;
-// };
-
-// // const extractHierarchicalData = (data) => {
-// //   const result = [];
-// //   let dataTableStart = -1;
-
-// //   // Find the data table start
-// //   for (let i = 0; i < data.length; i++) {
-// //     const row = data[i];
-// //     if (!row || row.length === 0) continue;
-// //     const firstCell = String(row[0] || '').trim();
-// //     const secondCell = String(row[1] || '').trim();
-// //     if (firstCell === 'S/No' || secondCell === 'Particulars') {
-// //       dataTableStart = i + 1;
-// //       break;
-// //     }
-// //   }
-
-// //   if (dataTableStart === -1) {
-// //     for (let i = 0; i < data.length; i++) {
-// //       const row = data[i];
-// //       if (!row || row.length === 0) continue;
-// //       const secondCell = String(row[1] || '').trim();
-// //       if (secondCell.includes('Foreign Currency Assets')) {
-// //         dataTableStart = i;
-// //         break;
-// //       }
-// //     }
-// //   }
-
-// //   if (dataTableStart === -1) {
-// //     console.log('Could not find data table');
-// //     return result;
-// //   }
-
-// //   // Map to store nodes by their S/No for easy lookup
-// //   const nodeMap = new Map();
-// //   const topLevelNodes = [];
-
-// //   // First pass: Create all nodes with their S/No
-// //   for (let i = dataTableStart; i < data.length; i++) {
-// //     const row = data[i];
-// //     if (!row || row.length === 0) continue;
-
-// //     const sNo = String(row[0] || '').trim();
-// //     const label = String(row[1] || '').trim();
-    
-// //     // Skip empty rows or rows without S/No
-// //     if (!label || !sNo) continue;
-
-// //     // Check if this is a total row
-// //     const isTotalRow = label.includes('Total Foreign Assets') || 
-// //                        label.includes('Total Foreign Liabilities');
-
-// //     // Extract values for each currency
-// //     const values = {};
-// //     let hasValues = false;
-// //     for (let j = 0; j < CURRENCIES.length; j++) {
-// //       const colIndex = 2 + j;
-// //       const value = parseFloat(row[colIndex]);
-// //       if (!isNaN(value) && value !== 0) {
-// //         values[CURRENCIES[j]] = value;
-// //         hasValues = true;
-// //       } else {
-// //         values[CURRENCIES[j]] = null;
-// //       }
-// //     }
-
-// //     // Determine the level based on S/No format
-// //     const parts = sNo.split('.');
-// //     const level = parts.length;
-
-// //     const entry = {
-// //       id: sNo,
-// //       sNo: sNo,
-// //       label: label,
-// //       values: values,
-// //       rowNumber: i + 1,
-// //       level: level,
-// //       isTotalRow: isTotalRow,
-// //       children: []
-// //     };
-
-// //     nodeMap.set(sNo, entry);
-// //   }
-
-// //   // Second pass: Build the hierarchy
-// //   for (const [sNo, node] of nodeMap) {
-// //     const parts = sNo.split('.');
-    
-// //     if (parts.length === 1) {
-// //       // Top level node
-// //       topLevelNodes.push(node);
-// //     } else {
-// //       // Find parent by removing the last part
-// //       const parentSNo = parts.slice(0, -1).join('.');
-// //       const parent = nodeMap.get(parentSNo);
-      
-// //       if (parent) {
-// //         parent.children.push(node);
-// //       } else {
-// //         // If parent not found, check if it's a special case
-// //         // For example, "total-assets" might not follow the numbering
-// //         const isSpecialNode = sNo.includes('total') || sNo.includes('overall');
-// //         if (!isSpecialNode) {
-// //           // Try to find parent by looking for the base number
-// //           const baseSNo = parts[0];
-// //           const baseParent = nodeMap.get(baseSNo);
-// //           if (baseParent) {
-// //             baseParent.children.push(node);
-// //           } else {
-// //             topLevelNodes.push(node);
-// //           }
-// //         } else {
-// //           topLevelNodes.push(node);
-// //         }
-// //       }
-// //     }
-// //   }
-
-// //   // Sort children by S/No
-// //   const sortChildren = (nodes) => {
-// //     nodes.sort((a, b) => {
-// //       // Convert S/No to comparable format
-// //       const aParts = a.sNo.split('.').map(Number);
-// //       const bParts = b.sNo.split('.').map(Number);
-      
-// //       for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
-// //         if (aParts[i] !== bParts[i]) {
-// //           return aParts[i] - bParts[i];
-// //         }
-// //       }
-// //       return aParts.length - bParts.length;
-// //     });
-
-// //     nodes.forEach(node => {
-// //       if (node.children && node.children.length > 0) {
-// //         sortChildren(node.children);
-// //       }
-// //     });
-// //   };
-
-// //   // Sort top level nodes
-// //   topLevelNodes.sort((a, b) => {
-// //     // Put total rows at the end of their section
-// //     if (a.isTotalRow && !b.isTotalRow) return 1;
-// //     if (!a.isTotalRow && b.isTotalRow) return -1;
-    
-// //     const aParts = a.sNo.split('.').map(Number);
-// //     const bParts = b.sNo.split('.').map(Number);
-    
-// //     for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
-// //       if (aParts[i] !== bParts[i]) {
-// //         return aParts[i] - bParts[i];
-// //       }
-// //     }
-// //     return aParts.length - bParts.length;
-// //   });
-
-// //   // Sort all children
-// //   sortChildren(topLevelNodes);
-
-// //   // Clean up - remove empty children arrays
-// //   const cleanData = (nodes) => {
-// //     nodes.forEach(node => {
-// //       if (node.children && node.children.length === 0) {
-// //         delete node.children;
-// //       } else if (node.children) {
-// //         cleanData(node.children);
-// //       }
-// //     });
-// //   };
-// //   cleanData(topLevelNodes);
-
-// //   return topLevelNodes;
-// // };
-
-// const flattenData = (nodes) => {
-//   const result = [];
-//   const traverse = (nodes, parentId = null) => {
-//     nodes.forEach(node => {
-//       const flatNode = {
-//         id: node.id,
-//         sNo: node.sNo || '',
-//         label: node.label,
-//         values: node.values || {},
-//         rowNumber: node.rowNumber,
-//         level: node.level || 0,
-//         isTotalRow: node.isTotalRow || false,
-//         parentId: parentId
-//       };
-//       result.push(flatNode);
-//       if (node.children && node.children.length > 0) {
-//         traverse(node.children, node.id);
-//       }
-//     });
-//   };
-//   traverse(nodes);
-//   return result;
-// };
-
-// export const validateReportStructure = (parsedData) => {
-//   const errors = [];
-
-//   if (!parsedData.metadata.institutionCode) {
-//     errors.push('Institution Code is missing');
-//   }
-//   if (!parsedData.metadata.financialYear) {
-//     errors.push('Financial Year is missing');
-//   }
-//   if (!parsedData.metadata.startDate) {
-//     errors.push('Start Date is missing');
-//   }
-//   if (!parsedData.metadata.endDate) {
-//     errors.push('End Date is missing');
-//   }
-//   if (!parsedData.metadata.reportTitle) {
-//     errors.push('Report Title is missing');
-//   }
-
-//   if (!parsedData.data || parsedData.data.length === 0) {
-//     errors.push('No data found in the report');
-//   }
-
-//   return {
-//     isValid: errors.length === 0,
-//     errors,
-//   };
-// };
-
-// export const prepareReportForSubmission = (parsedData) => {
-//   return {
-//     id: parsedData.id ,
-//     departmentId: parsedData.departmentId ,
-//     departmentName: parsedData.departmentName ,
-//     reportTypeId: parsedData.reportTypeId ,
-//     reportTypeName: parsedData.reportTypeName ,
-//     ReturnKey: parsedData.ReturnKey ,
-//     fileName: parsedData.fileName ,
-//     status: parsedData.status || 'PENDING',
-//     createdAt: parsedData.createdAt || new Date().toISOString(),
-//     createdBy: parsedData.createdBy || 'current-user',
-//     metadata: parsedData.metadata,
-//     currencies: parsedData.currencies || CURRENCIES,
-//     additionalColumns: parsedData.additionalColumns,
-//     data: parsedData.data,
-//     flatData: parsedData.flatData || flattenData(parsedData.data),
-//     validations: parsedData.validations || [],
-//     isValid: parsedData.isValid !== undefined ? parsedData.isValid : true
-//   };
-// };

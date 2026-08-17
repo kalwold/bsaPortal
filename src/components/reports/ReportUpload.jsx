@@ -18,7 +18,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const [validationErrors, setValidationErrors] = useState([]);
 
   const uploadMutation = useMutation({
-    mutationFn: (formData) => reportService.uploadReport(formData),
+    mutationFn: (formData) => reportService.uploadReport(reportType, formData),
     onSuccess: (data) => {
       toast.success('Report uploaded successfully!');
       setSelectedFile(null);
