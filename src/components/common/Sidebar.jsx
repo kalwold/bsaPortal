@@ -22,7 +22,7 @@ const DEPARTMENT_DATA = [
     icon: FiTrendingUp,
     reportTypes: [
       { id: 'ibd-daily', name: 'Daily Foreign Currency Exposure' },
-      { id: 'foreign_exchange_position', name: 'Foreign Exchange Position' },
+      
       // { id: 'liquidity_coverage_ratio', name: 'Liquidity Coverage Ratio' },
       // { id: 'interest_rate_risk', name: 'Interest Rate Risk' },
     ]
@@ -44,9 +44,9 @@ const DEPARTMENT_DATA = [
     icon: FiBarChart2,
     reportTypes: [
       { id: 'balance_sheet', name: 'Balance Sheet' },
-      { id: 'income_statement', name: 'Income Statement' },
-      { id: 'cash_flow', name: 'Cash Flow Statement' },
-      { id: 'financial_ratios', name: 'Financial Ratios' },
+      { id: 'liquidity_requirement', name: 'Liquidity Requirement Report' },
+      // { id: 'cash_flow', name: 'Cash Flow Statement' },
+      // { id: 'financial_ratios', name: 'Financial Ratios' },
     ]
   },
   {

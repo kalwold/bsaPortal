@@ -1,7 +1,13 @@
 import * as XLSX from 'xlsx';
 
-// Currency columns in the report
+// Currency columns for foreign currency exposure report
 const CURRENCIES = ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK', 'SEK', 'SAR', 'CAD', 'AED', 'AUD', 'CNY', 'NOK', 'KWD'];
+	
+const REPORT_TYPES = {
+  DAILY_FOREX: 'daily-forex-exposure',
+  MONTHLY_BALANCE: 'monthly-balance-sheet',
+  LIQUIDITY_REQUIREMENT: 'liquidity-requirement'
+};
 
 export const parseExcelReport = (file) => {
   return new Promise((resolve, reject) => {
@@ -16,20 +22,49 @@ export const parseExcelReport = (file) => {
 
         console.log('Raw Excel Data:', jsonData);
 
+          const reportType = detectReportType(jsonData);
+        console.log('Detected Report Type:', reportType);
+
         const metadata = extractMetadata(jsonData);
         console.log('Extracted Metadata:', metadata);
 
-        const hierarchicalData = extractHierarchicalData(jsonData);
+         let hierarchicalData = [];
+        let currencies = [];
+        let additionalColumns = [];
+
+        if (reportType === REPORT_TYPES.DAILY_FOREX) {
+          // const result = extractForexData(jsonData);
+          // hierarchicalData = result.hierarchicalData;
+          hierarchicalData = result.hierarchicalData;
+        const result = extractHierarchicalForexData(jsonData);
+          currencies = result.currencies;
         console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
+          additionalColumns = result.additionalColumns;
+        } else if (reportType === REPORT_TYPES.MONTHLY_BALANCE) {
+          const result = extractBalanceSheetData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          currencies = result.currencies;
+          additionalColumns = result.additionalColumns;
+        } else if (reportType === REPORT_TYPES.LIQUIDITY_REQUIREMENT) {
+          const result = extractLiquidityRequirementData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          currencies = result.currencies;
+          additionalColumns = result.additionalColumns;
+        } else {
+          throw new Error(`Unsupported report type: ${reportType}`);
+        }
+
+        // const hierarchicalData = extractHierarchicalData(jsonData);
+        // console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
 
         const flatData = flattenData(hierarchicalData);
 
         const report = {
           id: `RPT-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
-          departmentId: 'ibd',
-          departmentName: 'IBD',
-          reportTypeId: 'ibd-daily',
-          reportTypeName: 'Daily Foreign Currency Exposure',
+          departmentId: metadata.departmentId,
+          departmentName: metadata.departmentName,
+          reportTypeId: metadata.reportType,
+          reportTypeName: metadata.reportTitle,
           ReturnKey: metadata.ReturnKey,
           fileName: file.name,
           status: 'PENDING',
@@ -37,7 +72,7 @@ export const parseExcelReport = (file) => {
           createdBy: 'current-user',
           metadata: metadata,
           currencies: CURRENCIES,
-          additionalColumns: ['OTHER1', 'OTHER2', 'OTHER3', 'OVERALL_EXPOSURE'],
+          additionalColumns: additionalColumns,
           data: hierarchicalData,
           flatData: flatData,
           validations: [],
@@ -64,7 +99,9 @@ const extractMetadata = (data) => {
     startDate: '',
     endDate: '',
     reportType: '',
-    unit: ''
+    unit: '',
+    departmentId: '', 
+    departmentName: ''
   };
 
   for (let i = 0; i < data.length; i++) {
@@ -77,6 +114,8 @@ const extractMetadata = (data) => {
 
     console.log(`Row ${i + 1}:`, { firstCell, secondCell, thirdCell, i });
 
+
+
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       console.log('Found Return Key:', metadata.ReturnKey);
@@ -84,6 +123,17 @@ const extractMetadata = (data) => {
       if (firstCell.includes('SINGLE CURRENCY')) {
         metadata.reportType = 'single-currency-exposure';
         console.log('Found Report Type:', metadata.reportType);
+      metadata.departmentId = 'ibd';
+        console.log('Found Report Type:', metadata.reportType);
+        metadata.departmentName = 'IBD';
+      } else if (firstCell.includes('MB001')) {
+        metadata.reportType = 'monthly-balance-sheet';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance Department';
+      } else if (firstCell.includes('ZS001') || firstCell.includes('LSR-Statutory ZS001')) {
+        metadata.reportType = 'liquidity-requirement';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance Department';
       }
     }
 
@@ -121,7 +171,50 @@ const extractMetadata = (data) => {
   return metadata;
 };
 
-const extractHierarchicalData = (data) => {
+
+const detectReportType = (data) => {
+  if (!data || data.length === 0) return null;
+
+  // Check first row for ReturnKey
+  const firstRow = data[0];
+  if (firstRow && firstRow.length > 0) {
+    const firstCell = String(firstRow[0] || '').trim();
+    
+    if (firstCell && firstCell.includes('SINGLE CURRENCY')) {
+      return REPORT_TYPES.DAILY_FOREX;
+    }
+    if (firstCell && firstCell.includes('MB001')) {
+      return REPORT_TYPES.MONTHLY_BALANCE;
+    }
+    if (firstCell && (firstCell.includes('ZS001') || firstCell.includes('LSR-Statutory ZS001'))) {
+      return REPORT_TYPES.LIQUIDITY_REQUIREMENT;
+    }
+  }
+
+  // // Check other rows for report type indicators
+  // for (let i = 0; i < Math.min(data.length, 10); i++) {
+  //   const row = data[i];
+  //   if (!row) continue;
+    
+  //   for (let j = 0; j < Math.min(row.length, 3); j++) {
+  //     const cell = String(row[j] || '').trim();
+  //     if (cell && cell.includes('Daily Foreign Currency Exposure')) {
+  //       return REPORT_TYPES.DAILY_FOREX;
+  //     }
+  //     if (cell && (cell.includes('Monthy Balance Sheet') || cell.includes('Balance Sheet'))) {
+  //       return REPORT_TYPES.MONTHLY_BALANCE;
+  //     }
+  //     if (cell && (cell.includes('Liquidity Requirement Report') || cell.includes('LSR-Statutory'))) {
+  //       return REPORT_TYPES.LIQUIDITY_REQUIREMENT;
+  //     }
+  //   }
+  // }
+
+  return null;
+};
+
+
+const extractHierarchicalForexData = (data) => {
   const result = [];
   let dataTableStart = -1;
 
@@ -592,6 +685,449 @@ const extractHierarchicalData = (data) => {
   
   return topLevelNodes;
 };
+const extractBalanceSheetData = (data) => {
+  const hierarchicalData = [];
+  let dataTableStart = -1;
+
+  // Find the data table start
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    const firstCell = String(row[0] || '').trim();
+    const secondCell = String(row[1] || '').trim();
+    if (firstCell === 'Code' || secondCell === 'Description') {
+      dataTableStart = i + 1;
+      break;
+    }
+  }
+
+  if (dataTableStart === -1) {
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (!row || row.length === 0) continue;
+      const firstCell = String(row[0] || '').trim();
+      if (firstCell === 'ASSETS') {
+        dataTableStart = i + 1;
+        break;
+      }
+    }
+  }
+
+  if (dataTableStart === -1) {
+    return { hierarchicalData: [], currencies: ['Current Month'], additionalColumns: [] };
+  }
+
+  const topLevelNodes = [];
+  const nodeMap = new Map();
+  let currentParent = null;
+
+  // Find value column
+  let valueColumnIndex = -1;
+  const headerRow = data[dataTableStart - 1];
+  for (let i = 0; i < headerRow.length; i++) {
+    const cell = String(headerRow[i] || '').trim();
+    if (cell === 'Current Month' || cell === 'Current Month ' || cell.includes('Current')) {
+      valueColumnIndex = i;
+      break;
+    }
+  }
+  if (valueColumnIndex === -1) valueColumnIndex = 2;
+
+  // Parse the data
+  for (let i = dataTableStart; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const code = String(row[0] || '').trim();
+    const description = String(row[1] || '').trim();
+
+    if (!description) continue;
+
+    const isSectionHeader = description === 'ASSETS' || 
+                           description === 'LIABILITIES & CAPITAL' ||
+                           description === 'LIABILITIES' ||
+                           description === 'CAPITAL & RESER. A/C';
+
+    const isTotalRow = description.includes('TOTAL ASSETS') || 
+                       description.includes('TOTAL LIABILITIES') ||
+                       description.includes('TOTAL LIABILITIES AND NET WORTH');
+
+    // Extract value
+    let value = null;
+    if (valueColumnIndex < row.length) {
+      const rawValue = parseFloat(row[valueColumnIndex]);
+      if (!isNaN(rawValue) && rawValue !== 0) {
+        value = rawValue;
+      }
+    }
+
+    // Determine level
+    let level = 0;
+    if (code && code !== '') {
+      const codeParts = code.split('.');
+      level = codeParts.length;
+    } else if (isSectionHeader) {
+      level = 0;
+    } else if (isTotalRow) {
+      level = 0;
+    }
+
+    const entry = {
+      id: code || `row-${i}`,
+      sNo: code || '',
+      label: description,
+      values: {
+        'Current Month': value !== null ? value.toFixed(2) : '0'
+      },
+      rowNumber: i + 1,
+      level: level,
+      isTotalRow: isTotalRow || false,
+      isSectionHeader: isSectionHeader || false,
+      children: []
+    };
+
+    if (code) {
+      nodeMap.set(code, entry);
+    }
+
+    if (!code) {
+      if (isSectionHeader) {
+        topLevelNodes.push(entry);
+        currentParent = entry;
+      } else if (isTotalRow) {
+        if (description.includes('TOTAL ASSETS')) {
+          const assetParent = topLevelNodes.find(n => n.label === 'ASSETS');
+          if (assetParent) assetParent.children.push(entry);
+          else topLevelNodes.push(entry);
+        } else if (description.includes('TOTAL LIABILITIES')) {
+          const liabilityParent = topLevelNodes.find(n => n.label === 'LIABILITIES');
+          if (liabilityParent) liabilityParent.children.push(entry);
+          else topLevelNodes.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      } else {
+        if (currentParent && !currentParent.isSectionHeader) {
+          currentParent.children.push(entry);
+        } else if (currentParent) {
+          currentParent.children.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      }
+    }
+  }
+
+  // Build hierarchy for nodes with codes
+  for (const [code, node] of nodeMap) {
+    const codeParts = code.split('.');
+    
+    if (codeParts.length === 1) {
+      const existing = topLevelNodes.find(n => n.id === code);
+      if (!existing) {
+        topLevelNodes.push(node);
+      }
+    } else if (codeParts.length > 1) {
+      const parentCode = codeParts.slice(0, -1).join('.');
+      const parent = nodeMap.get(parentCode);
+      
+      if (parent) {
+        const exists = parent.children.some(child => child.id === node.id);
+        if (!exists) {
+          parent.children.push(node);
+        }
+      } else {
+        const baseCode = codeParts[0];
+        const baseParent = nodeMap.get(baseCode);
+        if (baseParent) {
+          const exists = baseParent.children.some(child => child.id === node.id);
+          if (!exists) {
+            baseParent.children.push(node);
+          }
+        }
+      }
+    }
+  }
+
+  // Sort children
+  const sortChildren = (nodes) => {
+    nodes.sort((a, b) => {
+      if (a.isTotalRow && !b.isTotalRow) return 1;
+      if (!a.isTotalRow && b.isTotalRow) return -1;
+      
+      if (a.sNo && b.sNo) {
+        const aParts = a.sNo.split('.').map(Number);
+        const bParts = b.sNo.split('.').map(Number);
+        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+          if (aParts[i] !== bParts[i]) {
+            return aParts[i] - bParts[i];
+          }
+        }
+        return aParts.length - bParts.length;
+      }
+      return 0;
+    });
+
+    nodes.forEach(node => {
+      if (node.children && node.children.length > 0) {
+        sortChildren(node.children);
+      }
+    });
+  };
+
+  sortChildren(topLevelNodes);
+
+  const cleanData = (nodes) => {
+    nodes.forEach(node => {
+      if (node.children && node.children.length === 0) {
+        delete node.children;
+      } else if (node.children) {
+        cleanData(node.children);
+      }
+    });
+  };
+  cleanData(topLevelNodes);
+
+  return {
+    hierarchicalData: topLevelNodes,
+    currencies: ['Current Month'],
+    additionalColumns: []
+  };
+};
+
+const extractLiquidityRequirementData = (data) => {
+  const hierarchicalData = [];
+  let dataTableStart = -1;
+
+  // Find the data table start - look for "code" column
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    const firstCell = String(row[0] || '').trim();
+    const secondCell = String(row[1] || '').trim();
+    if (firstCell === 'code' || secondCell === 'Description') {
+      dataTableStart = i + 1;
+      break;
+    }
+  }
+
+  if (dataTableStart === -1) {
+    // Try to find the table by looking for "Required Liquid Assets"
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (!row || row.length === 0) continue;
+      const secondCell = String(row[1] || '').trim();
+      if (secondCell === 'Required Liquid Assets') {
+        dataTableStart = i;
+        break;
+      }
+    }
+  }
+
+  if (dataTableStart === -1) {
+    return { hierarchicalData: [], currencies: ['Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average'], additionalColumns: [] };
+  }
+
+  const topLevelNodes = [];
+  const nodeMap = new Map();
+  let currentParent = null;
+
+  // Get column headers (days of week)
+  const headerRow = data[dataTableStart - 1];
+  const dayColumns = [];
+  let dayStartIndex = -1;
+  
+  for (let i = 0; i < headerRow.length; i++) {
+    const cell = String(headerRow[i] || '').trim();
+    if (cell === 'Thu' || cell === 'Fri' || cell === 'Sat' || cell === 'Sun' || cell === 'Mon' || cell === 'Tue' || cell === 'Wed') {
+      if (dayStartIndex === -1) dayStartIndex = i;
+      dayColumns.push(cell);
+    }
+    if (cell === 'Weekly Average') {
+      dayColumns.push(cell);
+    }
+  }
+
+  // If we didn't find day columns, use default positions
+  if (dayColumns.length === 0) {
+    dayStartIndex = 2;
+    dayColumns.push('Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average');
+  }
+
+  console.log('Day columns:', dayColumns);
+  console.log('Day start index:', dayStartIndex);
+
+  // Parse the data
+  for (let i = dataTableStart; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const code = String(row[0] || '').trim();
+    const description = String(row[1] || '').trim();
+
+    // Skip rows without description or notes
+    if (!description) continue;
+    if (description.includes('Note:') || description.includes('_')) continue;
+
+    // Check if this is a section header
+    const isSectionHeader = description === 'Required Liquid Assets' || 
+                           description === 'Liquid Assets Held' ||
+                           description === 'Excess/deficit' ||
+                           description === 'Liquidity Ratio';
+
+    // Check if this is a total row
+    const isTotalRow = description.includes('Total liquid assets') || 
+                       description.includes('Excess/deficit') ||
+                       description.includes('Liquidity Ratio');
+
+    // Extract values for each day
+    const values = {};
+    let hasValues = false;
+
+    for (let j = 0; j < dayColumns.length; j++) {
+      const colIndex = dayStartIndex + j;
+      if (colIndex < row.length) {
+        const rawValue = parseFloat(row[colIndex]);
+        if (!isNaN(rawValue) && rawValue !== 0) {
+          values[dayColumns[j]] = rawValue.toFixed(2);
+          hasValues = true;
+        } else {
+          values[dayColumns[j]] = '0';
+        }
+      } else {
+        values[dayColumns[j]] = '0';
+      }
+    }
+
+    // Determine level
+    let level = 0;
+    if (code && code !== '') {
+      const codeParts = code.split('.');
+      level = codeParts.length;
+    } else if (isSectionHeader) {
+      level = 0;
+    } else if (isTotalRow) {
+      level = 1;
+    } else if (description && description.startsWith('  ')) {
+      level = 2;
+    }
+
+    const entry = {
+      id: code || `row-${i}`,
+      sNo: code || '',
+      label: description,
+      values: values,
+      rowNumber: i + 1,
+      level: level,
+      isTotalRow: isTotalRow || false,
+      isSectionHeader: isSectionHeader || false,
+      children: []
+    };
+
+    if (code) {
+      nodeMap.set(code, entry);
+    }
+
+    if (!code) {
+      if (isSectionHeader) {
+        topLevelNodes.push(entry);
+        currentParent = entry;
+      } else if (isTotalRow) {
+        // Total rows go to the current parent
+        if (currentParent) {
+          currentParent.children.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      } else {
+        // Other rows without code
+        if (currentParent && !currentParent.isSectionHeader) {
+          currentParent.children.push(entry);
+        } else if (currentParent) {
+          currentParent.children.push(entry);
+        } else {
+          topLevelNodes.push(entry);
+        }
+      }
+    }
+  }
+
+  // Build hierarchy for nodes with codes
+  for (const [code, node] of nodeMap) {
+    const codeParts = code.split('.');
+    
+    if (codeParts.length === 1) {
+      const existing = topLevelNodes.find(n => n.id === code);
+      if (!existing) {
+        topLevelNodes.push(node);
+      }
+    } else if (codeParts.length > 1) {
+      const parentCode = codeParts.slice(0, -1).join('.');
+      const parent = nodeMap.get(parentCode);
+      
+      if (parent) {
+        const exists = parent.children.some(child => child.id === node.id);
+        if (!exists) {
+          parent.children.push(node);
+        }
+      } else {
+        const baseCode = codeParts[0];
+        const baseParent = nodeMap.get(baseCode);
+        if (baseParent) {
+          const exists = baseParent.children.some(child => child.id === node.id);
+          if (!exists) {
+            baseParent.children.push(node);
+          }
+        }
+      }
+    }
+  }
+
+  // Sort children by code
+  const sortChildren = (nodes) => {
+    nodes.sort((a, b) => {
+      if (a.isTotalRow && !b.isTotalRow) return 1;
+      if (!a.isTotalRow && b.isTotalRow) return -1;
+      
+      if (a.sNo && b.sNo) {
+        const aParts = a.sNo.split('.').map(Number);
+        const bParts = b.sNo.split('.').map(Number);
+        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+          if (aParts[i] !== bParts[i]) {
+            return aParts[i] - bParts[i];
+          }
+        }
+        return aParts.length - bParts.length;
+      }
+      return 0;
+    });
+
+    nodes.forEach(node => {
+      if (node.children && node.children.length > 0) {
+        sortChildren(node.children);
+      }
+    });
+  };
+
+  sortChildren(topLevelNodes);
+
+  const cleanData = (nodes) => {
+    nodes.forEach(node => {
+      if (node.children && node.children.length === 0) {
+        delete node.children;
+      } else if (node.children) {
+        cleanData(node.children);
+      }
+    });
+  };
+  cleanData(topLevelNodes);
+
+  return {
+    hierarchicalData: topLevelNodes,
+    currencies: dayColumns,
+    additionalColumns: []
+  };
+};
 
 const flattenData = (nodes) => {
   const result = [];
@@ -659,8 +1195,8 @@ export const prepareReportForSubmission = (parsedData) => {
     createdAt: parsedData.createdAt || new Date().toISOString(),
     createdBy: parsedData.createdBy || 'current-user',
     metadata: parsedData.metadata,
-    currencies: parsedData.currencies || CURRENCIES,
-    additionalColumns: parsedData.additionalColumns,
+    currencies: parsedData.currencies || [],
+    additionalColumns: parsedData.additionalColumns|| [],
     data: parsedData.data,
     flatData: parsedData.flatData || flattenData(parsedData.data),
     validations: parsedData.validations || [],
