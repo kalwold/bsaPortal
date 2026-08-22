@@ -67,27 +67,29 @@ const extractReserveBaseData = (data) => {
   let dayStartIndex = -1;
   
   for (let i = 0; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || '').trim();
-    if (cell === 'Day 1') {
-      dayStartIndex = i;
-      console.log('Found Day 1 at column:', i , cell);
-    }
-    if (cell && cell.startsWith('Day ') && !isNaN(cell.split(' ')[1])) {
-      dayColumns.push(cell);
-    }
-    if (cell === 'Monthly Average') {
-      dayColumns.push(cell);
-    }
+    const cell = String(headerRow[i] || '').trim().replace(/\s+/g, '_');
+if (cell === 'Day_1') {
+    dayStartIndex = i;
+    console.log('Found Day 1 at column:', i, cell);
   }
-console.log('dayColumns', dayColumns)
+
+  if (cell && cell.startsWith('Day_') && !isNaN(cell.split('_')[1])) {
+    dayColumns.push(cell);
+  }
+
+  if (cell === 'Monthly_Average') {
+    dayColumns.push(cell);
+  }
+  }
+
   // If we couldn't find day columns, use default positions
-  if (dayColumns.length === 0) {
-    dayStartIndex = 2;
-    for (let i = 1; i <= 31; i++) {
-      dayColumns.push(`Day ${i}`);
-    }
-    dayColumns.push('Monthly Average');
-  }
+  // if (dayColumns.length === 0) {
+  //   dayStartIndex = 2;
+  //   for (let i = 1; i <= 31; i++) {
+  //     dayColumns.push(`Day ${i}`);
+  //   }
+  //   dayColumns.push('Monthly Average');
+  // }
 
   console.log('Day columns:', dayColumns);
   console.log('Day start index:', dayStartIndex);
@@ -126,7 +128,7 @@ console.log('dayColumns', dayColumns)
     const values = {};
 
     // Only extract values if not a section header without data
-    if (!isSectionHeader || description.includes('Reserve Base') || description.includes('Net Reserve Base')) {
+    //if (!isSectionHeader || description.includes('Reserve Base') || description.includes('Net Reserve Base')) {
       for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
@@ -140,12 +142,12 @@ console.log('dayColumns', dayColumns)
           values[dayColumns[j]] = '0';
         }
       }
-    } else {
-      // For section headers without data, set all to null
-      for (let j = 0; j < dayColumns.length; j++) {
-        values[dayColumns[j]] = null;
-      }
-    }
+    // } else {
+    //   // For section headers without data, set all to null
+    //   for (let j = 0; j < dayColumns.length; j++) {
+    //     values[dayColumns[j]] = null;
+    //   }
+    // }
 
     // Determine level
     let level = 0;
@@ -160,7 +162,7 @@ console.log('dayColumns', dayColumns)
     }
 
     const entry = {
-      id: code || `row-${i}`,
+      id: code || ``,
       sNo: code || '',
       label: description,
       values: values,
