@@ -22,66 +22,31 @@ const DEPARTMENT_DATA = [
     icon: FiTrendingUp,
     reportTypes: [
       { id: 'ibd-daily', name: 'Daily Foreign Currency Exposure' },
-      
-      // { id: 'liquidity_coverage_ratio', name: 'Liquidity Coverage Ratio' },
-      // { id: 'interest_rate_risk', name: 'Interest Rate Risk' },
     ]
   },
-  // {
-  //   id: 'risk_management',
-  //   name: 'Risk Management',
-  //   icon: FiBarChart2,
-  //   reportTypes: [
-  //     { id: 'credit_risk_exposure', name: 'Credit Risk Exposure' },
-  //     { id: 'market_risk_var', name: 'Market Risk VaR' },
-  //     { id: 'operational_risk', name: 'Operational Risk' },
-  //     { id: 'stress_testing', name: 'Stress Testing' },
-  //   ]
-  // },
   {
     id: 'finance',
     name: 'Finance',
     icon: FiBarChart2,
     reportTypes: [
-      { id: 'balance_sheet', name: 'Balance Sheet' },
-      { id: 'liquidity_requirement', name: 'Liquidity Requirement Report' },
+      { id: 'finance-monthly_balance-sheet', name: 'Balance Sheet' },
+      { id: 'finance-weekly', name: 'Liquidity Requirement Report' },
+      { id: 'finance-monthly_reserve-base', name:'Monthly Reserve Base Report'}
       // { id: 'cash_flow', name: 'Cash Flow Statement' },
       // { id: 'financial_ratios', name: 'Financial Ratios' },
     ]
   },
   {
-    id: 'compliance',
-    name: 'Compliance',
+    id: 'credit',
+    name: 'Credit',
     icon: FiBarChart2,
     reportTypes: [
-      { id: 'aml_cft', name: 'AML/CFT Report' },
-      { id: 'regulatory_reporting', name: 'Regulatory Reporting' },
-      { id: 'kyc_compliance', name: 'KYC Compliance' },
-      { id: 'sanctions_screening', name: 'Sanctions Screening' },
+      { id: 'loan-related-parties', name: 'Loans to Related Parties Report' },
+  
     ]
   },
-  {
-    id: 'operations',
-    name: 'Operations',
-    icon: FiBarChart2,
-    reportTypes: [
-      { id: 'settlement_risk', name: 'Settlement Risk' },
-      { id: 'transaction_monitoring', name: 'Transaction Monitoring' },
-      { id: 'fraud_detection', name: 'Fraud Detection' },
-      { id: 'operational_efficiency', name: 'Operational Efficiency' },
-    ]
-  },
-  // {
-  //   id: 'internal_audit',
-  //   name: 'Internal Audit',
-  //   icon: FiBarChart2,
-  //   reportTypes: [
-  //     { id: 'audit_findings', name: 'Audit Findings' },
-  //     { id: 'internal_controls', name: 'Internal Controls' },
-  //     { id: 'compliance_audit', name: 'Compliance Audit' },
-  //     { id: 'risk_assessment', name: 'Risk Assessment' },
-  //   ]
-  // }
+  
+
 ];
 
 const Sidebar = () => {

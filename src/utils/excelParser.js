@@ -1,56 +1,85 @@
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
+import extractLiquidityRequirementData from "./extractLiquidityRequirementData";
+import extractLoanRelatedPartiesData from "./extractLoanRelatedPartiesData";
+import extractBalanceSheetData from "./extractBalanceSheetData";
+import extractForexData from "./extractForexData";
+import extractReserveBaseData from "./extractReserveBaseData";
 
 // Currency columns for foreign currency exposure report
-const CURRENCIES = ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK', 'SEK', 'SAR', 'CAD', 'AED', 'AUD', 'CNY', 'NOK', 'KWD'];
-	
-const REPORT_TYPES = {
-  DAILY_FOREX: 'daily-forex-exposure',
-  MONTHLY_BALANCE: 'monthly-balance-sheet',
-  LIQUIDITY_REQUIREMENT: 'liquidity-requirement'
-};
 
-export const parseExcelReport = (file) => {
+const REPORT_TYPES = {
+  DAILY_FOREX: "ibd-daily",
+  MONTHLY_BALANCE: "finance-monthly_balance-sheet",
+  LIQUIDITY_WEEKLY: "finance-weekly",
+  LOAN_RELATED_PARTIES: 'loan-related-parties',
+  RESERVE_BASE: 'finance-monthly_reserve-base'
+};
+export const parseExcelReport = (file,reportTypeIn) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, { type: "array" });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-        console.log('Raw Excel Data:', jsonData);
+        console.log("Raw Excel Data:", jsonData);
 
-          const reportType = detectReportType(jsonData);
-        console.log('Detected Report Type:', reportType);
+        const reportType = detectReportType(jsonData);
+        console.log("Detected Report Type:", reportType , "SS", reportTypeIn);
+
+
+        if (reportTypeIn !== reportType ){
+          throw new Error('Unsupported report type');}
 
         const metadata = extractMetadata(jsonData);
-        console.log('Extracted Metadata:', metadata);
+        console.log("Extracted Metadata:", metadata);
 
-         let hierarchicalData = [];
-        let currencies = [];
+        let hierarchicalData = [];
+        let columns = [];
         let additionalColumns = [];
+        let noandtitles=[];
 
         if (reportType === REPORT_TYPES.DAILY_FOREX) {
-          // const result = extractForexData(jsonData);
-          // hierarchicalData = result.hierarchicalData;
+          const result = extractForexData(jsonData);
           hierarchicalData = result.hierarchicalData;
-        const result = extractHierarchicalForexData(jsonData);
-          currencies = result.currencies;
-        console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
+         columns = result.columns;
+         // columns = ["USD","EUR","CHF","GBP","JPY","DJF","KES","INR","DKK","SEK","SAR","CAD","AED","AUD","CNY","NOK","KWD"];
           additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles
+          //noandtitles = ['S/No', 'Particulars']
+         // additionalColumns = ['OTHER1', 'OTHER2', 'OTHER3','OVERALL_EXPOSURE']
         } else if (reportType === REPORT_TYPES.MONTHLY_BALANCE) {
           const result = extractBalanceSheetData(jsonData);
           hierarchicalData = result.hierarchicalData;
-          currencies = result.currencies;
+          columns = result.columns;
           additionalColumns = result.additionalColumns;
-        } else if (reportType === REPORT_TYPES.LIQUIDITY_REQUIREMENT) {
+          noandtitles=result.noandtitles
+
+        } else if (reportType === REPORT_TYPES.LIQUIDITY_WEEKLY) {
           const result = extractLiquidityRequirementData(jsonData);
           hierarchicalData = result.hierarchicalData;
-          currencies = result.currencies;
+          columns = result.columns;
           additionalColumns = result.additionalColumns;
-        } else {
+          noandtitles=result.noandtitles
+           console.log("Found title on return:", noandtitles);
+        }else if(reportType === REPORT_TYPES.LOAN_RELATED_PARTIES){
+          const result = extractLoanRelatedPartiesData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles
+           console.log("Found hierarchicalData  on return:", hierarchicalData );
+        } else if (reportType === REPORT_TYPES.RESERVE_BASE) {
+          const result = extractReserveBaseData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles
+        }
+        else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
 
@@ -60,117 +89,37 @@ export const parseExcelReport = (file) => {
         const flatData = flattenData(hierarchicalData);
 
         const report = {
-          id: `RPT-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
+          id: `${reportType}-${new Date().toISOString().split("T")[0].replace(/-/g, "")}`,
           departmentId: metadata.departmentId,
           departmentName: metadata.departmentName,
-          reportTypeId: metadata.reportType,
+          reportTypeId:reportType,
           reportTypeName: metadata.reportTitle,
           ReturnKey: metadata.ReturnKey,
           fileName: file.name,
-          status: 'PENDING',
+          status: "PENDING",
           createdAt: new Date().toISOString(),
-          createdBy: 'current-user',
+          createdBy: "current-user",
           metadata: metadata,
-          currencies: CURRENCIES,
+          noandtitles:noandtitles,
+          columns: columns,
           additionalColumns: additionalColumns,
           data: hierarchicalData,
           flatData: flatData,
           validations: [],
-          isValid: true
+          isValid: true,
+          
         };
 
         resolve(report);
       } catch (error) {
-        console.error('Parse error:', error);
+        console.error("Parse error:", error);
         reject(new Error(`Failed to parse Excel file: ${error.message}`));
       }
     };
-    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsArrayBuffer(file);
   });
 };
-
-const extractMetadata = (data) => {
-  const metadata = {
-    reportTitle: '',
-    ReturnKey: '',
-    institutionCode: '',
-    financialYear: '',
-    startDate: '',
-    endDate: '',
-    reportType: '',
-    unit: '',
-    departmentId: '', 
-    departmentName: ''
-  };
-
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
-
-    const firstCell = String(row[0] || '').trim();
-    const secondCell = String(row[1] || '').trim();
-    const thirdCell = String(row[2] || '').trim();
-
-    console.log(`Row ${i + 1}:`, { firstCell, secondCell, thirdCell, i });
-
-
-
-    if (i === 0 && firstCell) {
-      metadata.ReturnKey = firstCell;
-      console.log('Found Return Key:', metadata.ReturnKey);
-      
-      if (firstCell.includes('SINGLE CURRENCY')) {
-        metadata.reportType = 'single-currency-exposure';
-        console.log('Found Report Type:', metadata.reportType);
-      metadata.departmentId = 'ibd';
-        console.log('Found Report Type:', metadata.reportType);
-        metadata.departmentName = 'IBD';
-      } else if (firstCell.includes('MB001')) {
-        metadata.reportType = 'monthly-balance-sheet';
-        metadata.departmentId = 'finance';
-        metadata.departmentName = 'Finance Department';
-      } else if (firstCell.includes('ZS001') || firstCell.includes('LSR-Statutory ZS001')) {
-        metadata.reportType = 'liquidity-requirement';
-        metadata.departmentId = 'finance';
-        metadata.departmentName = 'Finance Department';
-      }
-    }
-
-    if (i === 3 && secondCell) {
-      metadata.reportTitle = secondCell;
-      console.log('Found Report Title:', metadata.reportTitle);
-    }
-
-    if (i === 7 && secondCell && secondCell.includes('Instiution Code')) {
-      metadata.institutionCode = thirdCell || '';
-      console.log('Found Institution Code:', metadata.institutionCode);
-    }
-
-    if (i === 8 && secondCell && secondCell.includes('Financial Year')) {
-      metadata.financialYear = thirdCell || '';
-      console.log('Found Financial Year:', metadata.financialYear);
-    }
-
-    if (i === 9 && secondCell && secondCell.includes('Start Date')) {
-      metadata.startDate = thirdCell || '';
-      console.log('Found Start Date:', metadata.startDate);
-    }
-
-    if (i === 10 && secondCell && secondCell.includes('End Date')) {
-      metadata.endDate = thirdCell || '';
-      console.log('Found End Date:', metadata.endDate);
-    }
-
-    if (i === 12 && thirdCell === 'In Thousands') {
-      metadata.unit = 'In Thousands';
-      console.log('Found Unit:', metadata.unit);
-    }
-  }
-
-  return metadata;
-};
-
 
 const detectReportType = (data) => {
   if (!data || data.length === 0) return null;
@@ -178,970 +127,859 @@ const detectReportType = (data) => {
   // Check first row for ReturnKey
   const firstRow = data[0];
   if (firstRow && firstRow.length > 0) {
-    const firstCell = String(firstRow[0] || '').trim();
-    
-    if (firstCell && firstCell.includes('SINGLE CURRENCY')) {
+    const firstCell = String(firstRow[0] || "").trim();
+
+    if (firstCell && firstCell.includes("SINGLE CURRENCY")) {
       return REPORT_TYPES.DAILY_FOREX;
     }
-    if (firstCell && firstCell.includes('MB001')) {
+    if (firstCell && firstCell.includes("MB001")) {
       return REPORT_TYPES.MONTHLY_BALANCE;
     }
-    if (firstCell && (firstCell.includes('ZS001') || firstCell.includes('LSR-Statutory ZS001'))) {
-      return REPORT_TYPES.LIQUIDITY_REQUIREMENT;
+    if (firstCell && firstCell.includes("ZS001")) {
+      return REPORT_TYPES.LIQUIDITY_WEEKLY;
+    }
+    if (firstCell && firstCell.includes("BSD_LOAN_PART13001")){
+      return REPORT_TYPES.LOAN_RELATED_PARTIES;
+    }
+    if (firstCell && (firstCell.includes('Reserve Base') || firstCell.includes('RB001'))) {
+      return REPORT_TYPES.RESERVE_BASE;
     }
   }
-
-  // // Check other rows for report type indicators
-  // for (let i = 0; i < Math.min(data.length, 10); i++) {
-  //   const row = data[i];
-  //   if (!row) continue;
-    
-  //   for (let j = 0; j < Math.min(row.length, 3); j++) {
-  //     const cell = String(row[j] || '').trim();
-  //     if (cell && cell.includes('Daily Foreign Currency Exposure')) {
-  //       return REPORT_TYPES.DAILY_FOREX;
-  //     }
-  //     if (cell && (cell.includes('Monthy Balance Sheet') || cell.includes('Balance Sheet'))) {
-  //       return REPORT_TYPES.MONTHLY_BALANCE;
-  //     }
-  //     if (cell && (cell.includes('Liquidity Requirement Report') || cell.includes('LSR-Statutory'))) {
-  //       return REPORT_TYPES.LIQUIDITY_REQUIREMENT;
-  //     }
-  //   }
-  // }
-
+    // const thirdRow = data[3];
+    // const thirdCell = String(thirdRow[0] || "").trim();
+    // console.log("thirdRow", thirdCell)
+    //  if (thirdCell && thirdCell.includes("Loans to Related")){
+    //   return REPORT_TYPES.LOAN_RELATED_PARTIES;
+    // }
   return null;
 };
 
+const extractMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
 
-const extractHierarchicalForexData = (data) => {
-  const result = [];
-  let dataTableStart = -1;
-
-  console.log('=== Extracting Hierarchical Data ===');
-
-  // Find the data table start
+  console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'S/No') {
-      dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
-      break;
-    }
-  }
 
-  if (dataTableStart === -1) {
-    console.log('Could not find data table');
-    return result;
-  }
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const tweneeEigntsCell = String(row[33] || "").trim();
 
-  const nodeMap = new Map();
-  const topLevelNodes = [];
+    console.log(`Row ${i + 1}:`, {
+      firstCell,
+      secondCell,
+      thirdCell,
+      fourthCell,
+      eighthCell,
+      tweneeEigntsCell
+    });
 
-  // Get the header row to identify column positions
-  const headerRow = data[dataTableStart - 1];
-  
-  // Find column indices
-  let currencyStartIndex = -1;
-  let othersStartIndex = -1;
-  let overallExposureIndex = -1;
-  
-  for (let i = 0; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || '').trim();
-    console.log(`Header column ${i}: "${cell}"`);
-    
-    if (cell === 'USD') {
-      currencyStartIndex = i;
-      console.log('Found USD at column:', i);
-    }
-    if (cell === 'Others in Single Currency') {
-      othersStartIndex = i;
-      console.log('Found Others in Single Currency at column:', i);
-    }
-    if (cell === 'Overall Exposure' || cell.includes('Overall')) {
-      overallExposureIndex = i;
-      console.log('Found Overall Exposure at column:', i);
-    }
-  }
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      console.log("Found Return Key:", metadata.ReturnKey);
 
-  // Fallback if headers not found
-  if (currencyStartIndex === -1) {
-    currencyStartIndex = 2;
-    console.log('Using default currency start index:', currencyStartIndex);
-  }
-  
-  // IMPORTANT: The "Others in Single Currency" columns are at fixed positions
-  // In your Excel, they are at indices 19, 20, 21 (columns T, U, V)
-  // We need to find them by looking at the header row or using fixed positions
-  if (othersStartIndex === -1) {
-    // Try to find "Others in Single Currency" by looking at the header
-    for (let i = 0; i < headerRow.length; i++) {
-      const cell = String(headerRow[i] || '').trim();
-      if (cell === 'Others in Single Currency') {
-        othersStartIndex = i;
-        console.log('Found Others in Single Currency at column:', i);
-        break;
+      if (firstCell.includes("SINGLE CURRENCY")) {
+        metadata.reportType = "single-currency-exposure";
+        metadata.departmentName = "IBD";
+        metadata.departmentId = "ibd";
+        metadata.reportTypeId = "ibd-daily";
+        console.log("Found Report Type:", metadata.reportType);
+      } else if (firstCell.includes("MB001")) {
+        metadata.reportType = "finance-monthly_balance-sheet";
+        metadata.departmentName = "Finance";
+        metadata.departmentId = "finance";
+        metadata.reportTypeId = "finance-monthly_balance-sheet";
+        console.log("Found Report Type:", metadata.reportType);
+      } else if (firstCell.includes("ZS001")) {
+        metadata.reportType = "finance-weekly";
+        metadata.departmentName = "Finance";
+        metadata.departmentId = "finance";
+        metadata.reportTypeId = "finance-weekly";
+        console.log("Found Report Type:", metadata.reportType);
+      } else if(firstCell.includes('BSD_LOAN_PART13001')){
+        metadata.reportType = "loan-related-parties";
+        metadata.departmentName = "Credit";
+        metadata.departmentId = "credit";
+        metadata.reportTypeId = "loan-related-parties";
+        console.log("Found Report Type:", metadata.reportType);
+      }
+      else if (firstCell.includes('RB001')){
+        metadata.reportType = 'finance-monthly_reserve-base';
+        metadata.departmentName = 'Finance';
+        metadata.departmentId='finance';
+        metadata.reportTypeId='finance-monthly_reserve-base'
+        
       }
     }
-    // If still not found, use a fixed offset based on your Excel structure
-    if (othersStartIndex === -1) {
-      // The "Others in Single Currency" columns are typically after the 17 currency columns
-      // But they are separated by some empty columns
-      // In your Excel, they start at column T (index 19)
-      othersStartIndex = 19;
-      console.log('Using fixed others start index:', othersStartIndex);
+
+    if (i === 3 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || secondCell;
+      console.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+      i === 7 &&
+      (firstCell || secondCell) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = thirdCell || fourthCell;
+      console.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      i === 8 &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = thirdCell  || fourthCell ||  "";
+      console.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      i === 9 &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+      metadata.startDate = thirdCell  || fourthCell || "";
+      console.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      i === 10 &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = thirdCell  || fourthCell || "";
+      console.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      i === 12 &&
+      (thirdCell || eighthCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        eighthCell.toLowerCase().includes("in"))
+    ) {
+      metadata.unit = thirdCell || tweneeEigntsCell || eighthCell;
+      console.log("Found Unit:", metadata.unit);
     }
   }
 
-  if (overallExposureIndex === -1) {
-    overallExposureIndex = headerRow.length - 1;
-    console.log('Using last column as Overall Exposure:', overallExposureIndex);
-  }
+  return metadata;
+};
 
-  console.log('Currency start index:', currencyStartIndex);
-  console.log('Others start index:', othersStartIndex);
-  console.log('Overall Exposure index:', overallExposureIndex);
 
-  // First pass: Create all nodes with their S/No
-  for (let i = dataTableStart; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
 
-    const sNo = String(row[0] || '').trim();
-    const label = String(row[1] || '').trim();
+
+
+// const extractLiquidityRequirementData = (data) => {
+//   const hierarchicalData = [];
+//   let dataTableStart = -1;
+//    let noandtitles = [];
+//     for (let i = 0; i < data.length; i++) {
+//     const row = data[i];
     
-    // Skip rows without S/No or without label
-    if (!sNo || !label) continue;
+//     const firstCell = String(row[0] || "").trim();
+//     const secondCell = String(row[1] || "").trim();
 
-    // Check if this is a total row
-    const isTotalRow = label.includes('Total Foreign Assets') || 
-                       label.includes('Total Foreign Liabilities');
+//     if(i === 13){
+//       noandtitles = [firstCell,secondCell]
+//       console.log("Found title:", noandtitles);
+//     }
+//   }
+//   for (let i = 0; i < data.length; i++) {
+//     const row = data[i];
+    
+//     const firstCell = String(row[0] || "").trim();
+//     const secondCell = String(row[1] || "").trim();
 
-    // Check if this is a section header
-    const isSectionHeader = !sNo.includes('.') && 
-                           (label.includes('Foreign Currency Assets') || 
-                            label.includes('Foreign Currency Liabilities') ||
-                            label.includes('Foreign Exhange Position') ||
-                            label.includes('Overall Foreign Exhange Position'));
-
-
+//     if (firstCell === "code" || secondCell === "Description") {
+    
+//       dataTableStart = i + 1;
+//       break;
+//     }
    
-    // Extract values for ALL columns
-    const values = {};
-    
-    // 1. Extract 17 currency values - ONLY from currency columns
-    // These are at positions currencyStartIndex to currencyStartIndex + 16
-    for (let j = 0; j < CURRENCIES.length; j++) {
-      const colIndex = currencyStartIndex + j;
-      // Skip if this column is the Overall Exposure column
-      if (colIndex === overallExposureIndex) {
-        values[CURRENCIES[j]] = null;
-        continue;
-      }
-      // Skip if this column is in the "Others" range
-      if (colIndex >= othersStartIndex && colIndex < othersStartIndex + 3) {
-        values[CURRENCIES[j]] = '0';
-        continue;
-      }
-      if (colIndex < row.length) {
-        const value = parseFloat(row[colIndex]).toFixed(2);
-        if (!isNaN(value) && value !== 0) {
-          values[CURRENCIES[j]] = value;
-        } else {
-          values[CURRENCIES[j]] = '0';
-        }
-      } else {
-        values[CURRENCIES[j]] = '0';
-      }
-    }
+//   }
 
-    // 2. Extract "Others in Single Currency" columns (OTHER1, OTHER2, OTHER3)
-    // These are at positions othersStartIndex, othersStartIndex+1, othersStartIndex+2
-    const otherColumns = ['OTHER1', 'OTHER2', 'OTHER3'];
-    for (let j = 0; j < otherColumns.length; j++) {
-      const colIndex = othersStartIndex + j;
-      // Skip if this column is the Overall Exposure column
-      if (colIndex === overallExposureIndex) {
-        values[otherColumns[j]] = null;
-        continue;
-      }
-      if (colIndex < row.length) {
-        const value = parseFloat(row[colIndex]).toFixed(2);
-        if (!isNaN(value) && value !== 0) {
-          values[otherColumns[j]] = value;
-        } else {
-          values[otherColumns[j]] = '0';
-        }
-      } else {
-        values[otherColumns[j]] = '0';
-      }
-    }
+ 
 
-    // 3. Extract "Overall Exposure" - ONLY from the Overall Exposure column
-    if (overallExposureIndex !== -1 && overallExposureIndex < row.length) {
-      const overallValue = parseFloat(row[overallExposureIndex]).toFixed(2);
-      if (!isNaN(overallValue) && overallValue !== 0) {
-        values.OVERALL_EXPOSURE = overallValue;
-      } else {
-        values.OVERALL_EXPOSURE = null;
-      }
-    } else {
-      values.OVERALL_EXPOSURE = null;
-    }
+//   // Alternative: Look for "Required Liquid Assets"
+//   if (dataTableStart === -1) {
+//     for (let i = 0; i < data.length; i++) {
+//       const row = data[i];
+//       const secondCell = String(row[1] || "").trim();
+//       if (secondCell === "Required Liquid Assets") {
+//         dataTableStart = i;
+//         break;
+//       }
+//     }
+//   }
 
-    // Determine the level based on S/No format
-    const parts = sNo.split('.');
-    const level = parts.length;
-
-    console.log(`Row ${i}: S/No=${sNo}, Label=${label}, Level=${level}`);
-
-    const entry = {
-      id: sNo,
-      sNo: sNo,
-      label: label,
-      values: values,
-      rowNumber: i + 1,
-      level: level,
-      isTotalRow: isTotalRow || false,
-      isSectionHeader: isSectionHeader || false,
-      children: []
-    };
-
-    nodeMap.set(sNo, entry);
-  }
-
-  // Handle total rows without S/No
-  for (let i = dataTableStart; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
-
-    const sNo = String(row[0] || '').trim();
-    const label = String(row[1] || '').trim();
-    
-    if (!sNo && label && (label.includes('Total Foreign Assets') || label.includes('Total Foreign Liabilities'))) {
-      const values = {};
-      
-      // 1. Extract 17 currency values
-      for (let j = 0; j < CURRENCIES.length; j++) {
-        const colIndex = currencyStartIndex + j;
-        if (colIndex === overallExposureIndex) {
-          values[CURRENCIES[j]] = null;
-          continue;
-        }
-        if (colIndex >= othersStartIndex && colIndex < othersStartIndex + 3) {
-          values[CURRENCIES[j]] = '0';
-          continue;
-        }
-        if (colIndex < row.length) {
-          const value = parseFloat(row[colIndex]).toFixed(2);
-          
-          if (!isNaN(value) && value !== 0) {
-            values[CURRENCIES[j]] = value;
-          } else {
-            values[CURRENCIES[j]] = '0';
-          }
-        } else {
-          values[CURRENCIES[j]] = '0';
-        }
-      }
-
-      // 2. Extract Others columns
-      const otherColumns = ['OTHER1', 'OTHER2', 'OTHER3'];
-      for (let j = 0; j < otherColumns.length; j++) {
-        const colIndex = othersStartIndex + j;
-        if (colIndex === overallExposureIndex) {
-          values[otherColumns[j]] = null;
-          continue;
-        }
-        if (colIndex < row.length) {
-          const value = parseFloat(row[colIndex]).toFixed(2);
-          if (!isNaN(value) && value !== 0) {
-            values[otherColumns[j]] = value;
-          } else {
-            values[otherColumns[j]] = '0';
-          }
-        } else {
-          values[otherColumns[j]] = '0';
-        }
-      }
-
-      // 3. Extract Overall Exposure
-      if (overallExposureIndex !== -1 && overallExposureIndex < row.length) {
-        const overallValue = parseFloat(row[overallExposureIndex]).toFixed(2);
-        if (!isNaN(overallValue) && overallValue !== 0) {
-          values.OVERALL_EXPOSURE = overallValue;
-        } else {
-          values.OVERALL_EXPOSURE = null;
-        }
-      } else {
-        values.OVERALL_EXPOSURE = null;
-      }
-
-     // const entryId = label.includes('Assets') ? 'total-assets' : 'total-liabilities';
-       const entry = {
-        id: '',
-        sNo: '',
-        label: label,
-        values: values,
-        rowNumber: i + 1,
-        level: 0,
-        isTotalRow: true,
-        isSectionHeader: false,
-        children: []
-      };
-
-      const parentId = label.includes('Assets') ? '1' : '2';
-      const parent = nodeMap.get(parentId);
-      if (parent) {
-        parent.children.push(entry);
-        console.log(`Added total row "${label}" to parent "${parentId}"`);
-      } else {
-        nodeMap.set(entry.id, entry);
-      }
-    }
-  }
-
-  // Handle special rows: 8.1 to 8.6 - these only have Overall Exposure
-  for (let i = dataTableStart; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
-
-    const sNo = String(row[0] || '').trim();
-    const label = String(row[1] || '').trim();
-    
-    if (sNo && sNo.startsWith('8.') && label) {
-      const parts = sNo.split('.');
-      if (parts.length === 2) {
-        const values = {};
-        
-        // All currency values are null
-        for (let j = 0; j < CURRENCIES.length; j++) {
-          values[CURRENCIES[j]] = null;
-        }
-        
-        // OTHER1, OTHER2, OTHER3 are null
-        values['OTHER1'] = null;
-        values['OTHER2'] = null;
-        values['OTHER3'] = null;
-        
-        // Get the Overall Exposure value
-        if (overallExposureIndex !== -1 && overallExposureIndex < row.length) {
-          const overallValue = parseFloat(row[overallExposureIndex]).toFixed(2);
-          if (!isNaN(overallValue) && overallValue !== 0) {
-            values.OVERALL_EXPOSURE = overallValue;
-          } else {
-            values.OVERALL_EXPOSURE = null;
-          }
-        } else {
-          values.OVERALL_EXPOSURE = null;
-        }
-
-        const entry = {
-          id: sNo,
-          sNo: sNo,
-          label: label,
-          values: values,
-          rowNumber: i + 1,
-          level: 2,
-          isTotalRow: false,
-          isSectionHeader: false,
-          children: []
-        };
-
-        // if (!nodeMap.has(sNo)) {
-        //   nodeMap.set(sNo, entry);
-        //   console.log(`Added special node ${sNo}: ${label} with OVERALL_EXPOSURE:`, values.OVERALL_EXPOSURE);
-        // }
-      }
-    }
-  }
-
-  // Handle row 8 itself
-  for (let i = dataTableStart; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
-
-    const sNo = String(row[0] || '').trim();
-    const label = String(row[1] || '').trim();
-    
-    if (sNo === '8' && label) {
-      const values = {};
-      
-      for (let j = 0; j < CURRENCIES.length; j++) {
-        values[CURRENCIES[j]] = null;
-      }
-      
-      values['OTHER1'] = null;
-      values['OTHER2'] = null;
-      values['OTHER3'] = null;
-      values.OVERALL_EXPOSURE = null;
-
-      const entry = {
-        id: '8',
-        sNo: '8',
-        label: label,
-        values: values,
-        rowNumber: i + 1,
-        level: 1,
-        isTotalRow: false,
-        isSectionHeader: true,
-        children: []
-      };
-
-      // if (!nodeMap.has('8')) {
-      //   nodeMap.set('8', entry);
-      //   console.log(`Added section node 8: ${label}`);
-      // }
-    }
-  }
-
-  // Build the hierarchy
-  for (const [sNo, node] of nodeMap) {
-    if (node.isTotalRow && node.id !== 'total-assets' && node.id !== 'total-liabilities') {
-      continue;
-    }
-
-    const parts = sNo.split('.');
-    
-    if (parts.length === 1) {
-      topLevelNodes.push(node);
-      console.log(`Added top-level node: ${sNo} - ${node.label}`);
-    } else if (parts.length > 1) {
-      const parentSNo = parts.slice(0, -1).join('.');
-      const parent = nodeMap.get(parentSNo);
-      
-      if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
-        if (!exists) {
-          parent.children.push(node);
-          console.log(`Added node ${sNo} as child of ${parentSNo}`);
-        }
-      } else {
-        const baseSNo = parts[0];
-        const baseParent = nodeMap.get(baseSNo);
-        if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
-          if (!exists) {
-            baseParent.children.push(node);
-            console.log(`Added node ${sNo} as child of ${baseSNo} (fallback)`);
-          }
-        } else {
-          topLevelNodes.push(node);
-          console.log(`Added node ${sNo} as top-level (no parent found)`);
-        }
-      }
-    }
-  }
-
-  // Sort children by S/No
-  const sortChildren = (nodes) => {
-    nodes.sort((a, b) => {
-      if (a.isTotalRow && !b.isTotalRow) return 1;
-      if (!a.isTotalRow && b.isTotalRow) return -1;
-      
-      if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
-        
-        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
-          if (aParts[i] !== bParts[i]) {
-            return aParts[i] - bParts[i];
-          }
-        }
-        return aParts.length - bParts.length;
-      }
-      
-      if (a.sNo && !b.sNo) return -1;
-      if (!a.sNo && b.sNo) return 1;
-      
-      return 0;
-    });
-
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
-        sortChildren(node.children);
-      }
-    });
-  };
-
-  sortChildren(topLevelNodes);
-
-  // Clean up - remove empty children arrays
-  const cleanData = (nodes) => {
-    nodes.forEach(node => {
-      if (node.children && node.children.length === 0) {
-        delete node.children;
-      } else if (node.children) {
-        cleanData(node.children);
-      }
-    });
-  };
-  cleanData(topLevelNodes);
-
-  console.log('Final top-level nodes:', topLevelNodes.length);
-  console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+//   const headerRow = data[dataTableStart - 1];
   
-  return topLevelNodes;
-};
-const extractBalanceSheetData = (data) => {
-  const hierarchicalData = [];
-  let dataTableStart = -1;
-
-  // Find the data table start
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    const secondCell = String(row[1] || '').trim();
-    if (firstCell === 'Code' || secondCell === 'Description') {
-      dataTableStart = i + 1;
-      break;
-    }
-  }
-
-  if (dataTableStart === -1) {
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      if (!row || row.length === 0) continue;
-      const firstCell = String(row[0] || '').trim();
-      if (firstCell === 'ASSETS') {
-        dataTableStart = i + 1;
-        break;
-      }
-    }
-  }
-
-  if (dataTableStart === -1) {
-    return { hierarchicalData: [], currencies: ['Current Month'], additionalColumns: [] };
-  }
-
-  const topLevelNodes = [];
-  const nodeMap = new Map();
-  let currentParent = null;
-
-  // Find value column
-  let valueColumnIndex = -1;
-  const headerRow = data[dataTableStart - 1];
-  for (let i = 0; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || '').trim();
-    if (cell === 'Current Month' || cell === 'Current Month ' || cell.includes('Current')) {
-      valueColumnIndex = i;
-      break;
-    }
-  }
-  if (valueColumnIndex === -1) valueColumnIndex = 2;
-
-  // Parse the data
-  for (let i = dataTableStart; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
-
-    const code = String(row[0] || '').trim();
-    const description = String(row[1] || '').trim();
-
-    if (!description) continue;
-
-    const isSectionHeader = description === 'ASSETS' || 
-                           description === 'LIABILITIES & CAPITAL' ||
-                           description === 'LIABILITIES' ||
-                           description === 'CAPITAL & RESER. A/C';
-
-    const isTotalRow = description.includes('TOTAL ASSETS') || 
-                       description.includes('TOTAL LIABILITIES') ||
-                       description.includes('TOTAL LIABILITIES AND NET WORTH');
-
-    // Extract value
-    let value = null;
-    if (valueColumnIndex < row.length) {
-      const rawValue = parseFloat(row[valueColumnIndex]);
-      if (!isNaN(rawValue) && rawValue !== 0) {
-        value = rawValue;
-      }
-    }
-
-    // Determine level
-    let level = 0;
-    if (code && code !== '') {
-      const codeParts = code.split('.');
-      level = codeParts.length;
-    } else if (isSectionHeader) {
-      level = 0;
-    } else if (isTotalRow) {
-      level = 0;
-    }
-
-    const entry = {
-      id: code || `row-${i}`,
-      sNo: code || '',
-      label: description,
-      values: {
-        'Current Month': value !== null ? value.toFixed(2) : '0'
-      },
-      rowNumber: i + 1,
-      level: level,
-      isTotalRow: isTotalRow || false,
-      isSectionHeader: isSectionHeader || false,
-      children: []
-    };
-
-    if (code) {
-      nodeMap.set(code, entry);
-    }
-
-    if (!code) {
-      if (isSectionHeader) {
-        topLevelNodes.push(entry);
-        currentParent = entry;
-      } else if (isTotalRow) {
-        if (description.includes('TOTAL ASSETS')) {
-          const assetParent = topLevelNodes.find(n => n.label === 'ASSETS');
-          if (assetParent) assetParent.children.push(entry);
-          else topLevelNodes.push(entry);
-        } else if (description.includes('TOTAL LIABILITIES')) {
-          const liabilityParent = topLevelNodes.find(n => n.label === 'LIABILITIES');
-          if (liabilityParent) liabilityParent.children.push(entry);
-          else topLevelNodes.push(entry);
-        } else {
-          topLevelNodes.push(entry);
-        }
-      } else {
-        if (currentParent && !currentParent.isSectionHeader) {
-          currentParent.children.push(entry);
-        } else if (currentParent) {
-          currentParent.children.push(entry);
-        } else {
-          topLevelNodes.push(entry);
-        }
-      }
-    }
-  }
-
-  // Build hierarchy for nodes with codes
-  for (const [code, node] of nodeMap) {
-    const codeParts = code.split('.');
-    
-    if (codeParts.length === 1) {
-      const existing = topLevelNodes.find(n => n.id === code);
-      if (!existing) {
-        topLevelNodes.push(node);
-      }
-    } else if (codeParts.length > 1) {
-      const parentCode = codeParts.slice(0, -1).join('.');
-      const parent = nodeMap.get(parentCode);
-      
-      if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
-        if (!exists) {
-          parent.children.push(node);
-        }
-      } else {
-        const baseCode = codeParts[0];
-        const baseParent = nodeMap.get(baseCode);
-        if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
-          if (!exists) {
-            baseParent.children.push(node);
-          }
-        }
-      }
-    }
-  }
-
-  // Sort children
-  const sortChildren = (nodes) => {
-    nodes.sort((a, b) => {
-      if (a.isTotalRow && !b.isTotalRow) return 1;
-      if (!a.isTotalRow && b.isTotalRow) return -1;
-      
-      if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
-        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
-          if (aParts[i] !== bParts[i]) {
-            return aParts[i] - bParts[i];
-          }
-        }
-        return aParts.length - bParts.length;
-      }
-      return 0;
-    });
-
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
-        sortChildren(node.children);
-      }
-    });
-  };
-
-  sortChildren(topLevelNodes);
-
-  const cleanData = (nodes) => {
-    nodes.forEach(node => {
-      if (node.children && node.children.length === 0) {
-        delete node.children;
-      } else if (node.children) {
-        cleanData(node.children);
-      }
-    });
-  };
-  cleanData(topLevelNodes);
-
-  return {
-    hierarchicalData: topLevelNodes,
-    currencies: ['Current Month'],
-    additionalColumns: []
-  };
-};
-
-const extractLiquidityRequirementData = (data) => {
-  const hierarchicalData = [];
-  let dataTableStart = -1;
-
-  // Find the data table start - look for "code" column
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    const secondCell = String(row[1] || '').trim();
-    if (firstCell === 'code' || secondCell === 'Description') {
-      dataTableStart = i + 1;
-      break;
-    }
-  }
-
-  if (dataTableStart === -1) {
-    // Try to find the table by looking for "Required Liquid Assets"
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      if (!row || row.length === 0) continue;
-      const secondCell = String(row[1] || '').trim();
-      if (secondCell === 'Required Liquid Assets') {
-        dataTableStart = i;
-        break;
-      }
-    }
-  }
-
-  if (dataTableStart === -1) {
-    return { hierarchicalData: [], currencies: ['Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average'], additionalColumns: [] };
-  }
-
-  const topLevelNodes = [];
-  const nodeMap = new Map();
-  let currentParent = null;
-
-  // Get column headers (days of week)
-  const headerRow = data[dataTableStart - 1];
-  const dayColumns = [];
-  let dayStartIndex = -1;
+//   const dayColumns = [];
+//   let dayStartIndex = -1;
   
-  for (let i = 0; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || '').trim();
-    if (cell === 'Thu' || cell === 'Fri' || cell === 'Sat' || cell === 'Sun' || cell === 'Mon' || cell === 'Tue' || cell === 'Wed') {
-      if (dayStartIndex === -1) dayStartIndex = i;
-      dayColumns.push(cell);
-    }
-    if (cell === 'Weekly Average') {
-      dayColumns.push(cell);
-    }
-  }
+//   // Look for day names (Thu, Fri, Sat, Sun, Mon, Tue, Wed)
+//   for (let i = 0; i < headerRow.length; i++) {
+//     const cell = String(headerRow[i] || "").trim();
+//     if (
+//       cell === "Thu" ||
+//       cell === "Fri" ||
+//       cell === "Sat" ||
+//       cell === "Sun" ||
+//       cell === "Mon" ||
+//       cell === "Tue" ||
+//       cell === "Wed"
+//     ) {
+//       if (dayStartIndex === -1) dayStartIndex = i;
+//       dayColumns.push(cell);
+//     }
+//     if (cell === "Weekly Average") {
+//       dayColumns.push("Weekly_Average");
+//     }
+//   }
 
-  // If we didn't find day columns, use default positions
-  if (dayColumns.length === 0) {
-    dayStartIndex = 2;
-    dayColumns.push('Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average');
-  }
+//   if (dayColumns.length === 0) {
+//     dayStartIndex = 2;
+//     dayColumns.push(
+//       "Thu",
+//       "Fri",
+//       "Sat",
+//       "Sun",
+//       "Mon",
+//       "Tue",
+//       "Wed",
+//       "Weekly_Average",
+//     );
+//   }
 
-  console.log('Day columns:', dayColumns);
-  console.log('Day start index:', dayStartIndex);
+//   const topLevelNodes = [];
+//   const nodeMap = new Map();
+//   let currentParent = null;
 
-  // Parse the data
-  for (let i = dataTableStart; i < data.length; i++) {
-    const row = data[i];
-    if (!row || row.length === 0) continue;
+//   // Loop through each row
+//   for (let i = dataTableStart; i < data.length; i++) {
+//     const row = data[i];
+//     if (!row || row.length === 0) continue;
+//     if (i > 26) continue;
 
-    const code = String(row[0] || '').trim();
-    const description = String(row[1] || '').trim();
+//     const code = String(row[0] || "").trim();
+//     const description = String(row[1] || "").trim();
 
-    // Skip rows without description or notes
-    if (!description) continue;
-    if (description.includes('Note:') || description.includes('_')) continue;
+//     // Skip empty rows, notes, and footers
+//     if (!description) continue;
+//     if (description.includes("Note:") || description.includes("_")) continue;
 
-    // Check if this is a section header
-    const isSectionHeader = description === 'Required Liquid Assets' || 
-                           description === 'Liquid Assets Held' ||
-                           description === 'Excess/deficit' ||
-                           description === 'Liquidity Ratio';
+//     //  IDENTIFY ROW TYPES 
+//     const isSectionHeader =
+//       description === "Required Liquid Assets" ||
+//       description === "Liquid Assets Held" ||
+//       description === "Excess/deficit" ||
+//       description === "Liquidity Ratio";
 
-    // Check if this is a total row
-    const isTotalRow = description.includes('Total liquid assets') || 
-                       description.includes('Excess/deficit') ||
-                       description.includes('Liquidity Ratio');
+//     const isTotalRow =
+//       description.includes("Total liquid assets") ||
+//       description.includes("Excess/deficit") ||
+//       description.includes("Liquidity Ratio");
 
-    // Extract values for each day
-    const values = {};
-    let hasValues = false;
+//     // EXTRACT VALUES FOR EACH DAY
+//      const values = {};
 
-    for (let j = 0; j < dayColumns.length; j++) {
-      const colIndex = dayStartIndex + j;
-      if (colIndex < row.length) {
-        const rawValue = parseFloat(row[colIndex]);
-        if (!isNaN(rawValue) && rawValue !== 0) {
-          values[dayColumns[j]] = rawValue.toFixed(2);
-          hasValues = true;
-        } else {
-          values[dayColumns[j]] = '0';
-        }
-      } else {
-        values[dayColumns[j]] = '0';
-      }
-    }
+//     const isNullSection = description === 'Required Liquid Assets' || 
+//                       description === 'Liquid Assets Held';
 
-    // Determine level
-    let level = 0;
-    if (code && code !== '') {
-      const codeParts = code.split('.');
-      level = codeParts.length;
-    } else if (isSectionHeader) {
-      level = 0;
-    } else if (isTotalRow) {
-      level = 1;
-    } else if (description && description.startsWith('  ')) {
-      level = 2;
-    }
+//             if (isNullSection) {
+//   // Section headers - set all values to null
+//   for (let j = 0; j < dayColumns.length; j++) {
+//     values[dayColumns[j]] = null;
+//   }
+// } else {
 
-    const entry = {
-      id: code || `row-${i}`,
-      sNo: code || '',
-      label: description,
-      values: values,
-      rowNumber: i + 1,
-      level: level,
-      isTotalRow: isTotalRow || false,
-      isSectionHeader: isSectionHeader || false,
-      children: []
-    };
+//     for (let j = 0; j < dayColumns.length; j++) {
+      
+//       const colIndex = dayStartIndex + j;
+//       if (colIndex < row.length) {
+//         const rawValue = parseFloat(row[colIndex]);
+//         if (!isNaN(rawValue) && rawValue !== 0) {
+//           values[dayColumns[j]] = rawValue.toFixed(2);
+//         } else {
+//           values[dayColumns[j]] = "0";
+//         }
+//       } else {
+//         values[dayColumns[j]] = "0";
+//       }
 
-    if (code) {
-      nodeMap.set(code, entry);
-    }
+//     }}
 
-    if (!code) {
-      if (isSectionHeader) {
-        topLevelNodes.push(entry);
-        currentParent = entry;
-      } else if (isTotalRow) {
-        // Total rows go to the current parent
-        if (currentParent) {
-          currentParent.children.push(entry);
-        } else {
-          topLevelNodes.push(entry);
-        }
-      } else {
-        // Other rows without code
-        if (currentParent && !currentParent.isSectionHeader) {
-          currentParent.children.push(entry);
-        } else if (currentParent) {
-          currentParent.children.push(entry);
-        } else {
-          topLevelNodes.push(entry);
-        }
-      }
-    }
-  }
+//     // DETERMINE HIERARCHY LEVEL
+//     let level = 0;
+//     if (code && code !== "") {
+//       const codeParts = code.split(".");
+//       level = codeParts.length;
+//     } else if (isSectionHeader) {
+//       level = 0;
+//     } else if (isTotalRow) {
+//       level = 1;
+//     }
 
-  // Build hierarchy for nodes with codes
-  for (const [code, node] of nodeMap) {
-    const codeParts = code.split('.');
+//     //  CREATE THE NODE
+//     const entry = {
+//       id: code || "",
+//       sNo: code || "",
+//       label: description,
+//       values: values, // Contains values for each day
+//       rowNumber: i + 1,
+//       level: level,
+//       isTotalRow: isTotalRow || false,
+//       isSectionHeader: isSectionHeader || false,
+//       children: [],
+//     };
+
+//     // BUILD HIERARCHY 
+//     if (code) {
+//       nodeMap.set(code, entry);
+//     }
+
+//     if (!code) {
+//       if (isSectionHeader) {
+//         // Section header (e.g., "Required Liquid Assets")
+//         topLevelNodes.push(entry);
+//         currentParent = entry;
+//       } else if (isTotalRow) {
+//         // Total rows (e.g., "Total liquid assets")
+//         if (currentParent) {
+//           currentParent.children.push(entry);
+//         } else {
+//           topLevelNodes.push(entry);
+//         }
+//       } else {
+//         // Other rows without code
+//         if (currentParent && !currentParent.isSectionHeader) {
+//           currentParent.children.push(entry);
+//         } else if (currentParent) {
+//           currentParent.children.push(entry);
+//         } else {
+//           topLevelNodes.push(entry);
+//         }
+//       }
+//     }
+//   }
+
+//   // BUILD HIERARCHY FOR CODED NODES
+//   for (const [code, node] of nodeMap) {
+//     const codeParts = code.split(".");
+
+//     if (codeParts.length === 1) {
+//       // Top level (1, 2, 3, 4)
+//       const existing = topLevelNodes.find((n) => n.id === code);
+//       if (!existing) {
+//         topLevelNodes.push(node);
+//       }
+//     } else if (codeParts.length > 1) {
+//       // Child node (1.1, 1.2, etc.)
+//       const parentCode = codeParts.slice(0, -1).join(".");
+//       const parent = nodeMap.get(parentCode);
+
+//       if (parent) {
+//         const exists = parent.children.some((child) => child.id === node.id);
+//         if (!exists) {
+//           parent.children.push(node);
+//         }
+//       } else {
+//         const baseCode = codeParts[0];
+//         const baseParent = nodeMap.get(baseCode);
+//         if (baseParent) {
+//           const exists = baseParent.children.some(
+//             (child) => child.id === node.id,
+//           );
+//           if (!exists) {
+//             baseParent.children.push(node);
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   // SORT CHILDREN 
+//   const sortChildren = (nodes) => {
+//     nodes.sort((a, b) => {
+//       // Total rows at the end
+//       if (a.isTotalRow && !b.isTotalRow) return 1;
+//       if (!a.isTotalRow && b.isTotalRow) return -1;
+
+//       // Sort by S/No
+//       if (a.sNo && b.sNo) {
+//         const aParts = a.sNo.split(".").map(Number);
+//         const bParts = b.sNo.split(".").map(Number);
+//         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+//           if (aParts[i] !== bParts[i]) {
+//             return aParts[i] - bParts[i];
+//           }
+//         }
+//         return aParts.length - bParts.length;
+//       }
+//       return 0;
+//     });
+
+//     nodes.forEach((node) => {
+//       if (node.children && node.children.length > 0) {
+//         sortChildren(node.children);
+//       }
+//     });
+//   };
+
+//   sortChildren(topLevelNodes);
+
+//   // CLEAN UP 
+//   const cleanData = (nodes) => {
+//     nodes.forEach((node) => {
+//       if (node.children && node.children.length === 0) {
+//         delete node.children;
+//       } else if (node.children) {
+//         cleanData(node.children);
+//       }
+//     });
+//   };
+//   cleanData(topLevelNodes);
+
+//   //  RETURN RESULT 
+//   return {
+//     hierarchicalData: topLevelNodes,
+//     columns: dayColumns, // ['Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average']
+//     additionalColumns: [],
+//     noandtitles:noandtitles
+//   };
+// };
+
+// const extractLoanRelatedPartiesData = (data) => {
+//   const hierarchicalData = [];
+//   let dataTableStart = -1;
+//   let noandtitles = [];
+//   for (let i = 0; i < data.length; i++) {
+//     const row = data[i];
+//     const firstCell = String(row[1] || "").trim();
+//     let secondCell = String(row[2] || "").trim();
+
+//     if (secondCell ==='Name of Borrower'){
+//       secondCell= 'Name_of_Borrower'
+//     }
     
-    if (codeParts.length === 1) {
-      const existing = topLevelNodes.find(n => n.id === code);
-      if (!existing) {
-        topLevelNodes.push(node);
-      }
-    } else if (codeParts.length > 1) {
-      const parentCode = codeParts.slice(0, -1).join('.');
-      const parent = nodeMap.get(parentCode);
-      
-      if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
-        if (!exists) {
-          parent.children.push(node);
-        }
-      } else {
-        const baseCode = codeParts[0];
-        const baseParent = nodeMap.get(baseCode);
-        if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
-          if (!exists) {
-            baseParent.children.push(node);
-          }
-        }
-      }
-    }
-  }
 
-  // Sort children by code
-  const sortChildren = (nodes) => {
-    nodes.sort((a, b) => {
-      if (a.isTotalRow && !b.isTotalRow) return 1;
-      if (!a.isTotalRow && b.isTotalRow) return -1;
-      
-      if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
-        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
-          if (aParts[i] !== bParts[i]) {
-            return aParts[i] - bParts[i];
-          }
-        }
-        return aParts.length - bParts.length;
-      }
-      return 0;
-    });
+//     if (i === 13) {
+//       noandtitles = [firstCell, secondCell];
+//       console.log("Found title:", noandtitles);
+//     }
+//   }
+//   console.log("Found title:", noandtitles[0]);
+//   console.log('=== Extracting Loan Related Parties Data ===');
 
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
-        sortChildren(node.children);
-      }
-    });
-  };
+//   // Log first few rows to understand structure
+//   for (let i = 0; i < Math.min(data.length, 20); i++) {
+//     const row = data[i];
+//     if (row) {
+//       console.log(`Row ${i}:`, row.slice(0, 10).map(c => String(c || '').trim()));
+//     }
+//   }
 
-  sortChildren(topLevelNodes);
+//   // Find the data table start - look for "S.No." column
+//   for (let i = 0; i < data.length; i++) {
+//     const row = data[i];
+//     if (!row || row.length === 0) continue;
+//     const firstCell = String(row[1] || '').trim();
+//     if (firstCell === 'S.No.') {
+//       dataTableStart = i + 2;
+//       console.log('Found data table at row:', dataTableStart);
+//       break;
+//     }
+//   }
 
-  const cleanData = (nodes) => {
-    nodes.forEach(node => {
-      if (node.children && node.children.length === 0) {
-        delete node.children;
-      } else if (node.children) {
-        cleanData(node.children);
-      }
-    });
-  };
-  cleanData(topLevelNodes);
+//   // if (dataTableStart === -1) {
+//   //   // Try to find by looking for "Name of Borrower"
+//   //   for (let i = 0; i < data.length; i++) {
+//   //     const row = data[i];
+//   //     if (!row || row.length === 0) continue;
+//   //     const secondCell = String(row[2] || '').trim();
+//   //     if (secondCell === 'Name of Borrower') {
+//   //       dataTableStart = i + 2;
+//   //       console.log('Found data table at row (alt):', dataTableStart);
+//   //       break;
+//   //     }
+//   //   }
+//   // }
 
-  return {
-    hierarchicalData: topLevelNodes,
-    currencies: dayColumns,
-    additionalColumns: []
-  };
-};
+//   if (dataTableStart === -1) {
+//     console.log('Could not find data table');
+//     return { hierarchicalData: [], columns: [], additionalColumns: [] , noandtitles : [] };
+//   }
+
+//   // Get the header row to identify column positions
+//   const headerRow = data[dataTableStart - 1];
+  
+//   // Print header row for debugging
+//   console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+
+//   // Define column mappings with descriptive names
+//   let colMap = {
+//     sNo: 1,
+//     borrowerName: 2,
+//     // Approved Loan Limit Amount - Term Loans
+//     approvedTermLoans: 2,
+//     // Approved Loan Limit Amount - Merchandise Loans
+//     approvedMerchandiseLoans: 4,
+//     // Approved Loan Limit Amount - Overdraft
+//     approvedOverdraft: 5,
+//     // Total (A) - sum of Term Loans + Merchandise Loans + Overdraft
+//     totalA: 6,
+//     // Capital of the Bank (Paid up + Share Premium + Legal + General reserve) (B)
+//     capitalB: 7,
+//     // Percent of Capital (C=A/B*100)
+//     percentOfCapitalC: 8,
+//     // Cash Collateral Value - Term Loans
+//     cashCollateralTerm: 9,
+//     // Cash Collateral Value - Merchandise Loans
+//     cashCollateralMerchandise: 10,
+//     // Cash Collateral Value - Overdraft
+//     cashCollateralOverdraft: 11,
+//     // Cash Equivalent Collateral Value - Term Loans
+//     cashEquivalentTerm: 12,
+//     // Cash Equivalent Collateral Value - Merchandise Loans
+//     cashEquivalentMerchandise: 13,
+//     // Cash Equivalent Collateral Value - Overdraft
+//     cashEquivalentOverdraft: 14,
+//     // Federal Guarantee Collateral Value - Term Loans
+//     federalGuaranteeTerm: 15,
+//     // Federal Guarantee Collateral Value - Merchandise Loans
+//     federalGuaranteeMerchandise: 16,
+//     // Federal Guarantee Collateral Value - Overdraft
+//     federalGuaranteeOverdraft: 17,
+//     // "A" Grade Foreign Guarantee Collateral Value - Term Loans
+//     foreignGuaranteeTerm: 18,
+//     // "A" Grade Foreign Guarantee Collateral Value - Merchandise Loans
+//     foreignGuaranteeMerchandise: 19,
+//     // "A" Grade Foreign Guarantee Collateral Value - Overdraft
+//     foreignGuaranteeOverdraft: 20,
+//     // Total (H=sumD-G) - sum of all collateral values
+//     totalH: 21,
+//     // Outstanding Balance - Term Loans
+//     outstandingTerm: 22,
+//     // Outstanding Balance - Merchandise Loans
+//     outstandingMerchandise: 23,
+//     // Outstanding Balance - Overdraft
+//     outstandingOverdraft: 24,
+//     // Total (I) - sum of outstanding balances
+//     totalI: 25,
+//     // Adjusted Outstanding Balance (J=I-H)
+//     adjustedOutstandingJ: 26,
+//     // Percent of Capital (K=J/B*100)
+//     percentOfCapitalK: 27,
+//     // Adjusted Outstanding Balance with O/D Approved Limit - Term Loans
+//     adjustedTermLoans: 28,
+//     // Adjusted Outstanding Balance with O/D Approved Limit - Merchandise Loans
+//     adjustedMerchandise: 29,
+//     // Adjusted Outstanding Balance with O/D Approved Limit - Overdraft Approved Limit
+//     adjustedOverdraft: 30,
+//     // Total (L) - sum of adjusted balances
+//     totalL: 31,
+//     // Percent of Capital (M=L/B*100)
+//     percentOfCapitalM: 32,
+//     // Status (Classification)
+//     statusClassification: 33,
+//     // Pass field
+
+//   };
+
+//   // Find actual column indices from header by matching patterns
+//   for (let i = 0; i < headerRow.length; i++) {
+//     const cell = String(headerRow[i] || '').trim();
+//     console.log(`Column ${i}: "${cell}"`);
+    
+//     // if (cell === 'S.No.') colMap.sNo = i;
+//     // if (cell === 'Name of Borrower') colMap.borrowerName = i;
+//     // Look for Term Loans under Approved Loan Limit Amount
+//     if (cell === 'Term Loans' && i < 5) colMap.approvedTermLoans = i;
+//     if (cell === 'Merchandise Loans*' && i < 5) colMap.approvedMerchandiseLoans = i;
+//     if (cell === 'Overdraft' && i < 5) colMap.approvedOverdraft = i;
+//     if (cell.includes('Total (A)')) colMap.totalA = i;
+//     if (cell.includes('Capital of the Bank')) colMap.capitalB = i;
+//     if (cell.includes('Percent of Capital')) colMap.percentOfCapitalC = i;
+//     if (cell.includes('Status (Classification)')) colMap.statusClassification = i;
+    
+//     // Cash Collateral
+//     if (cell === 'Cash Collateral Value (D)') {
+//       // The next three columns are Term Loans, Merchandise, Overdraft
+//       colMap.cashCollateralTerm = i + 1;
+//       colMap.cashCollateralMerchandise = i + 2;
+//       colMap.cashCollateralOverdraft = i + 3;
+//     }
+//     // Cash Equivalent
+//     if (cell === 'Cash Equivalent Collateral Value (E)') {
+//       colMap.cashEquivalentTerm = i + 1;
+//       colMap.cashEquivalentMerchandise = i + 2;
+//       colMap.cashEquivalentOverdraft = i + 3;
+//     }
+//     // Federal Guarantee
+//     if (cell === 'Federal Guarantee  Collateral Value(F)') {
+//       colMap.federalGuaranteeTerm = i + 1;
+//       colMap.federalGuaranteeMerchandise = i + 2;
+//       colMap.federalGuaranteeOverdraft = i + 3;
+//     }
+//     // Foreign Guarantee
+//     if (cell === '"A" Grade Foreign Guarantee Collateral Value(G)') {
+//       colMap.foreignGuaranteeTerm = i + 1;
+//       colMap.foreignGuaranteeMerchandise = i + 2;
+//       colMap.foreignGuaranteeOverdraft = i + 3;
+//     }
+//     if (cell === 'Total (H=sumD-G)') colMap.totalH = i;
+    
+//     // Outstanding Balance
+//     if (cell === 'Outstanding Balance') {
+//       colMap.outstandingTerm = i + 1;
+//       colMap.outstandingMerchandise = i + 2;
+//       colMap.outstandingOverdraft = i + 3;
+//     }
+//     if (cell === 'Total (I)') colMap.totalI = i;
+//     if (cell === 'Adjusted Outstanding Balance  (J=I-H)') colMap.adjustedOutstandingJ = i;
+//     if (cell === 'Percent of Capital (K=J/B*100)') colMap.percentOfCapitalK = i;
+    
+//     // Adjusted Outstanding Balance with O/D Approved Limit
+//     if (cell === 'Adjusted Outstanding Balance with O/D Approved Limit') {
+//       colMap.adjustedTermLoans = i + 1;
+//       colMap.adjustedMerchandise = i + 2;
+//       colMap.adjustedOverdraft = i + 3;
+//     }
+//     if (cell === 'Total (L)') colMap.totalL = i;
+//     if (cell === 'Percent of Capital (M=L/B*100)') colMap.percentOfCapitalM = i;
+    
+//     if (cell === 'Pass') colMap.pass = i;
+//   }
+
+//   console.log('Final Column Map:', colMap);
+
+//   // Collect all column names for currencies
+//   const columnNames = [
+//   'Approved_Loan_Limit-Term_Loans',
+//   'Approved_Loan_Limit-Merchandise_Loans',
+//   'Approved_Loan_Limit-Overdraft',
+//   'Total_Approved_Loan_Limit(A)',
+//   'Capital_of_the_Bank(B)',
+//   'Percent_of_Capital(C=A/B*100)',
+//   'Cash_Collateral-Term_Loans',
+//   'Cash_Collateral-Merchandise_Loans',
+//   'Cash_Collateral-Overdraft',
+//   'Cash_Equivalent-Term_Loans',
+//   'Cash_Equivalent-Merchandise_Loans',
+//   'Cash_Equivalent-Overdraft',
+//   'Federal_Guarantee-Term_Loans',
+//   'Federal_Guarantee-Merchandise_Loans',
+//   'Federal_Guarantee-Overdraft',
+//   'Foreign_Guarantee-Term_Loans',
+//   'Foreign_Guarantee-Merchandise_Loans',
+//   'Foreign_Guarantee-Overdraft',
+//   'Total_Collateral(H)',
+//   'Outstanding_Balance-Term_Loans',
+//   'Outstanding_Balance-Merchandise_Loans',
+//   'Outstanding_Balance-Overdraft',
+//   'Total_Outstanding(I)',
+//   'Adjusted_Outstanding(J=I-H)',
+//   'Percent_of_Capital(K=J/B*100)',
+//   'Adjusted_Balance-Term_Loans',
+//   'Adjusted_Balance-Merchandise_Loans',
+//   'Adjusted_Balance-Overdraft_Approved_Limit',
+//   'Total_Adjusted_Balance(L)',
+//   'Percent_of_Capital(M=L/B*100)',
+//   'Status(Classification)'
+// ];
+//   // const columnNames = [
+//   //   'Approved_Loan_Limit-Term_Loans',
+//   //   'Approved_Loan_Limit-Merchandise_Loans',
+//   //   'Approved_Loan_Limit-Overdraft',
+//   //   'Total Approved Loan Limit (A)',
+//   //   'Capital of the Bank (B)',
+//   //   'Percent of Capital (C=A/B*100)',
+//   //   'Cash Collateral - Term Loans',
+//   //   'Cash Collateral - Merchandise Loans',
+//   //   'Cash Collateral - Overdraft',
+//   //   'Cash Equivalent - Term Loans',
+//   //   'Cash Equivalent - Merchandise Loans',
+//   //   'Cash Equivalent - Overdraft',
+//   //   'Federal Guarantee - Term Loans',
+//   //   'Federal Guarantee - Merchandise Loans',
+//   //   'Federal Guarantee - Overdraft',
+//   //   'Foreign Guarantee - Term Loans',
+//   //   'Foreign Guarantee - Merchandise Loans',
+//   //   'Foreign Guarantee - Overdraft',
+//   //   'Total Collateral (H)',
+//   //   'Outstanding Balance - Term Loans',
+//   //   'Outstanding Balance - Merchandise Loans',
+//   //   'Outstanding Balance - Overdraft',
+//   //   'Total Outstanding (I)',
+//   //   'Adjusted Outstanding (J=I-H)',
+//   //   'Percent of Capital (K=J/B*100)',
+//   //   'Adjusted Balance - Term Loans',
+//   //   'Adjusted Balance - Merchandise Loans',
+//   //   'Adjusted Balance - Overdraft Approved Limit',
+//   //   'Total Adjusted Balance (L)',
+//   //   'Percent of Capital (M=L/B*100)',
+//   //   'Status (Classification)'
+//   // ];
+
+//   const topLevelNodes = [];
+
+//   // Parse each row
+//   for (let i = dataTableStart; i < data.length; i++) {
+//     const row = data[i];
+//     console.log("row data", row, colMap.sNo)
+//     if (!row || row.length === 0) continue;
+
+//     const sNo = String(row[colMap.sNo] || '').trim();
+//     console.log("s.no", sNo)
+//     // Skip if no S.No or if it's a formula row (starts with =)
+    
+
+//     const borrowerName = String(row[colMap.borrowerName] || '').trim();
+//     if (!sNo && borrowerName !== 'Grand Total') continue;
+//     // Skip if no borrower name
+//     if (!borrowerName) continue;
+//     if(i > 135) continue;
+
+//     console.log(`Processing row ${i}: S.No=${sNo}, Borrower=${borrowerName}`);
+
+//     // Extract all values with proper naming
+//     const values = {};
+
+//     // Helper function to extract value
+//     const getValue = (index) => {
+//       if (index !== undefined && index < row.length) {
+//         const val = parseFloat(row[index]);
+//         return !isNaN(val) && val !== 0 ? val.toFixed(2) : '0';
+//       }
+//       return '0';
+//     };
+
+//     const getStringValue = (index) => {
+//       if (index !== undefined && index < row.length) {
+//         return String(row[index] || '').trim();
+//       }
+//       return '';
+//     };
+
+//     // Approved Loan Limit Amount
+//     values['Approved_Loan_Limit-Term_Loans'] = getValue(colMap.approvedTermLoans);
+//     values['Approved_Loan_Limit-Merchandise_Loans'] = getValue(colMap.approvedMerchandiseLoans);
+//     values['Approved_Loan_Limit-Overdraft'] = getValue(colMap.approvedOverdraft);
+//     values['Total_Approved_Loan_Limit(A)'] = getValue(colMap.totalA);
+
+//     // Capital and Ratios
+//     values['Capital_of_the_Bank(B)'] = getValue(colMap.capitalB);
+//     values['Percent_of_Capital(C=A/B*100)'] = getValue(colMap.percentOfCapitalC);
+
+//     // Cash Collateral
+//     values['Cash_Collateral-Term_Loans'] = getValue(colMap.cashCollateralTerm);
+//     values['Cash_Collateral-Merchandise_Loans'] = getValue(colMap.cashCollateralMerchandise);
+//     values['Cash_Collateral-Overdraft'] = getValue(colMap.cashCollateralOverdraft);
+
+//     // Cash Equivalent
+//     values['Cash_Equivalent-Term_Loans'] = getValue(colMap.cashEquivalentTerm);
+//     values['Cash_Equivalent-Merchandise_Loans'] = getValue(colMap.cashEquivalentMerchandise);
+//     values['Cash_Equivalent-Overdraft'] = getValue(colMap.cashEquivalentOverdraft);
+
+//     // Federal Guarantee
+//     values['Federal_Guarantee-Term_Loans'] = getValue(colMap.federalGuaranteeTerm);
+//     values['Federal_Guarantee-Merchandise_Loans'] = getValue(colMap.federalGuaranteeMerchandise);
+//     values['Federal_Guarantee-Overdraft'] = getValue(colMap.federalGuaranteeOverdraft);
+
+//     // Foreign Guarantee
+//     values['Foreign_Guarantee-Term_Loans'] = getValue(colMap.foreignGuaranteeTerm);
+//     values['Foreign_Guarantee-Merchandise_Loans'] = getValue(colMap.foreignGuaranteeMerchandise);
+//     values['Foreign_Guarantee-Overdraft'] = getValue(colMap.foreignGuaranteeOverdraft);
+
+//     // Total Collateral
+//     values['Total_Collateral(H)'] = getValue(colMap.totalH);
+
+//     // Outstanding Balance
+//     values['Outstanding_Balance-Term_Loans'] = getValue(colMap.outstandingTerm);
+//     values['Outstanding_Balance-Merchandise_Loans'] = getValue(colMap.outstandingMerchandise);
+//     values['Outstanding_Balance-Overdraft'] = getValue(colMap.outstandingOverdraft);
+//     values['Total_Outstanding(I)'] = getValue(colMap.totalI);
+
+//     // Adjusted Outstanding
+//     values['Adjusted_Outstanding(J=I-H)'] = getValue(colMap.adjustedOutstandingJ);
+//     values['Percent_of_Capital(K=J/B*100)'] = getValue(colMap.percentOfCapitalK);
+
+//     // Adjusted Outstanding with O/D Approved Limit
+//     values['Adjusted_Balance-Term_Loans'] = getValue(colMap.adjustedTermLoans);
+//     values['Adjusted_Balance-Merchandise_Loans'] = getValue(colMap.adjustedMerchandise);
+//     values['Adjusted_Balance-Overdraft_Approved_Limit'] = getValue(colMap.adjustedOverdraft);
+//     values['Total_Adjusted_Balance(L)'] = getValue(colMap.totalL);
+//     values['Percent_of_Capital(M=L/B*100)'] = getValue(colMap.percentOfCapitalM);
+
+//     // Status and Pass
+//     values['Status(Classification)'] = getStringValue(colMap.statusClassification);
+    
+
+//     // Create the entry
+//     const entry = {
+//       id: sNo,
+//       sNo: sNo,
+//       label: borrowerName,
+//       values: values,
+//       rowNumber: i + 1,
+//       level: 1,
+//       isTotalRow: false,
+//       isSectionHeader: false,
+//       children: []
+//     };
+
+//     topLevelNodes.push(entry);
+//   }
+
+//   // Sort by S.No
+//   topLevelNodes.sort((a, b) => {
+//     const aNum = parseInt(a.sNo);
+//     const bNum = parseInt(b.sNo);
+//     return aNum - bNum;
+//   });
+
+//   console.log('Total loan entries:', topLevelNodes.length);
+//   console.log('Sample entry:', topLevelNodes[0]);
+
+//   console.log("data before return", topLevelNodes,columnNames,noandtitles)
+//   return {
+//     hierarchicalData: topLevelNodes,
+//     columns: columnNames,
+//     additionalColumns: [],
+//     noandtitles: noandtitles
+//   };
+// };
 
 const flattenData = (nodes) => {
   const result = [];
   const traverse = (nodes, parentId = null) => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       const flatNode = {
         id: node.id,
-        sNo: node.sNo || '',
+        sNo: node.sNo || "",
         label: node.label,
         values: node.values || {},
         rowNumber: node.rowNumber,
         level: node.level || 0,
         isTotalRow: node.isTotalRow || false,
-        parentId: parentId
+        parentId: parentId,
       };
       result.push(flatNode);
       if (node.children && node.children.length > 0) {
@@ -1157,23 +995,23 @@ export const validateReportStructure = (parsedData) => {
   const errors = [];
 
   if (!parsedData.metadata.institutionCode) {
-    errors.push('Institution Code is missing');
+    errors.push("Institution Code is missing");
   }
   if (!parsedData.metadata.financialYear) {
-    errors.push('Financial Year is missing');
+    errors.push("Financial Year is missing");
   }
   if (!parsedData.metadata.startDate) {
-    errors.push('Start Date is missing');
+    errors.push("Start Date is missing");
   }
   if (!parsedData.metadata.endDate) {
-    errors.push('End Date is missing');
+    errors.push("End Date is missing");
   }
   if (!parsedData.metadata.reportTitle) {
-    errors.push('Report Title is missing');
+    errors.push("Report Title is missing");
   }
 
   if (!parsedData.data || parsedData.data.length === 0) {
-    errors.push('No data found in the report');
+    errors.push("No data found in the report");
   }
 
   return {
@@ -1191,19 +1029,16 @@ export const prepareReportForSubmission = (parsedData) => {
     reportTypeName: parsedData.reportTypeName,
     ReturnKey: parsedData.ReturnKey,
     fileName: parsedData.fileName,
-    status: parsedData.status || 'PENDING',
+    status: parsedData.status || "PENDING",
     createdAt: parsedData.createdAt || new Date().toISOString(),
-    createdBy: parsedData.createdBy || 'current-user',
+    createdBy: parsedData.createdBy || "current-user",
     metadata: parsedData.metadata,
-    currencies: parsedData.currencies || [],
-    additionalColumns: parsedData.additionalColumns|| [],
+    columns: parsedData.columns ,
+    noandtitles:parsedData.noandtitles,
+    additionalColumns: parsedData.additionalColumns,
     data: parsedData.data,
-    flatData: parsedData.flatData || flattenData(parsedData.data),
+    //flatData: parsedData.flatData || flattenData(parsedData.data),
     validations: parsedData.validations || [],
-    isValid: parsedData.isValid !== undefined ? parsedData.isValid : true
+    isValid: parsedData.isValid !== undefined ? parsedData.isValid : true,
   };
 };
-
-
-
-

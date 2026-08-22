@@ -4,9 +4,10 @@ import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 const ReportDataTable = ({
 
   data,
-  currencies,
-  additionalColumns = ['OTHER1', 'OTHER2', 'OTHER3', 'OVERALL_EXPOSURE'],
-  showSNo = true
+  columns,
+  additionalColumns ,
+  showSNo = true,
+  noandtitles
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
 
@@ -15,9 +16,25 @@ const ReportDataTable = ({
     if (data && data.length > 0) {
       console.log('First node:', data[0]);
       console.log('First node values keys:', Object.keys(data[0].values || {}));
+
     }
   }, [data]);
 
+  
+   if (additionalColumns.length===0 && columns.length===0 ){
+    additionalColumns =  ['OTHER1', 'OTHER2', 'OTHER3','OVERALL_EXPOSURE'];
+  
+  }
+  if (columns.length===0){
+    columns =  ["USD","EUR","CHF","GBP","JPY","DJF","KES","INR","DKK","SEK","SAR","CAD","AED","AUD","CNY","NOK","KWD"];
+  
+  }
+  
+  if (noandtitles.length===0){
+    noandtitles =  ['S/No', 'Particulars'];
+  
+  }
+  
   const toggleRow = (id) => {
     setExpandedRows(prev => ({
       ...prev,
@@ -47,6 +64,7 @@ const ReportDataTable = ({
       node.values && node.values[col] !== null && node.values[col] !== undefined
     );
 
+    
     return (
       <React.Fragment key={node.id}>
         <tr className={`${rowClass} transition-colors`}>
@@ -74,11 +92,11 @@ const ReportDataTable = ({
               </span>
             </div>
           </td>
-          {currencies.map(currency => (
-            <td key={currency} className="px-4 py-2 text-sm text-right font-mono border border-gray-300">
-              {node.values && node.values[currency] !== null && node.values[currency] !== undefined ? (
+          {columns.map(column => (
+            <td key={column} className="px-4 py-2 text-sm text-right font-mono border border-gray-300">
+              {node.values && node.values[column] !== null && node.values[column] !== undefined ? (
                 <span className={`${isTotalRow ? 'font-bold text-yellow-700' : ''}`}>
-                  {node.values[currency].toLocaleString()}
+                  {node.values[column].toLocaleString()}
                 </span>
               ) : (
                 <span className="text-gray-300">-</span>
@@ -106,39 +124,33 @@ const ReportDataTable = ({
       </React.Fragment>
     );
   };
+ 
 
-   const allColumns = [...currencies, ...additionalColumns];
+     
+   const allColumns = [...columns, ...additionalColumns];
   return (
-    <div className="overflow-x-auto border rounded-lg shadow-sm">
+    <div className="overflow-auto border rounded-lg shadow-sm">
       <table className="min-w-full  border-collapse border border-gray-300">
         <thead className="bg-gray-100">
           <tr>
-            {showSNo && (
-              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200">
-                S/No
+           
+            {noandtitles.map(noandtitle=>(
+              <th key={noandtitle} className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
+                {noandtitle}
               </th>
-            )}
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Particulars
-            </th>
-            {currencies.map(currency => (
-              <th key={currency} className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
-                {currency}
+            ))}
+            {columns.map(column => (
+              <th key={column} className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
+                {column}
               </th>
             ))}
                         {/* Additional Column Headers */}
-            <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
-              OTHER1
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
-              OTHER2
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
-              OTHER3
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider border-l-2 border-gray-300 bg-purple-50">
-              Overall Exposure
-            </th>
+               {additionalColumns.map(additionalColumn => (
+              <th key={additionalColumn} className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
+                {additionalColumn}
+              </th>
+            ))}
+         
           </tr> 
           
         </thead>

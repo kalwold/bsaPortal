@@ -7,55 +7,27 @@ export const DEPARTMENT_DATA = [
     name: 'IBD',
     reportTypes: [
       { id: 'ibd-daily', name: 'Daily Foreign Currency Exposure' },
-      { id: 'foreign_exchange_position', name: 'Foreign Exchange Position' },
       
-    ]
-  },
-  {
-    id: 'risk_management',
-    name: 'Risk Management',
-    reportTypes: [
-      { id: 'credit_risk_exposure', name: 'Credit Risk Exposure' },
-      { id: 'market_risk_var', name: 'Market Risk VaR' },
-      { id: 'operational_risk', name: 'Operational Risk' },
     ]
   },
   {
     id: 'finance',
     name: 'Finance',
     reportTypes: [
-      { id: 'balance_sheet', name: 'Balance Sheet' },
-      { id: 'income_statement', name: 'Income Statement' },
-      { id: 'cash_flow', name: 'Cash Flow Statement' },
+      { id: 'finance-monthly_balance-sheet', name: 'Balance Sheet' },
+      { id: 'finance-weekly', name: 'Liquidity Requirement Report' },
+      { id: 'finance-monthly_reserve-base', name:'Monthly Reserve Base Report'}
+
     ]
   },
   {
-    id: 'compliance',
-    name: 'Compliance',
+    id: 'credit',
+    name: 'Credit',
     reportTypes: [
-      { id: 'aml_cft', name: 'AML/CFT Report' },
-      { id: 'regulatory_reporting', name: 'Regulatory Reporting' },
-      { id: 'kyc_compliance', name: 'KYC Compliance' },
+      { id: 'loan-related-parties', name: 'Loans to Related Parties Report' },
     ]
   },
-  {
-    id: 'operations',
-    name: 'Operations',
-    reportTypes: [
-      { id: 'settlement_risk', name: 'Settlement Risk' },
-      { id: 'transaction_monitoring', name: 'Transaction Monitoring' },
-      { id: 'fraud_detection', name: 'Fraud Detection' },
-    ]
-  },
-  {
-    id: 'internal_audit',
-    name: 'Internal Audit',
-    reportTypes: [
-      { id: 'audit_findings', name: 'Audit Findings' },
-      { id: 'internal_controls', name: 'Internal Controls' },
-      { id: 'compliance_audit', name: 'Compliance Audit' },
-    ]
-  }
+ 
 ];
 
 export const getDepartmentById = (deptId) => {
