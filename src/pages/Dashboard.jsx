@@ -27,9 +27,8 @@ import {
 const Dashboard = () => {
   const { user } = useAuth();
 
-  // =========================================================
   // FETCH ALL REPORTS
-  // =========================================================
+
   const {
     data: reports = [],
     isLoading,

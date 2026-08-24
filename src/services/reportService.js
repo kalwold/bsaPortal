@@ -25,6 +25,8 @@ export const DEPARTMENT_DATA = [
     name: 'Credit',
     reportTypes: [
       { id: 'loan-related-parties', name: 'Loans to Related Parties Report' },
+     { id: 'breakdown-loans-advances', name: 'Breakdown of Loans and Advances' },
+     { id: 'loan-portfolio', name: ' Loan and Advances Portfolio Report' },
     ]
   },
  
