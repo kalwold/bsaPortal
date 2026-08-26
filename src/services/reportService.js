@@ -25,8 +25,7 @@ export const DEPARTMENT_DATA = [
     name: 'Finance',
     reportTypes: [
       { id: 'balance_sheet', name: 'Balance Sheet' },
-      { id: 'income_statement', name: 'Income Statement' },
-      { id: 'cash_flow', name: 'Cash Flow Statement' },
+      { id: 'liquidity_requirement', name: 'Liquidity Requirement Report' },
     ]
   },
   {
@@ -74,13 +73,14 @@ export const reportService = {
   getCurrentUser: () => api.get('/auth/me').then(res => res.data),
 
   // Report Management
-  uploadReport: (formData) => {
+  uploadReport: (reportType, formData) => {
   //  return api.post('/reports/upload', formData, {
 
       // headers: {
       //   'Content-Type': 'multipart/form-data',
       // },
-return api.post('/ibd-daily/post', formData, {
+      
+return api.post(`/${reportType}/post`, formData, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -102,11 +102,11 @@ return api.post('/ibd-daily/post', formData, {
   },
 
   approveReport: (reportType, data) => {
-    return api.post(`/${reportType}/approve`, data).then(res => res.data);
+    return api.put(`/${reportType}/approve`, data).then(res => res.data);
   },
 
   rejectReport: (reportType, data) => {
-    return api.post(`/${reportType}/reject`, data).then(res => res.data);
+    return api.put(`/${reportType}/reject`, data).then(res => res.data);
   },
 
   // Department Management (using hardcoded data)

@@ -9,18 +9,19 @@ const ReviewPage = () => {
   const [filter, setFilter] = useState('pending');
 
   const { data: reports, isLoading } = useQuery({
-    queryKey: ['reports', 'review', filter, user?.departmentId],
-    queryFn: () => reportService.getReports({
-      departmentId: user?.departmentId,
-      status: filter,
-      role: 'reviewer',
-    }),
-    enabled: !!user,
+    queryKey: ['reports'],
+    // queryFn: () => reportService.getReports({
+    //   departmentId: user?.departmentId,
+    //   status: filter,
+    //   role: 'reviewer',
+    // }),
+    queryFn: () => reportService.getReports(  'ibd-daily' ),
+    //enabled: !!user,
   });
 
   const filters = [
     { value: 'pending', label: 'Pending' },
-    { value: 'review', label: 'In Review' },
+   // { value: 'review', label: 'In Review' },
     { value: 'approved', label: 'Approved' },
     { value: 'rejected', label: 'Rejected' },
   ];

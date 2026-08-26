@@ -20,19 +20,30 @@ import { FiFileText, FiClock, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 const Dashboard = () => {
   const { user } = useAuth();
 
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['reportStats', user?.departmentId],
-    queryFn: () => reportService.getReportStats(user?.departmentId),
-    enabled: !!user,
+  // const { data: stats, isLoading } = useQuery({
+  //   queryKey: ['reportStats', user?.departmentId],
+  //   queryFn: () => reportService.getReportStats(user?.departmentId),
+  //   enabled: !!user,
+  // });
+
+   const { data: stats, isLoading } = useQuery({
+    queryKey: ['reportStats'],
+    queryFn: () => reportService.getReports(
+            'ibd-daily'
+          ),
+    //enabled: !!user,
   });
 
   const { data: recentReports } = useQuery({
     queryKey: ['recentReports', user?.departmentId],
-    queryFn: () => reportService.getReports({ 
-      departmentId: user?.departmentId,
-      limit: 5,
-    }),
-    enabled: !!user,
+    // queryFn: () => reportService.getReports({ 
+    //   departmentId: user?.departmentId,
+    //   limit: 5,
+    // }),
+    queryFn: () => reportService.getReports(
+            'ibd-daily'
+          ),
+   // enabled: !!user,
   });
 
   if (isLoading) {
@@ -43,39 +54,44 @@ const Dashboard = () => {
     );
   }
 
-  const COLORS = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444'];
-
+  const COLORS = ['#3b237b', '#F59E0B', '#10B981', '#EF4444'];
+ 
+  const totalReports = stats?.length || 0;
+  const pendingCount = stats?.filter((r) => r.status === "PENDING").length || 0;
+  const inReviewCount = stats?.filter((r) => r.status === "IN_REVIEW").length || 0;
+  const approvedCount = stats?.filter((r) => r.status === "APPROVED").length || 0;
+  const rejectedCount = stats?.filter((r) => r.status === "REJECTED").length || 0;
   const pieData = [
-    { name: 'Pending', value: stats?.pending || 0 },
-    { name: 'In Review', value: stats?.review || 0 },
-    { name: 'Approved', value: stats?.approved || 0 },
-    { name: 'Rejected', value: stats?.rejected || 0 },
+    { name: 'Pending',  value: pendingCount},
+    { name: 'In Review', value: inReviewCount },
+    { name: 'Approved', value: approvedCount },
+    { name: 'Rejected', value: rejectedCount },
   ];
 
   const statCards = [
     { 
       label: 'Total Reports', 
-      value: stats?.total || 0, 
+      value: totalReports, 
       icon: FiFileText, 
-      color: 'bg-blue-500' 
+      color: 'bg-[#3b237b]' 
     },
     { 
       label: 'Pending', 
-      value: stats?.pending || 0, 
+      value: pendingCount, 
       icon: FiClock, 
-      color: 'bg-yellow-500' 
+      color: 'bg-[#E4AA25]' 
     },
     { 
       label: 'Approved', 
-      value: stats?.approved || 0, 
+      value: approvedCount, 
       icon: FiCheckCircle, 
-      color: 'bg-green-500' 
+      color: 'bg-[#00a887]' 
     },
     { 
       label: 'Rejected', 
-      value: stats?.rejected || 0, 
+      value: rejectedCount, 
       icon: FiXCircle, 
-      color: 'bg-red-500' 
+      color: 'bg-[#ff4d00]' 
     },
   ];
 
@@ -118,7 +134,7 @@ const Dashboard = () => {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
+                {/* <Pie
                   data={pieData}
                   cx="50%"
                   cy="50%"
@@ -131,7 +147,26 @@ const Dashboard = () => {
                   {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </Pie>
+                </Pie> */}
+                <Pie
+  data={pieData}
+  cx="50%"
+  cy="50%"
+  labelLine={false}
+  label={({ name, percent }) =>
+    percent > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : null
+  }
+  outerRadius={80}
+  fill="#8884d8"
+  dataKey="value"
+>
+  {pieData.map((entry, index) => (
+    <Cell
+      key={`cell-${index}`}
+      fill={COLORS[index % COLORS.length]}
+    />
+  ))}
+</Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
@@ -166,7 +201,7 @@ const Dashboard = () => {
               <div key={report.id} className="px-6 py-4 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-blue-600">
+                    <p className="text-sm font-medium text-[#48198B]">
                       {report.title || 'Single Currency Exposure Report'}
                     </p>
                     <p className="text-sm text-gray-500">{report.type} • {report.department}</p>
@@ -179,9 +214,9 @@ const Dashboard = () => {
                     }`}>
                       {report.status}
                     </span>
-                    <span className="text-sm text-gray-500">
+                    {/* <span className="text-sm text-gray-500">
                       {new Date(report.uploadedAt).toLocaleDateString()}
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               </div>

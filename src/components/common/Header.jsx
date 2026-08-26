@@ -19,23 +19,23 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-[#412985] border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h2 className="text-lg font-semibold text-white">
             Welcome back!
           </h2>
         </div>
         
         <div className="flex items-center space-x-4">
-          <button className="p-2 text-gray-400 hover:text-gray-600 relative">
+          <button className="p-2 text-gray-100 hover:text-gray-200 relative">
             <FiBell className="w-5 h-5" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
           
           <button
             onClick={handleLogout}
-            className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center px-3 py-2 text-sm text-gray-200 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
           >
             <FiLogOut className="w-4 h-4 mr-2" />
             Logout

@@ -39,8 +39,8 @@ const DepartmentReportPage = () => {
       //   typeId: reportTypeId,
       // }),
        reportService.getReports(
-       reportTypeId
-      ),
+         reportTypeId,
+  ),
   });
 
   const handleRefresh = () => {
@@ -63,7 +63,7 @@ const DepartmentReportPage = () => {
         </h3>
         <button
           onClick={() => navigate("/dashboard")}
-          className="mt-4 text-blue-600 hover:text-blue-800"
+          className="mt-4 text-[#48198B] hover:text-blue-800"
         >
           Go to Dashboard
         </button>
@@ -103,7 +103,7 @@ const DepartmentReportPage = () => {
             </button>
             <button
               onClick={() => setShowUpload(!showUpload)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="px-4 py-2 bg-[#412985] text-white rounded-lg hover:bg-[#472f92] transition-colors flex items-center space-x-2"
             >
               <FiUpload className="w-4 h-4" />
               <span>{showUpload ? "Cancel" : "Upload New Report"}</span>
@@ -179,7 +179,7 @@ const DepartmentReportPage = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
-                      <p className="text-sm font-medium text-blue-600">
+                      <p className="text-sm font-medium text-[#48198B]">
                         {report.metadata?.reportTitle ||
                           report.reportTypeName ||
                           "Daily Foreign Currency Exposure Report"}
@@ -208,7 +208,7 @@ const DepartmentReportPage = () => {
                     </div>
                   </div>
                   <div className="ml-4 flex-shrink-0">
-                    <span className="text-sm text-blue-600 hover:text-blue-900">
+                    <span className="text-sm text-[#48198B] hover:text-blue-900">
                       View →
                     </span>
                   </div>
@@ -222,7 +222,7 @@ const DepartmentReportPage = () => {
             <p>No reports found for this report type</p>
             <button
               onClick={() => setShowUpload(true)}
-              className="mt-4 text-blue-600 hover:text-blue-800"
+              className="mt-4 text-[#48198B] hover:text-blue-800"
             >
               Upload your first report →
             </button>

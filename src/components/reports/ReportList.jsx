@@ -39,7 +39,7 @@ const ReportList = ({ reports, loading }) => {
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center space-x-3">
-                <p className="text-sm font-medium text-blue-600">
+                <p className="text-sm font-medium text-[#48198B]">
                   {report.metadata?.reportTitle || report.reportTypeName || 'Daily Foreign Currency Exposure Report'}
                 </p>
                 <StatusBadge status={report.status} />
@@ -60,7 +60,7 @@ const ReportList = ({ reports, loading }) => {
               </div>
             </div>
             <div className="ml-4 flex-shrink-0">
-              <span className="text-sm text-blue-600 hover:text-blue-900">
+              <span className="text-sm text-[#48198B] hover:text-blue-900">
                 View →
               </span>
             </div>

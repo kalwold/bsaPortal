@@ -17,18 +17,24 @@ const ReportsPage = () => {
     //   departmentId: user?.departmentId,
     //   status: statusFilter || undefined,
     // }),
-    queryFn: () =>  reportService.getReports({
-            reportType: reports.id
-          }),
+    queryFn: () =>  reportService.getReports(
+            'ibd-daily'
+          ),
     //enabled: !!user,
   });
 
+
+  console.log("reports:", reports);
   const filteredReports = reports?.filter(report => 
-    report.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.type?.toLowerCase().includes(searchTerm.toLowerCase())
+    report.reportTypeName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    report.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    report.reportTypeId?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    report.status?.toLowerCase().includes(statusFilter.toLowerCase())
   );
 
+  console.log("reports:", reports);
+console.log("searchTerm:", searchTerm);
+console.log("filteredReports:", filteredReports);
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
@@ -60,14 +66,13 @@ const ReportsPage = () => {
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>
-              <option value="review">In Review</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>
           </div>
         </div>
 
-        <ReportList reports={reports} loading={isLoading} />
+        <ReportList reports={filteredReports} loading={isLoading} />
       </div>
     </div>
   );

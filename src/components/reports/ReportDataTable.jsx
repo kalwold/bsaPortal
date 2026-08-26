@@ -5,7 +5,7 @@ const ReportDataTable = ({
 
   data,
   currencies,
-  additionalColumns = ['O1', 'O2', 'O3', 'OVERALL_EXPOSURE'],
+  additionalColumns = ['OTHER1', 'OTHER2', 'OTHER3', 'OVERALL_EXPOSURE'],
   showSNo = true
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
@@ -51,11 +51,11 @@ const ReportDataTable = ({
       <React.Fragment key={node.id}>
         <tr className={`${rowClass} transition-colors`}>
           {showSNo && (
-            <td className="px-3 py-2 text-sm text-gray-600 text-center font-mono">
+            <td className="px-3 py-2 text-sm text-gray-600 text-center font-mono border border-gray-300">
               {node.id || '-'}
             </td>
           )}
-          <td className="px-4 py-2 text-sm">
+          <td className="px-4 py-2 text-sm border border-gray-300">
             <div 
               className="flex items-center cursor-pointer hover:text-blue-600"
               style={{ paddingLeft: `${level * 20}px` }}
@@ -75,11 +75,10 @@ const ReportDataTable = ({
             </div>
           </td>
           {currencies.map(currency => (
-            <td key={currency} className="px-4 py-2 text-sm text-right font-mono">
+            <td key={currency} className="px-4 py-2 text-sm text-right font-mono border border-gray-300">
               {node.values && node.values[currency] !== null && node.values[currency] !== undefined ? (
                 <span className={`${isTotalRow ? 'font-bold text-yellow-700' : ''}`}>
-                  {node.values[currency].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  
+                  {node.values[currency].toLocaleString()}
                 </span>
               ) : (
                 <span className="text-gray-300">-</span>
@@ -111,7 +110,7 @@ const ReportDataTable = ({
    const allColumns = [...currencies, ...additionalColumns];
   return (
     <div className="overflow-x-auto border rounded-lg shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="min-w-full  border-collapse border border-gray-300">
         <thead className="bg-gray-100">
           <tr>
             {showSNo && (
@@ -129,13 +128,13 @@ const ReportDataTable = ({
             ))}
                         {/* Additional Column Headers */}
             <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
-              O1
+              OTHER1
             </th>
             <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
-              O2
+              OTHER2
             </th>
             <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-l border-gray-200">
-              O3
+              OTHER3
             </th>
             <th className="px-4 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider border-l-2 border-gray-300 bg-purple-50">
               Overall Exposure
@@ -143,12 +142,12 @@ const ReportDataTable = ({
           </tr> 
           
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-200 ">
           {data && data.length > 0 ? (
             data.map(node => renderRow(node, 0))
           ) : (
             <tr>
-              <td colSpan={allColumns.length + (showSNo ? 2 : 1)} className="px-4 py-8 text-center text-gray-500">  
+              <td colSpan={allColumns.length + (showSNo ? 2 : 1)} className="px-4 py-8 text-center text-gray-500 border border--300">  
                 No data available
               </td>
             </tr> 

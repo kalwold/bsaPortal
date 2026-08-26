@@ -35,7 +35,7 @@ function App() {
                 <Route index element={<Navigate to="/dashboard" />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="upload" element={<UploadPage />} />
-                <Route path="review" element={<ReviewPage />} />
+                {/* <Route path="review" element={<ReviewPage />} /> */}
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="report/:reportId" element={<ReportViewer />} />
                 <Route path="department/:deptId/report/:reportTypeId" element={<DepartmentReportPage />} />
