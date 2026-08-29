@@ -31,7 +31,8 @@ const ReportViewer = () => {
   const approveMutation = useMutation({
        mutationFn: (data) => {
       // Use report type from the report data
-      const reportType = report?.reportTypeId || report?.metadata?.reportType || 'ibd-daily';
+      const reportType = report?.reportTypeId || report?.metadata?.reportType;
+      
       return reportService.approveReport(reportType, data);
     },
     onSuccess: () => {
@@ -115,9 +116,11 @@ const ReportViewer = () => {
     );
   }
 
-  const currencies = report.currencies || ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK', 'SEK', 'SAR', 'CAD', 'AED', 'AUD', 'CNY', 'NOK', 'KWD'];
-  const reportData = report.data || [];
+  const columns = report.columns || [];
+    const reportData = report.data || [];
   const metadata = report.metadata || {};
+  const additionalColumns= report.additionalColumns || [];
+  const noandtitles = report.noandtitles || [];
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -247,7 +250,7 @@ const ReportViewer = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-gray-400">
-                    {reportData.length} sections • {currencies.length} currencies
+                    {reportData.length} sections • {columns.length} columns
                   </span>
                   {/* <button className="flex items-center text-sm text-[#48198B] hover:text-blue-800 transition-colors px-3 py-1 border border-blue-200 rounded-lg hover:bg-blue-50">
                     <FiDownload className="w-4 h-4 mr-1" />
@@ -257,9 +260,10 @@ const ReportViewer = () => {
               </div>
               <ReportDataTable 
   data={reportData} 
-  currencies={currencies} 
-  additionalColumns={report.additionalColumns}
+  columns={columns} 
+  additionalColumns={additionalColumns}
   showSNo={true} 
+  noandtitles={noandtitles}
 />
             </div>
           )}

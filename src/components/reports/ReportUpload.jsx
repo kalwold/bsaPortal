@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { reportService } from '../../services/reportService';
@@ -18,6 +18,19 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const [validationErrors, setValidationErrors] = useState([]);
 
   console.log('ReportUpload props:', { departmentId, reportType });
+
+  useEffect(() => {
+  // Cleanup function - runs when component unmounts or before next render
+  return () => {
+    // Reset all file-related states
+    setSelectedFile(null);
+    setParsedData(null);
+    setValidationErrors([]);
+    setUploadProgress(0);
+
+    
+  };
+}, [departmentId, reportType]);
 
   const uploadMutation = useMutation({
    mutationFn: ({ reportType, reportJson }) => reportService.uploadReport(reportType ,reportJson),
@@ -40,7 +53,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
     try {
       setValidationErrors([]);
       
-      const parsed = await parseExcelReport(file);
+      const parsed = await parseExcelReport(file,reportType);
       console.log('Parsed report:', parsed);
       
       const validation = validateReportStructure(parsed);
@@ -58,7 +71,8 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
       toast.success('File validated successfully!');
     } catch (error) {
       console.error('Error parsing file:', error);
-      toast.error(`Error parsing file: ${error.message}`);
+     // toast.error(`Error parsing file: ${error.message}`);
+     toast.error(` ${error.message}`);
       setSelectedFile(null);
     }
   };
@@ -75,8 +89,11 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
     formData.append('reportType', reportType);
     
     const reportData = prepareReportForSubmission(parsedData);
+    
     formData.append('reportData', JSON.stringify(reportData));
     const reportJson = JSON.stringify(reportData);
+
+    console.log("report payload",reportJson)
 
     const interval = setInterval(() => {
       setUploadProgress(prev => {
@@ -118,10 +135,13 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
     }
   };
 
-  const currencies = parsedData?.currencies || ['USD', 'EUR', 'CHF', 'GBP', 'JPY', 'DJF', 'KES', 'INR', 'DKK', 'SEK', 'SAR', 'CAD', 'AED', 'AUD', 'CNY', 'NOK', 'KWD'];
+  const columns = parsedData?.columns || [];
   const reportData = parsedData?.data || [];
   const metadata = parsedData?.metadata || {};
+  const additionalColumns =parsedData?.additionalColumns || [];
+  const noandtitles=parsedData?.noandtitles|| [];
 
+console.log('columns', columns, "additionalColumns ", additionalColumns, "noandtitles", noandtitles)
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="space-y-6">
@@ -165,7 +185,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
           </div>
         )}
 
-        <div
+      {!selectedFile && <div className="space-y-4">  <div
           className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
             isDragging ? 'border-blue-500 bg-blue-50 scale-105' : 'border-gray-300 hover:border-blue-400'
           }`}
@@ -173,29 +193,29 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
           onDragLeave={onDragLeave}
           onDrop={onDrop}
         >
-          <div className="space-y-4">
-            <div className={`p-4 rounded-full inline-block ${isDragging ? 'bg-blue-100' : 'bg-gray-100'}`}>
-              <FiUpload className={`h-12 w-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
-            </div>
-            <div>
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <span className="mt-2 block text-sm font-medium text-[#48198B] hover:text-blue-900 transition-colors">
-                  {isDragging ? 'Drop your file here' : 'Upload Excel File'}
-                </span>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept=".xlsx,.xls"
-                  className="sr-only"
-                  onChange={(e) => handleFileChange(e.target.files[0])}
-                />
-              </label>
-              <p className="text-xs text-gray-500 mt-1">
-                or drag and drop • XLSX or XLS up to 10MB
-              </p>
-            </div>
-          </div>
-        </div>
+  
+    <div className={`p-4 rounded-full inline-block ${isDragging ? 'bg-blue-100' : 'bg-gray-100'}`}>
+      <FiUpload className={`h-12 w-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
+    </div>
+    <div>
+      <label htmlFor="file-upload" className="cursor-pointer">
+        <span className="mt-2 block text-sm font-medium text-[#48198B] hover:text-blue-900 transition-colors">
+          {isDragging ? 'Drop your file here' : 'Upload Excel File'}
+        </span>
+        <input
+          id="file-upload"
+          type="file"
+          accept=".xlsx,.xls"
+          className="sr-only"
+          onChange={(e) => handleFileChange(e.target.files[0])}
+        />
+      </label>
+      <p className="text-xs text-gray-500 mt-1">
+        or drag and drop • XLSX or XLS up to 10MB
+      </p>
+    </div>
+  </div>
+        </div>}
 
         {selectedFile && (
           <div className="bg-green-50 p-4 rounded-lg flex items-center justify-between border border-green-200">
@@ -272,11 +292,11 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
             <div className="flex justify-between items-center mb-3">
               <h4 className="text-sm font-medium text-gray-700">Data Preview</h4>
               <span className="text-xs text-gray-400">
-                {reportData.length} sections • {currencies.length} currencies
+                {reportData.length} sections • {columns.length} columns
               </span>
             </div>
             <div className="max-h-96 overflow-y-auto border rounded-lg">
-              <ReportDataTable data={reportData} currencies={currencies} showSNo={true} />
+              <ReportDataTable data={reportData} columns={columns} showSNo={true} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
             </div>
             <p className="text-xs text-gray-400 mt-2">
               ✓ File validated successfully. Click Submit to upload.

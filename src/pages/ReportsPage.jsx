@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { reportService } from '../services/reportService';
+import { reportService, DEPARTMENT_DATA } from '../services/reportService';
 import ReportList from '../components/reports/ReportList';
 import { FiSearch } from 'react-icons/fi';
 
@@ -10,30 +10,95 @@ const ReportsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data: reports, isLoading } = useQuery({
-    //queryKey: ['reports', user?.departmentId, statusFilter],
-    queryKey: ['reports', user?.departmentId, statusFilter],
-    // queryFn: () => reportService.getReports({
-    //   departmentId: user?.departmentId,
-    //   status: statusFilter || undefined,
-    // }),
-    queryFn: () =>  reportService.getReports(
-            'ibd-daily'
-          ),
-    //enabled: !!user,
+  // const { data: reports, isLoading } = useQuery({
+  //   //queryKey: ['reports', user?.departmentId, statusFilter],
+  //   queryKey: ['reports', user?.departmentId, statusFilter],
+  //   // queryFn: () => reportService.getReports({
+  //   //   departmentId: user?.departmentId,
+  //   //   status: statusFilter || undefined,
+  //   // }),
+  //   queryFn: () =>  reportService.getReports(
+  //           'ibd-daily'
+  //         ),
+  //   //enabled: !!user,
+  // });
+
+ const {
+    data: reports = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['dashboardReports'],
+
+    queryFn: async () => {
+      // Get every report type from every department
+      const reportTypes = DEPARTMENT_DATA.flatMap((department) =>
+        department.reportTypes.map((reportType) => ({
+          ...reportType,
+          departmentId: department.id,
+          departmentName: department.name,
+        }))
+      );
+
+      console.log('Report Types:', reportTypes);
+
+      // Fetch all report types at the same time
+      const results = await Promise.all(
+        reportTypes.map(async (reportType) => {
+          try {
+            const response = await reportService.getReports(
+              reportType.id
+            );
+
+            // Make sure response is an array
+            const reports = Array.isArray(response)
+              ? response
+              : [];
+
+            return reports.map((report) => ({
+              ...report,
+
+              // Report information
+              reportTypeId: reportType.id,
+              reportTypeName: reportType.name,
+
+              // Department information
+              departmentId: reportType.departmentId,
+              departmentName: reportType.departmentName,
+            }));
+          } catch (err) {
+            console.error(
+              `Failed to load ${reportType.id}:`,
+              err
+            );
+
+            // Don't fail the entire dashboard
+            // if one report type fails
+            return [];
+          }
+        })
+      );
+
+      const allReports = results.flat();
+
+      console.log('All Reports:', allReports);
+
+      return allReports;
+    },
+
+    staleTime: 5 * 60 * 1000,
   });
-
-
   console.log("reports:", reports);
   const filteredReports = reports?.filter(report => 
-    report.reportTypeName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    report.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    report.reportTypeId?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+   ( report.reportTypeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    report.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    report.reportTypeId?.toLowerCase().includes(searchTerm.toLowerCase()) ) &&
     report.status?.toLowerCase().includes(statusFilter.toLowerCase())
   );
 
   console.log("reports:", reports);
-console.log("searchTerm:", searchTerm);
+console.log("searchTerm:", searchTerm, statusFilter);
 console.log("filteredReports:", filteredReports);
   return (
     <div className="max-w-6xl mx-auto">

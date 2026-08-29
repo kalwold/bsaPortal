@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -27,6 +27,13 @@ const DepartmentReportPage = () => {
   const reportType = getReportTypeById(deptId, reportTypeId);
   console.log("report type", reportTypeId)
 
+  useEffect(() => { 
+  
+  return () => {
+    setShowUpload(false)
+  };
+}, [reportType]);
+
   const {
     data: reports,
     isLoading: reportsLoading,
@@ -50,6 +57,8 @@ const DepartmentReportPage = () => {
 
     const handleReportClick = (report) => {
     // Navigate to report viewer with report data in state
+
+    console.log("report in report click",)
     navigate(`/report/${report.id}`, {
       state: { report: report }
     });
