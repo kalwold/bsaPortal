@@ -18,7 +18,10 @@ export const DEPARTMENT_DATA = [
         name: "Monthly Reserve Base Report",
       },
       { id: 'finance-monthly_statutory_requirement', name:'Statutory Reserve Requirement Report'},
-        { id: 'finance-monthly_key-balance-sheet', name:'Key Balance Sheet Report'}
+        { id: 'finance-monthly_key-balance-sheet', name:'Key Balance Sheet Report'},
+         { id: 'finance-monthly_capital-adequacy', name:'CAPITAL ADEQUACY REPORT (Monthly) - Capital Components'},
+               { id: 'finance-monthly_deposit-sector-region', name:'Report on Deposits by Sector and Region'},
+      { id: 'finance-monthly_deposit-range-region', name:'Report on Deposits by Range and Region'},
     ],
   },
   {

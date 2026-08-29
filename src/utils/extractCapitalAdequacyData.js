@@ -1,74 +1,52 @@
-const extractLoanBreakdownData = (data) => {
-  const hierarchicalData = [];
+const extractCapitalAdequacyData = (data)=>{
+  const sanitizeKey = (text) => {
+  return text
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-zA-Z0-9_]/g, '')
+    .replace(/_+/g, '_');
+};
   let dataTableStart = -1;
-   let noandtitles = [];
-    for (let i = 0; i < data.length; i++) {
+
+  let noandtitles = [];
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if(i === 13){
-      noandtitles = [firstCell,secondCell]
+    if (i === 13) {
+      noandtitles = [firstCell, secondCell];
       console.log("Found title:", noandtitles);
     }
-  }
-  console.log('=== Extracting Loan Breakdown Data ===');
 
-  // Log first few rows to understand structure
-  for (let i = 0; i < Math.min(data.length, 15); i++) {
+  }
+
+   // Log first few rows to understand structure
+  for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
       console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
 
-  // Find the data table start - look for "Code" column
+    // Find the data table start
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Code') {
+    const secondCell = String(row[1] || '').trim();
+    if (firstCell === 'Code' || secondCell === 'Description') {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
       break;
     }
   }
-
-  if (dataTableStart === -1) {
-    // Try to find by looking for "TOTAL LOANS & ADVANCES"
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      if (!row || row.length === 0) continue;
-      const firstCell = String(row[0] || '').trim();
-      if (firstCell === '1') {
-        const secondCell = String(row[1] || '').trim();
-        if (secondCell && secondCell.includes('TOTAL LOANS & ADVANCES')) {
-          dataTableStart = i;
-          console.log('Found data table at row (alt):', dataTableStart);
-          break;
-        }
-      }
-    }
-  }
-
-  if (dataTableStart === -1) {
-    console.log('Could not find data table');
-    return { hierarchicalData: [], currencies: ['Amount'], additionalColumns: [] };
-  }
-
-  // Get the header row
-  const headerRow = data[dataTableStart - 1];
-  console.log('Header row:', headerRow.map(c => String(c || '').trim()));
-
-  // Find the value column (column C = index 2)
-  const valueColumnIndex = 2;
-
-  const topLevelNodes = [];
+const headerRow = data[dataTableStart - 1];
+ const valueColumnIndex = 2;
+const topLevelNodes = [];
   const nodeMap = new Map();
   let currentParent = null;
 
-  // Parse each row
+   // Parse each row
   for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -83,10 +61,10 @@ const extractLoanBreakdownData = (data) => {
     if (description.includes('Note:') || description.includes('Note')) continue;
 
     // Check if this is a total row
-    const isTotalRow = description === 'TOTAL LOANS & ADVANCES (sum 2-4)' ||
-                       description === 'SHORT TERM (sum 2.1-2.13)' ||
-                       description === 'MEDIUM TERM (sum 3.1-3.13)' ||
-                       description === 'LONG TERM (sum 4.1-4.13)';
+    // const isTotalRow = description === 'TOTAL CAPITAL(17.1+17.2)' ||
+    //                    description === 'Risk-weighted assets (RWA) (18.1+18.2)';
+                
+    const isTotalRow = ""
 
     // Check if this is a parent section (like 2.4 International trade)
     const isParent = code && code.includes('.') && !code.match(/\.\d+$/);
@@ -135,57 +113,9 @@ const extractLoanBreakdownData = (data) => {
       nodeMap.set(code, entry);
     }
 
-    if (!code) {
-      // Rows without code are usually top-level totals
-      if (isTotalRow) {
-        // Check if this total should go under a parent
-        if (description.includes('SHORT TERM')) {
-          const parent = nodeMap.get('2');
-          if (parent) {
-            parent.children.push(entry);
-            console.log(`Added ${description} as child of 2`);
-          } else {
-            topLevelNodes.push(entry);
-          }
-        } else if (description.includes('MEDIUM TERM')) {
-          const parent = nodeMap.get('3');
-          if (parent) {
-            parent.children.push(entry);
-            console.log(`Added ${description} as child of 3`);
-          } else {
-            topLevelNodes.push(entry);
-          }
-        } else if (description.includes('LONG TERM')) {
-          const parent = nodeMap.get('4');
-          if (parent) {
-            parent.children.push(entry);
-            console.log(`Added ${description} as child of 4`);
-          } else {
-            topLevelNodes.push(entry);
-          }
-        } else if (description.includes('TOTAL LOANS & ADVANCES')) {
-          const parent = nodeMap.get('1');
-          if (parent) {
-            parent.children.push(entry);
-            console.log(`Added ${description} as child of 1`);
-          } else {
-            topLevelNodes.push(entry);
-          }
-        } else {
-          topLevelNodes.push(entry);
-        }
-      } else {
-        // Other rows without code - add to current parent
-        if (currentParent) {
-          currentParent.children.push(entry);
-        } else {
-          topLevelNodes.push(entry);
-        }
-      }
-    }
+  
   }
-
-  // Build hierarchy for nodes with codes
+    // Build hierarchy for nodes with codes
   for (const [code, node] of nodeMap) {
     const codeParts = code.split('.');
     
@@ -275,6 +205,6 @@ const extractLoanBreakdownData = (data) => {
     additionalColumns: [],
     noandtitles
   };
-};
+}
 
-export default extractLoanBreakdownData;
+export default extractCapitalAdequacyData

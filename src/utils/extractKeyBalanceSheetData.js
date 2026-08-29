@@ -114,7 +114,7 @@ const extractKeyBalanceSheetData = (data) => {
         }
   }
 
-  console.log('Total metric entries:', topLevelNodes.length);
+  console.log('Total metric entries:', topLevelNodes);
 
   return {
     hierarchicalData: topLevelNodes,

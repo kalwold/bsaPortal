@@ -44,7 +44,7 @@ const extractBalanceSheetData = (data) => {
 
   const topLevelNodes = [];
   const nodeMap = new Map();
-  let currentParent = null;
+  let currentParent = null;  
   let assetsNode = null;
   let liabilitiesNode = null;
 

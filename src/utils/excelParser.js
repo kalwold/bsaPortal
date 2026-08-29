@@ -15,6 +15,9 @@ import extractLoanRangeRegionData from "./extractLoanRangeRegionData";
 import extractLoanSectorRegionData from "./extractLoanSectorRegionData";
 import extractLoanStatutoryRequirementData from "./extractLoanStatutoryRequirementData";
 import extractKeyBalanceSheetData from "./extractKeyBalanceSheetData";
+import extractCapitalAdequacyData from "./extractCapitalAdequacyData";
+import extractDepositRangeRegionData from "./extractDepositRangeRegionData";
+import extractDepositSectorRegionData from "./extractDepositSectorRegionData";
 
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily",
@@ -24,6 +27,9 @@ const REPORT_TYPES = {
   RESERVE_BASE: 'finance-monthly_reserve',
   STATUTORY_REQ: 'finance-monthly_statutory_requirement',
    KEY_BALANCE_SHEET: 'finance-monthly_key-balance-sheet',
+   CAPITAL_ADEQUACY:'finance-monthly_capital-adequacy',
+   DEPOSIT_RANGE_REGION:'finance-monthly_deposit-range-region',
+   DEPOSIT_SECTOR_REGION: 'finance-monthly_deposit-sector-region',
   LOAN_BREAKDOWN:'credit-monthly_loan-breakdown',
   LOAN_PORTFOLIO: 'credit-monthly_loan-portfolio',
    NPL_PROVISIONS: 'credit-monthly_npl-provisions',
@@ -173,6 +179,27 @@ export const parseExcelReport = (file,reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles=result.noandtitles;
         }
+         else if (reportType === REPORT_TYPES.CAPITAL_ADEQUACY) {
+          const result = extractCapitalAdequacyData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.DEPOSIT_RANGE_REGION) {
+          const result = extractDepositRangeRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.DEPOSIT_SECTOR_REGION) {
+          const result = extractDepositSectorRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
@@ -270,6 +297,15 @@ const detectReportType = (data) => {
     }
     if (firstCell && firstCell.includes('Key Balance Sheet') || firstCell.includes('MK001')) {
       return REPORT_TYPES.KEY_BALANCE_SHEET;
+    }
+    if (firstCell && firstCell.includes('M_CC-On & Off') || firstCell.includes('KK001')) {
+      return REPORT_TYPES.CAPITAL_ADEQUACY;
+    }
+    if (firstCell && firstCell.includes('CDby Range and Reg') || firstCell.includes('CM001')) {
+      return REPORT_TYPES.DEPOSIT_RANGE_REGION;
+    }
+    if (firstCell && firstCell.includes('CD by S and Reg') || firstCell.includes('MD001')) {
+      return REPORT_TYPES.DEPOSIT_SECTOR_REGION;
     }
   }
   
@@ -408,6 +444,24 @@ const extractMetadata = (data) => {
        else if (firstCell.includes('Key Balance Sheet') || firstCell.includes('MK001')) {
         metadata.reportType = 'finance-monthly_key-balance-sheet';
         metadata.reportTypeId = 'finance-monthly_key-balance-sheet';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
+      }
+       else if (firstCell.includes('M_CC-On & Off') || firstCell.includes('KK001')) {
+        metadata.reportType = 'finance-monthly_capital-adequacy';
+        metadata.reportTypeId = 'finance-monthly_capital-adequacy';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
+      }
+       else if (firstCell.includes('CD by S and Reg') || firstCell.includes('MD001')) {
+        metadata.reportType = 'finance-monthly_deposit-sector-region';
+        metadata.reportTypeId = 'finance-monthly_deposit-sector-region';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
+      }
+       else if (firstCell.includes('CDby Range and Reg') || firstCell.includes('CM001')) {
+        metadata.reportType = 'finance-monthly_deposit-range-region';
+        metadata.reportTypeId = 'finance-monthly_deposit-range-region';
         metadata.departmentId = 'finance';
         metadata.departmentName = 'Finance';
       }

@@ -68,7 +68,7 @@ const ReportDataTable = ({
     return (
       <React.Fragment key={node.id}>
         <tr className={`${rowClass} transition-colors`}>
-          {showSNo && (
+          {(showSNo && node.id) && (
             <td className="px-3 py-2 text-sm text-gray-600 text-center font-mono border border-gray-300">
               {node.id || '-'}
             </td>
