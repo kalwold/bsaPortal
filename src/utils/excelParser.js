@@ -6,17 +6,34 @@ import extractForexData from "./extractForexData";
 import extractReserveBaseData from "./extractReserveBaseData";
 import extractLoanBreakdownData from "./extractLoanBreakdownData";
 import extractLoanPortfolioData from "./extractLoanPortfolioData";
-
-// Currency columns for foreign currency exposure report
+import extractNplProvisionsData from "./extractNplProvisionsData";
+import extractLoanDisbursementData from "./extractLoanDisbursementData";
+import extractLoanStatusData from "./extractLoanStatusData";
+import extractLoanClassificationData from "./extractLoanClassificationData";
+import extractLargeBorrowersData from "./extractLargeBorrowersData";
+import extractLoanRangeRegionData from "./extractLoanRangeRegionData";
+import extractLoanSectorRegionData from "./extractLoanSectorRegionData";
+import extractLoanStatutoryRequirementData from "./extractLoanStatutoryRequirementData";
+import extractKeyBalanceSheetData from "./extractKeyBalanceSheetData";
 
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
   LIQUIDITY_WEEKLY: "finance-weekly",
   LOAN_RELATED_PARTIES: 'loan-related-parties',
-  RESERVE_BASE: 'finance-monthly_reserve-base',
-  LOAN_BREAKDOWN:'breakdown-loans-advances',
-  LOAN_PORTFOLIO: 'loan-portfolio'
+  RESERVE_BASE: 'finance-monthly_reserve',
+  STATUTORY_REQ: 'finance-monthly_statutory_requirement',
+   KEY_BALANCE_SHEET: 'finance-monthly_key-balance-sheet',
+  LOAN_BREAKDOWN:'credit-monthly_loan-breakdown',
+  LOAN_PORTFOLIO: 'credit-monthly_loan-portfolio',
+   NPL_PROVISIONS: 'credit-monthly_npl-provisions',
+   LOAN_DISBURSEMENT: 'credit-monthly_loan-disbursement',
+   LOAN_STATUS: 'credit-monthly_loan-status',
+   LOAN_CLASSIFICATION: 'credit-monthly_loan-classification',
+   LARGE_BORROWERS: 'credit-monthly_large-borrowers',
+   LOAN_RANGE_REGION: 'credit-monthly_loan-range-region',
+   LOAN_SECTOR_REGION: 'credit-monthly_loan-sector-region',
+   
 };
 export const parseExcelReport = (file,reportTypeIn) => {
   return new Promise((resolve, reject) => {
@@ -50,12 +67,9 @@ export const parseExcelReport = (file,reportTypeIn) => {
           const result = extractForexData(jsonData);
           hierarchicalData = result.hierarchicalData;
          columns = result.columns;
-         // columns = ["USD","EUR","CHF","GBP","JPY","DJF","KES","INR","DKK","SEK","SAR","CAD","AED","AUD","CNY","NOK","KWD"];
           additionalColumns = result.additionalColumns;
           noandtitles=result.noandtitles
-          //noandtitles = ['S/No', 'Particulars']
-         // additionalColumns = ['OTHER1', 'OTHER2', 'OTHER3','OVERALL_EXPOSURE']
-        } else if (reportType === REPORT_TYPES.MONTHLY_BALANCE) {
+          } else if (reportType === REPORT_TYPES.MONTHLY_BALANCE) {
           const result = extractBalanceSheetData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
@@ -96,6 +110,68 @@ export const parseExcelReport = (file,reportTypeIn) => {
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles=result.noandtitles
+        }
+        else if (reportType === REPORT_TYPES.NPL_PROVISIONS) {
+          const result = extractNplProvisionsData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles
+        }
+        else if (reportType === REPORT_TYPES.LOAN_DISBURSEMENT) {
+          const result = extractLoanDisbursementData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+        else if (reportType === REPORT_TYPES.LOAN_STATUS) {
+          const result = extractLoanStatusData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }else if (reportType === REPORT_TYPES.LOAN_CLASSIFICATION) {
+          const result = extractLoanClassificationData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+        else if (reportType === REPORT_TYPES.LARGE_BORROWERS) {
+          const result = extractLargeBorrowersData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.LOAN_RANGE_REGION) {
+          const result = extractLoanRangeRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.LOAN_SECTOR_REGION) {
+          const result = extractLoanSectorRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.STATUTORY_REQ) {
+          const result = extractLoanStatutoryRequirementData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.KEY_BALANCE_SHEET) {
+          const result = extractKeyBalanceSheetData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
         }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
@@ -168,13 +244,35 @@ const detectReportType = (data) => {
      if (firstCell && (firstCell.includes('Loan and Advances Portfolio Report') || firstCell.includes('LOA_PORT'))) {
         return REPORT_TYPES.LOAN_PORTFOLIO;
       }
+       if (firstCell && (firstCell.includes('NPL&PRO') || firstCell.includes('NL001'))) {
+      return REPORT_TYPES.NPL_PROVISIONS;
+    }
+    if (firstCell && (firstCell.includes('LOA_ADV_OUT') || firstCell.includes('LA001'))) {
+      return REPORT_TYPES.LOAN_DISBURSEMENT;
+    }
+    if (firstCell && (firstCell.includes('LA_STAT') || firstCell.includes('LS001'))) {
+      return REPORT_TYPES.LOAN_STATUS;
+    }
+    if (firstCell && (firstCell.includes('M_LCPL') || firstCell.includes('LC001'))) {
+      return REPORT_TYPES.LOAN_CLASSIFICATION;
+    }
+      if (firstCell && (firstCell.includes('BOR_TEN_PER') || firstCell.includes('LB001'))) {
+      return REPORT_TYPES.LARGE_BORROWERS;
+    }
+    if (firstCell && (firstCell.includes('LOAN_RAN & REG') || firstCell.includes('RL001'))) {
+      return REPORT_TYPES.LOAN_RANGE_REGION;
+    }
+    if (firstCell && (firstCell.includes('LOAN_SEC & REG') || firstCell.includes('RS001'))) {
+      return REPORT_TYPES.LOAN_SECTOR_REGION;
+    }
+    if (firstCell && (firstCell.includes('SRRYY001') )) {
+      return REPORT_TYPES.STATUTORY_REQ;
+    }
+    if (firstCell && firstCell.includes('Key Balance Sheet') || firstCell.includes('MK001')) {
+      return REPORT_TYPES.KEY_BALANCE_SHEET;
+    }
   }
-    // const thirdRow = data[3];
-    // const thirdCell = String(thirdRow[0] || "").trim();
-    // console.log("thirdRow", thirdCell)
-    //  if (thirdCell && thirdCell.includes("Loans to Related")){
-    //   return REPORT_TYPES.LOAN_RELATED_PARTIES;
-    // }
+  
   return null;
 };
 
@@ -243,74 +341,126 @@ const extractMetadata = (data) => {
         console.log("Found Report Type:", metadata.reportType);
       }
       else if (firstCell.includes('RB001')){
-        metadata.reportType = 'finance-monthly_reserve-base';
+        metadata.reportType = 'finance-monthly_reserve';
         metadata.departmentName = 'Finance';
         metadata.departmentId='finance';
-        metadata.reportTypeId='finance-monthly_reserve-base'
+        metadata.reportTypeId='finance-monthly_reserve'
         
       }
       else if(firstCell.includes('BD001')){
-        metadata.reportType = 'breakdown-loans-advances';
+        metadata.reportType = 'credit-monthly_loan-breakdown';
         metadata.departmentName = 'Credit';
         metadata.departmentId='credit';
-        metadata.reportTypeId='breakdown-loans-advances'
+        metadata.reportTypeId='credit-monthly_loan-breakdown'
       }
       else if (firstCell.includes('LOA_PORT') || firstCell.includes('EP001')) {
-        metadata.reportType = 'loan-portfolio';
+        metadata.reportType = 'credit-monthly_loan-portfolio';
         metadata.departmentId = 'credit';
-        metadata.departmentName = 'Credit Department';
-        metadata.reportTypeId = 'loan-portfolio';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-portfolio';
+      }
+      else if (firstCell.includes('NPL&PRO') || firstCell.includes('NL001')) {
+        metadata.reportType = 'credit-monthly_npl-provisions';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_npl-provisions';
+      }else if (firstCell.includes('LOA_ADV_OUT') || firstCell.includes('LA001')) {
+        metadata.reportType = 'credit-monthly_loan-disbursement';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-disbursement';
+      }
+      else if (firstCell.includes('LA_STAT') || firstCell.includes('LS001')) {
+        metadata.reportType = 'credit-monthly_loan-status';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-status';
+      }else if (firstCell.includes('M_LCPL') || firstCell.includes('LC001')) {
+        metadata.reportType = 'credit-monthly_loan-classification';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-classification';
+      }
+      else if (firstCell.includes('BOR_TEN_PER') || firstCell.includes('LB001')) {
+        metadata.reportType = 'credit-monthly_large-borrowers';
+        metadata.reportTypeId = 'credit-monthly_large-borrowers';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+      }
+       else if (firstCell.includes('LOAN_RAN & REG') || firstCell.includes('RL001')) {
+        metadata.reportType = 'credit-monthly_loan-range-region';
+        metadata.reportTypeId = 'credit-monthly_loan-range-region';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+      }
+       else if (firstCell.includes('LOAN_SEC & REG') || firstCell.includes('RS001')) {
+        metadata.reportType = 'credit-monthly_loan-sector-region';
+        metadata.reportTypeId = 'credit-monthly_loan-sector-region';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+      }
+       else if (firstCell.includes('SRRYY001')) {
+        metadata.reportType = 'finance-monthly_statutory_requirement';
+        metadata.reportTypeId = 'finance-monthly_statutory_requirement';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
+      }
+       else if (firstCell.includes('Key Balance Sheet') || firstCell.includes('MK001')) {
+        metadata.reportType = 'finance-monthly_key-balance-sheet';
+        metadata.reportTypeId = 'finance-monthly_key-balance-sheet';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
       }
     }
 
-    if (i === 3 && (firstCell || secondCell)) {
+    if ((i === 2 || i === 3) && (firstCell || secondCell)) {
       metadata.reportTitle = firstCell || secondCell;
       console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-      i === 7 &&
+     (i === 6 || i === 7 )&&
       (firstCell || secondCell) &&
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || fourthCell;
+      metadata.institutionCode = secondCell||thirdCell || fourthCell;
       console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      i === 8 &&
+      (i === 8 || i === 7)&&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell  || fourthCell ||  "";
+      metadata.financialYear = secondCell||thirdCell  || fourthCell ||  "";
       console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      i === 9 &&
+      (i === 8 || i === 9) &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-      metadata.startDate = thirdCell  || fourthCell || "";
+      metadata.startDate = secondCell||thirdCell  || fourthCell || "";
       console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      i === 10 &&
+      (i === 10 || i === 9) &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
-      metadata.endDate = thirdCell  || fourthCell || "";
+      metadata.endDate = secondCell||thirdCell  || fourthCell || "";
       console.log("Found End Date:", metadata.endDate);
     }
 
     if (
-      i === 12 &&
-      (thirdCell || eighthCell) &&
+      (i === 9 || i === 12) &&
+      (thirdCell || eighthCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        eighthCell.toLowerCase().includes("in"))
+        eighthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
     ) {
-      metadata.unit = thirdCell || tweneeEigntsCell || eighthCell;
+      metadata.unit = firstCell||thirdCell || tweneeEigntsCell || eighthCell;
       console.log("Found Unit:", metadata.unit);
     }
   }

@@ -1,87 +1,112 @@
-import api from './api';
+import api from "./api";
 
 // Hardcoded department data for reference
 export const DEPARTMENT_DATA = [
   {
-    id: 'ibd',
-    name: 'IBD',
-    reportTypes: [
-      { id: 'ibd-daily', name: 'Daily Foreign Currency Exposure' },
-      
-    ]
+    id: "ibd",
+    name: "IBD",
+    reportTypes: [{ id: "ibd-daily", name: "Daily Foreign Currency Exposure" }],
   },
   {
-    id: 'finance',
-    name: 'Finance',
+    id: "finance",
+    name: "Finance",
     reportTypes: [
-      { id: 'finance-monthly_balance-sheet', name: 'Balance Sheet' },
-      { id: 'finance-weekly', name: 'Liquidity Requirement Report' },
-      { id: 'finance-monthly_reserve-base', name:'Monthly Reserve Base Report'}
-
-    ]
+      { id: "finance-monthly_balance-sheet", name: "Balance Sheet" },
+      { id: "finance-weekly", name: "Liquidity Requirement Report" },
+      {
+        id: "finance-monthly_reserve",
+        name: "Monthly Reserve Base Report",
+      },
+      { id: 'finance-monthly_statutory_requirement', name:'Statutory Reserve Requirement Report'},
+        { id: 'finance-monthly_key-balance-sheet', name:'Key Balance Sheet Report'}
+    ],
   },
   {
-    id: 'credit',
-    name: 'Credit',
+    id: "credit",
+    name: "Credit",
     reportTypes: [
-      { id: 'loan-related-parties', name: 'Loans to Related Parties Report' },
-     { id: 'breakdown-loans-advances', name: 'Breakdown of Loans and Advances' },
-     { id: 'loan-portfolio', name: ' Loan and Advances Portfolio Report' },
-    ]
+      { id: "loan-related-parties", name: "Loans to Related Parties Report" },
+      {
+        id: "credit-monthly_loan-breakdown",
+        name: "Breakdown of Loans and Advances",
+      },
+      { id: "credit-monthly_loan-portfolio", name: " Loan and Advances Portfolio Report" },
+      {
+        id: "credit-monthly_npl-provisions",
+        name: "Non-Performing Loans and Advances & Provisions",
+      },
+      {
+        id: "credit-monthly_loan-disbursement",
+        name: "Loan & Advance Disbursement, Collection and Outstanding Report",
+      },
+      { id: "credit-monthly_loan-status", name: "Loan and Advance by Status" },
+      {
+        id: "credit-monthly_loan-classification",
+        name: "Loan Classification and Provisioning",
+      },
+      {
+        id: "credit-monthly_large-borrowers",
+        name: "List of Borrowers that Exceed Ten Percent of the Banks Capital",
+      },
+       { id: 'credit-monthly_loan-range-region', name: 'Loans by Range and Region' },
+       { id: 'credit-monthly_loan-sector-region', name: 'Loans by Sector and Region' },
+    ],
   },
- 
 ];
 
 export const getDepartmentById = (deptId) => {
-  return DEPARTMENT_DATA.find(dept => dept.id === deptId);
+  return DEPARTMENT_DATA.find((dept) => dept.id === deptId);
 };
 
 export const getReportTypeById = (deptId, reportTypeId) => {
   const dept = getDepartmentById(deptId);
   if (!dept) return null;
-  return dept.reportTypes.find(type => type.id === reportTypeId);
+  return dept.reportTypes.find((type) => type.id === reportTypeId);
 };
 
 export const reportService = {
   // Auth
-  login: (credentials) => api.post('/auth/login', credentials).then(res => res.data),
-  getCurrentUser: () => api.get('/auth/me').then(res => res.data),
+  login: (credentials) =>
+    api.post("/auth/login", credentials).then((res) => res.data),
+  getCurrentUser: () => api.get("/auth/me").then((res) => res.data),
 
   // Report Management
   uploadReport: (reportType, formData) => {
-  //  return api.post('/reports/upload', formData, {
+    //  return api.post('/reports/upload', formData, {
 
-      // headers: {
-      //   'Content-Type': 'multipart/form-data',
-      // },
-      
-return api.post(`/${reportType}/post`, formData, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(res => res.data);
+    // headers: {
+    //   'Content-Type': 'multipart/form-data',
+    // },
+
+    return api
+      .post(`/${reportType}/post`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => res.data);
   },
 
- // getReports: (params = {}) => {
-    // const queryParams = new URLSearchParams();
-    // Object.entries(params).forEach(([key, value]) => {
-    //   if (value) queryParams.append(key, value);
-    // });
-    // return api.get(`/reports?${queryParams.toString()}`).then(res => res.data);
-    getReports: (reportType) =>{
-    return api.get(`/${reportType}/getall`).then(res => res.data);
+  // getReports: (params = {}) => {
+  // const queryParams = new URLSearchParams();
+  // Object.entries(params).forEach(([key, value]) => {
+  //   if (value) queryParams.append(key, value);
+  // });
+  // return api.get(`/reports?${queryParams.toString()}`).then(res => res.data);
+  getReports: (reportType) => {
+    return api.get(`/${reportType}/getall`).then((res) => res.data);
   },
 
   getReport: (reportId) => {
-    return api.get(`/reports/${reportId}`).then(res => res.data);
+    return api.get(`/reports/${reportId}`).then((res) => res.data);
   },
 
   approveReport: (reportType, data) => {
-    return api.put(`/${reportType}/approve`, data).then(res => res.data);
+    return api.put(`/${reportType}/approve`, data).then((res) => res.data);
   },
 
   rejectReport: (reportType, data) => {
-    return api.put(`/${reportType}/reject`, data).then(res => res.data);
+    return api.put(`/${reportType}/reject`, data).then((res) => res.data);
   },
 
   // Department Management (using hardcoded data)
@@ -106,9 +131,7 @@ return api.post(`/${reportType}/post`, formData, {
 
   // Stats
   getReportStats: (departmentId) => {
-    const params = departmentId ? `?departmentId=${departmentId}` : '';
-    return api.get(`/reports/stats${params}`).then(res => res.data);
+    const params = departmentId ? `?departmentId=${departmentId}` : "";
+    return api.get(`/reports/stats${params}`).then((res) => res.data);
   },
 };
-
-
