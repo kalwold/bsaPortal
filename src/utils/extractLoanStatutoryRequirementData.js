@@ -1,4 +1,4 @@
-const extractReserveBaseData = (data) => {
+const extractLoanStatutoryRequirementData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
   let noandtitles = [];
@@ -7,7 +7,7 @@ const extractReserveBaseData = (data) => {
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if (i === 12) {
+    if (i === 11) {
       noandtitles = [firstCell, secondCell];
       console.log("Found title:", noandtitles);
     }
@@ -108,19 +108,19 @@ if (cell === 'Day_1') {
 
     // Skip if no description or if it's a note
     if (!description) continue;
-    if (description.includes('Note:') || description.includes('Note')) continue;
+    if (code.includes('Note:') || code.includes('Note')) continue;
 
     // Skip if code is a formula or reference
     if (code && code.startsWith('=')) continue;
 
     // Check if this is a section header (like "Reserve Base (1.1+1.2+1.3)")
-    const isSectionHeader = description.includes('Reserve Base') || 
-                           description.includes('Deductions Items') ||
-                           description.includes('Net Reserve Base') ||
-                           description.includes('Deposit Balance with NBE') ||
-                           description.includes('Excess/Deficiency') ||
-                           description.includes('Reserve Ratio');
-
+    // const isSectionHeader = description.includes('Net Average Reserve Base (Previous Calendar Month)') || 
+    //                        description.includes('Deductions Items') ||
+    //                        description.includes('Net Reserve Base') ||
+    //                        description.includes('Deposit Balance with NBE') ||
+    //                        description.includes('Excess/Deficiency') ||
+    //                        description.includes('Reserve Ratio');
+const isSectionHeader =  code && !code.includes('.')
     // Check if this is a total row (like for Reserve Ratio)
     const isTotalRow = description.includes('Reserve Ratio');
 
@@ -129,7 +129,7 @@ if (cell === 'Day_1') {
 
     // Only extract values if not a section header without data
     //if (!isSectionHeader || description.includes('Reserve Base') || description.includes('Net Reserve Base')) {
-    if (!description.includes('Reserve Ratio')){ 
+      if (!description.includes('Reserve Ratio')){
     for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
@@ -142,10 +142,11 @@ if (cell === 'Day_1') {
         } else {
           values[dayColumns[j]] = '0';
         }
-      }
-    } else {
-      // For section headers without data, set all to null
-       for (let j = 0; j < dayColumns.length; j++) {
+
+       
+      }}
+      else{
+        for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
           const rawValue = parseFloat(row[colIndex]);
@@ -158,9 +159,15 @@ if (cell === 'Day_1') {
           values[dayColumns[j]] = '0';
         }
 
-       
+       console.log('persent datas: ', values)
       }
-    }
+      }
+    // } else {
+    //   // For section headers without data, set all to null
+    //   for (let j = 0; j < dayColumns.length; j++) {
+    //     values[dayColumns[j]] = null;
+    //   }
+    // }
 
     // Determine level
     let level = 0;
@@ -300,4 +307,4 @@ if (cell === 'Day_1') {
   };
 };
 
-export default extractReserveBaseData;
+export default extractLoanStatutoryRequirementData;

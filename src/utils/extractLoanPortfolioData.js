@@ -1,247 +1,698 @@
 const extractLoanPortfolioData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
-   let noandtitles = [];
-    for (let i = 0; i < data.length; i++) {
+  let noandtitles = [];
+
+  console.log("=== Extracting Loan Portfolio Data ===");
+
+  // =====================================================
+  // 1. Extract title information
+  // =====================================================
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    
+
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if(i === 13){
-      noandtitles = [firstCell,secondCell]
+    if (i === 13) {
+      noandtitles = [firstCell, secondCell];
       console.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting Loan Portfolio Data ===');
 
-  // Log first few rows to understand structure
+  // =====================================================
+  // 2. Log first few rows
+  // =====================================================
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
+
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim())
+      );
     }
   }
 
-  // Find the data table start - look for "Code" column
+  // =====================================================
+  // 3. Find table start using "Code"
+  // =====================================================
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
+
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Code') {
+
+    const firstCell = String(row[0] || "").trim();
+
+    if (firstCell === "Code") {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+
+      console.log(
+        "Found data table at row:",
+        dataTableStart
+      );
+
       break;
     }
   }
 
+  // =====================================================
+  // 4. Alternative table start
+  // =====================================================
   if (dataTableStart === -1) {
-    // Try to find by looking for "1.1" or "Advance on import bills"
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
+
       if (!row || row.length === 0) continue;
-      const firstCell = String(row[0] || '').trim();
-      const secondCell = String(row[1] || '').trim();
-      if (firstCell === '1.1' || secondCell === 'Advance on import bills') {
+
+      const firstCell = String(row[0] || "").trim();
+      const secondCell = String(row[1] || "").trim();
+
+      if (
+        firstCell === "1.1" ||
+        secondCell === "Advance on import bills"
+      ) {
         dataTableStart = i;
-        console.log('Found data table at row (alt):', dataTableStart);
+
+        console.log(
+          "Found data table at row (alt):",
+          dataTableStart
+        );
+
         break;
       }
     }
   }
 
+  // =====================================================
+  // 5. If table not found
+  // =====================================================
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
-    return { hierarchicalData: [], columns: ['Disbursement_Amount', 'Disbursement_Percentage', 'Outstanding_Amount', 'Outstanding_Percentage'], additionalColumns: [],noandtitles };
+    console.log("Could not find data table");
+
+    return {
+      hierarchicalData: [],
+
+      columns: [
+        "Disbursement_Amount",
+        "Disbursement_Percentage",
+        "Outstanding_Amount",
+        "Outstanding_Percentage"
+      ],
+
+      additionalColumns: [],
+
+      noandtitles
+    };
   }
 
-  const topLevelNodes = [];
-  let sectionParent = null;
+  // =====================================================
+  // 6. Hierarchy variables
+  // =====================================================
 
-  // Parse each row
+  const topLevelNodes = [];
+
+  // Parent 1
+  let section1Parent = null;
+
+  // Parent 2
+  let section2Parent = null;
+
+  // Current child of section 2
+  // Will contain 2.1 or 2.2
+  let currentSubsection = null;
+
+  // =====================================================
+  // 7. Parse rows
+  // =====================================================
+
   for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
+
     if (!row || row.length === 0) continue;
 
-    const code = String(row[0] || '').trim();
-    const description = String(row[1] || '').trim();
+    const code = String(row[0] || "").trim();
+    const description = String(row[1] || "").trim();
 
-    // Skip if no description
-    if (!description) continue;
+    // -----------------------------------------------------
+    // Skip empty descriptions
+    // -----------------------------------------------------
+    if (!description) {
+      continue;
+    }
 
-    // Skip note rows
-    if (description.includes('Note:')) continue;
+    // -----------------------------------------------------
+    // Skip notes
+    // -----------------------------------------------------
+    if (description.includes("Note:")) {
+      continue;
+    }
 
-    // Check if this is a total row
-    const isTotalRow = description.includes('Total(sum') || 
-                       description.includes('Total(') ||
-                       description.includes('Total (sum');
+    // =====================================================
+    // 8. Identify row types
+    // =====================================================
 
-    // Check if this is a section header (2.1, 2.2, etc.)
-    const isSectionHeader = code && (code === '2.1' || code === '2.2');
+    // 1.1, 1.2, 1.3, ...
+    const isSection1Item =
+      /^1\.\d+$/.test(code);
 
-    // Check if this is the main section (1.1 - 1.6)
-    const isMainSection = code && code.startsWith('1.');
+    // 2.1, 2.2, ...
+    const isSection2Item =
+      /^2\.\d+$/.test(code);
 
-    // Extract values
-    let disbursementAmount = '0';
-    let disbursementPercentage = '0';
-    let outstandingAmount = '0';
-    let outstandingPercentage = '0';
+    // Any Total row
+    const isTotalRow =
+      description.includes("Total(sum") ||
+      description.includes("Total(") ||
+      description.includes("Total (sum");
 
-    // Disbursement Amount is in column C (index 2)
+    // =====================================================
+    // IMPORTANT:
+    //
+    // Detect the TOTAL for section 2:
+    //
+    // Total(sum 2.1-2.2)
+    //
+    // This MUST go under 2, not under 2.2.
+    // =====================================================
+
+    const normalizedDescription = description
+      .replace(/\s+/g, "")
+      .replace(/[–—]/g, "-")
+      .toLowerCase();
+
+    const isSection2Total =
+      isTotalRow &&
+      (
+        normalizedDescription.includes("2.1-2.2") ||
+        normalizedDescription.includes("2.1to2.2")
+      );
+
+    // =====================================================
+    // 9. Extract values
+    // =====================================================
+
+    let disbursementAmount = "0";
+    let disbursementPercentage = "0";
+    let outstandingAmount = "0";
+    let outstandingPercentage = "0";
+
+    // -----------------------------------------------------
+    // Column C - Disbursement Amount
+    // -----------------------------------------------------
     if (row.length > 2) {
-      const val = parseFloat(row[2]);
-      if (!isNaN(val) && val !== 0) {
+      const rawValue = String(row[2] || "")
+        .replace(/,/g, "")
+        .trim();
+
+      const val = parseFloat(rawValue);
+
+      if (!isNaN(val)) {
         disbursementAmount = val.toFixed(2);
       }
     }
 
-    // Disbursement Percentage is in column D (index 3)
+    // -----------------------------------------------------
+    // Column D - Disbursement Percentage
+    // -----------------------------------------------------
     if (row.length > 3) {
-      const val = parseFloat(row[3]);
-      if (!isNaN(val) && val !== 0) {
+      const rawValue = String(row[3] || "")
+        .replace(/,/g, "")
+        .replace(/%/g, "")
+        .trim();
+
+      const val = parseFloat(rawValue);
+
+      if (!isNaN(val)) {
         disbursementPercentage = val.toFixed(2);
       }
     }
 
-    // Outstanding Amount is in column E (index 4)
+    // -----------------------------------------------------
+    // Column E - Outstanding Amount
+    // -----------------------------------------------------
     if (row.length > 4) {
-      const val = parseFloat(row[4]);
-      if (!isNaN(val) && val !== 0) {
+      const rawValue = String(row[4] || "")
+        .replace(/,/g, "")
+        .trim();
+
+      const val = parseFloat(rawValue);
+
+      if (!isNaN(val)) {
         outstandingAmount = val.toFixed(2);
       }
     }
 
-    // Outstanding Percentage is in column F (index 5)
+    // -----------------------------------------------------
+    // Column F - Outstanding Percentage
+    // -----------------------------------------------------
     if (row.length > 5) {
-      const val = parseFloat(row[5]);
-      if (!isNaN(val) && val !== 0) {
+      const rawValue = String(row[5] || "")
+        .replace(/,/g, "")
+        .replace(/%/g, "")
+        .trim();
+
+      const val = parseFloat(rawValue);
+
+      if (!isNaN(val)) {
         outstandingPercentage = val.toFixed(2);
       }
     }
 
-    // Determine level
-    let level = 0;
-    if (isMainSection) {
-      level = 1;
-    } else if (isSectionHeader) {
-      level = 0;
-    } else if (isTotalRow) {
-      level = 0;
-    }
+    // =====================================================
+    // 10. Create entry
+    // =====================================================
 
     const entry = {
-      id: code || ``,
-      sNo: code || '',
+      id: code || "",
+      sNo: code || "",
       label: description,
+
       values: {
-        'Disbursement_Amount': disbursementAmount,
-        'Disbursement_Percentage(%)': disbursementPercentage,
-        'Outstanding_Amount': outstandingAmount,
-        'Outstanding_Percentage(%)': outstandingPercentage
+        "Disbursement_Amount": disbursementAmount,
+        "Disbursement_Percentage":
+          disbursementPercentage,
+        "Outstanding_Amount":
+          outstandingAmount,
+        "Outstanding_Percentage":
+          outstandingPercentage
       },
+
       rowNumber: i + 1,
-      level: level,
-      isTotalRow: isTotalRow || false,
-      isSectionHeader: isSectionHeader || false,
-      isMainSection: isMainSection || false,
+
+      level: 0,
+
+      isTotalRow: isTotalRow,
+      isSectionHeader: false,
+      isMainSection: false,
+
       children: []
     };
 
-    if (isMainSection) {
-      // Main section items (1.1 - 1.6)
-      if (!sectionParent) {
-        // Create a section parent if not exists
-        sectionParent = {
-          id: '1',
-          sNo: '1',
-          label: 'Loans by Category',
+    // =====================================================
+    // 11. SECTION 1
+    //
+    // 1.1
+    // 1.2
+    // 1.3
+    //
+    // All go under:
+    //
+    // 1 - Loans by Category
+    // =====================================================
+
+    if (isSection1Item) {
+
+      // Create parent 1
+      if (!section1Parent) {
+
+        section1Parent = {
+          id: "1",
+          sNo: "1",
+          label: "Loans by Category",
+
           values: {
-            'Disbursement Amount': '0',
-            'Disbursement Percentage (%)': '0',
-            'Outstanding Amount': '0',
-            'Outstanding Percentage (%)': '0'
+            "Disbursement_Amount": "0",
+            "Disbursement_Percentage": "0",
+            "Outstanding_Amount": "0",
+            "Outstanding_Percentage": "0"
           },
+
           rowNumber: dataTableStart,
+
           level: 0,
+
           isTotalRow: false,
           isSectionHeader: true,
           isMainSection: false,
+
           children: []
         };
-        topLevelNodes.push(sectionParent);
+
+        topLevelNodes.push(section1Parent);
       }
-      sectionParent.children.push(entry);
-    } else if (isSectionHeader) {
-      // Section headers (2.1, 2.2)
-      topLevelNodes.push(entry);
-    } else if (isTotalRow) {
-      // Total rows - add to the last appropriate parent
-      if (sectionParent && entry.label.includes('Total(sum')) {
-        sectionParent.children.push(entry);
-      } else {
-        topLevelNodes.push(entry);
-      }
-    } else {
-      // Other rows
-      if (sectionParent) {
-        sectionParent.children.push(entry);
-      } else {
-        topLevelNodes.push(entry);
-      }
+
+      entry.level = 1;
+
+      section1Parent.children.push(entry);
+
+      console.log(
+        `Added ${code} under section 1`
+      );
+
+      continue;
     }
+
+    // =====================================================
+    // 12. SECTION 2 ITEMS
+    //
+    // 2.1
+    // 2.2
+    //
+    // Both go under:
+    //
+    // 2 - Loans by Purpose
+    // =====================================================
+
+    if (isSection2Item) {
+
+      // Create parent 2
+      if (!section2Parent) {
+
+        section2Parent = {
+          id: "2",
+          sNo: "2",
+          label: "Loans by Purpose",
+
+          values: {
+            "Disbursement_Amount": "0",
+            "Disbursement_Percentage": "0",
+            "Outstanding_Amount": "0",
+            "Outstanding_Percentage": "0"
+          },
+
+          rowNumber: i + 1,
+
+          level: 0,
+
+          isTotalRow: false,
+          isSectionHeader: true,
+          isMainSection: false,
+
+          children: []
+        };
+
+        topLevelNodes.push(section2Parent);
+      }
+
+      // ---------------------------------------------------
+      // IMPORTANT:
+      //
+      // This is now the current subsection.
+      //
+      // If code = 2.1:
+      // currentSubsection = 2.1
+      //
+      // If code = 2.2:
+      // currentSubsection = 2.2
+      // ---------------------------------------------------
+
+      currentSubsection = entry;
+
+      entry.level = 1;
+
+      section2Parent.children.push(entry);
+
+      console.log(
+        `Added ${code} under section 2`
+      );
+
+      continue;
+    }
+
+    // =====================================================
+    // 13. TOTAL FOR SECTION 2
+    //
+    // Total(sum 2.1-2.2)
+    //
+    // MUST be:
+    //
+    // 2
+    //   2.1
+    //   2.2
+    //   Total(sum 2.1-2.2)
+    // =====================================================
+
+    if (isSection2Total) {
+
+      if (section2Parent) {
+
+        entry.level = 1;
+
+        section2Parent.children.push(entry);
+
+        console.log(
+          "Added TOTAL 2.1-2.2 under section 2"
+        );
+
+      } else {
+
+        entry.level = 0;
+
+        topLevelNodes.push(entry);
+      }
+
+      continue;
+    }
+
+    // =====================================================
+    // 14. OTHER TOTALS
+    //
+    // Total for 2.1:
+    //
+    // 2
+    //   2.1
+    //      Total
+    //
+    // Total for 2.2:
+    //
+    // 2
+    //   2.2
+    //      Total
+    // =====================================================
+
+    if (isTotalRow) {
+
+      // -----------------------------------------------
+      // Total belongs to current 2.1 / 2.2
+      // -----------------------------------------------
+      if (currentSubsection) {
+
+        entry.level = 2;
+
+        currentSubsection.children.push(entry);
+
+        console.log(
+          `Added TOTAL under ${currentSubsection.sNo}`
+        );
+      }
+
+      // -----------------------------------------------
+      // Otherwise total belongs to section 1
+      // -----------------------------------------------
+      else if (section1Parent) {
+
+        entry.level = 1;
+
+        section1Parent.children.push(entry);
+
+        console.log(
+          "Added TOTAL under section 1"
+        );
+      }
+
+      // -----------------------------------------------
+      // Fallback
+      // -----------------------------------------------
+      else {
+
+        entry.level = 0;
+
+        topLevelNodes.push(entry);
+      }
+
+      continue;
+    }
+
+    // =====================================================
+    // 15. OTHER DATA ROWS
+    // =====================================================
+
+    // If inside 2.1 or 2.2
+    if (currentSubsection) {
+
+      entry.level = 2;
+
+      currentSubsection.children.push(entry);
+
+      console.log(
+        `Added ${code} under ${currentSubsection.sNo}`
+      );
+
+      continue;
+    }
+
+    // If inside section 1
+    if (section1Parent) {
+
+      entry.level = 1;
+
+      section1Parent.children.push(entry);
+
+      console.log(
+        `Added ${code} under section 1`
+      );
+
+      continue;
+    }
+
+    // If inside section 2
+    if (section2Parent) {
+
+      entry.level = 1;
+
+      section2Parent.children.push(entry);
+
+      console.log(
+        `Added ${code} under section 2`
+      );
+
+      continue;
+    }
+
+    // Fallback
+    entry.level = 0;
+
+    topLevelNodes.push(entry);
   }
 
-  // Sort children by code
+  // =====================================================
+  // 16. Sort children
+  //
+  // Totals always appear at the bottom of their
+  // respective parent.
+  // =====================================================
+
   const sortChildren = (nodes) => {
+
     nodes.sort((a, b) => {
-      if (a.isTotalRow && !b.isTotalRow) return 1;
-      if (!a.isTotalRow && b.isTotalRow) return -1;
-      
+
+      // Total always comes last
+      if (a.isTotalRow && !b.isTotalRow) {
+        return 1;
+      }
+
+      if (!a.isTotalRow && b.isTotalRow) {
+        return -1;
+      }
+
+      // Sort by S.No
       if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
-        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+
+        const aParts = a.sNo
+          .split(".")
+          .map(Number);
+
+        const bParts = b.sNo
+          .split(".")
+          .map(Number);
+
+        for (
+          let i = 0;
+          i < Math.min(
+            aParts.length,
+            bParts.length
+          );
+          i++
+        ) {
+
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
           }
         }
-        return aParts.length - bParts.length;
+
+        return (
+          aParts.length -
+          bParts.length
+        );
       }
+
       return 0;
     });
 
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
+    // Recursively sort children
+    nodes.forEach((node) => {
+
+      if (
+        node.children &&
+        node.children.length > 0
+      ) {
         sortChildren(node.children);
       }
+
     });
   };
 
   sortChildren(topLevelNodes);
 
-  // Clean up - remove empty children arrays
+  // =====================================================
+  // 17. Remove empty children arrays
+  // =====================================================
+
   const cleanData = (nodes) => {
-    nodes.forEach(node => {
-      if (node.children && node.children.length === 0) {
+
+    nodes.forEach((node) => {
+
+      if (
+        node.children &&
+        node.children.length === 0
+      ) {
+
         delete node.children;
+
       } else if (node.children) {
+
         cleanData(node.children);
       }
+
     });
   };
+
   cleanData(topLevelNodes);
 
-  console.log('Final top-level nodes:', topLevelNodes.length);
-  console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+  // =====================================================
+  // 18. Debug final hierarchy
+  // =====================================================
+
+  console.log(
+    "Final top-level nodes:",
+    topLevelNodes.length
+  );
+
+  console.log(
+    "Top-level nodes:",
+    topLevelNodes.map(
+      (n) => `${n.sNo} - ${n.label}`
+    )
+  );
+
+  console.log(
+    "FINAL HIERARCHY:",
+    JSON.stringify(
+      topLevelNodes,
+      null,
+      2
+    )
+  );
+
+  // =====================================================
+  // 19. Return
+  // =====================================================
 
   return {
     hierarchicalData: topLevelNodes,
-    columns: ['Disbursement_Amount', 'Disbursement_Percentage(%)', 'Outstanding_Amount', 'Outstanding_Percentage(%)'],
+
+    columns: [
+      "Disbursement_Amount",
+      "Disbursement_Percentage",
+      "Outstanding_Amount",
+      "Outstanding_Percentage"
+    ],
+
     additionalColumns: [],
-    noandtitles:noandtitles
+
+    noandtitles
   };
 };
 
-export default extractLoanPortfolioData
+export default extractLoanPortfolioData;

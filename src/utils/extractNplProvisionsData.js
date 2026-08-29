@@ -1,24 +1,32 @@
-const extractReserveBaseData = (data) => {
+const extractNplProvisionsData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
-  let noandtitles = [];
+
+    let noandtitles = [];
+
+
+
+  // =====================================================
+  // 1. Extract title information
+  // =====================================================
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
+
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if (i === 12) {
+    if (i === 13) {
       noandtitles = [firstCell, secondCell];
       console.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting Reserve Base Data ===');
+  console.log('=== Extracting NPL & Provisions Data ===');
 
   // Log first few rows to understand structure
-  for (let i = 0; i < Math.min(data.length, 20); i++) {
+  for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.slice(0, 10).map(c => String(c || '').trim()));
+      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
 
@@ -35,14 +43,14 @@ const extractReserveBaseData = (data) => {
   }
 
   if (dataTableStart === -1) {
-    // Try to find by looking for "Reserve Base"
+    // Try to find by looking for "Total non-performing loans"
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       if (!row || row.length === 0) continue;
       const firstCell = String(row[0] || '').trim();
       if (firstCell === '1') {
         const secondCell = String(row[1] || '').trim();
-        if (secondCell && secondCell.includes('Reserve Base')) {
+        if (secondCell && secondCell.includes('Total non-performing loans')) {
           dataTableStart = i;
           console.log('Found data table at row (alt):', dataTableStart);
           break;
@@ -53,46 +61,15 @@ const extractReserveBaseData = (data) => {
 
   if (dataTableStart === -1) {
     console.log('Could not find data table');
-    return { hierarchicalData: [], currencies: [], additionalColumns: [] };
+    return { hierarchicalData: [], columns: ['Amount'], additionalColumns: [] };
   }
 
-  // Get the header row to identify column positions
+  // Get the header row
   const headerRow = data[dataTableStart - 1];
-  
-  // Print header row for debugging
   console.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
-  // Find day columns
-  const dayColumns = [];
-  let dayStartIndex = -1;
-  
-  for (let i = 0; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || '').trim().replace(/\s+/g, '_');
-if (cell === 'Day_1') {
-    dayStartIndex = i;
-    console.log('Found Day 1 at column:', i, cell);
-  }
-
-  if (cell && cell.startsWith('Day_') && !isNaN(cell.split('_')[1])) {
-    dayColumns.push(cell);
-  }
-
-  if (cell === 'Monthly_Average') {
-    dayColumns.push(cell);
-  }
-  }
-
-  // If we couldn't find day columns, use default positions
-  // if (dayColumns.length === 0) {
-  //   dayStartIndex = 2;
-  //   for (let i = 1; i <= 31; i++) {
-  //     dayColumns.push(`Day ${i}`);
-  //   }
-  //   dayColumns.push('Monthly Average');
-  // }
-
-  console.log('Day columns:', dayColumns);
-  console.log('Day start index:', dayStartIndex);
+  // Find the value column (column C = index 2)
+  const valueColumnIndex = 2;
 
   const topLevelNodes = [];
   const nodeMap = new Map();
@@ -106,79 +83,50 @@ if (cell === 'Day_1') {
     const code = String(row[0] || '').trim();
     const description = String(row[1] || '').trim();
 
-    // Skip if no description or if it's a note
+    // Skip if no description
     if (!description) continue;
+
+    // Skip footer rows or notes
     if (description.includes('Note:') || description.includes('Note')) continue;
 
-    // Skip if code is a formula or reference
-    if (code && code.startsWith('=')) continue;
+    // Check if this is a total row
+    const isTotalRow = description === 'Total non-performing loans (sum 2-4)' ||
+                       description === 'Total substandard loans' ||
+                       description === 'Total doubtful loans' ||
+                       description === 'Total loss loans';
 
-    // Check if this is a section header (like "Reserve Base (1.1+1.2+1.3)")
-    const isSectionHeader = description.includes('Reserve Base') || 
-                           description.includes('Deductions Items') ||
-                           description.includes('Net Reserve Base') ||
-                           description.includes('Deposit Balance with NBE') ||
-                           description.includes('Excess/Deficiency') ||
-                           description.includes('Reserve Ratio');
+    // Check if this is a section header (like 2, 3, 4)
+    const isSectionHeader = code && (code === '2' || code === '3' || code === '4');
 
-    // Check if this is a total row (like for Reserve Ratio)
-    const isTotalRow = description.includes('Reserve Ratio');
-
-    // Extract values for each day
-    const values = {};
-
-    // Only extract values if not a section header without data
-    //if (!isSectionHeader || description.includes('Reserve Base') || description.includes('Net Reserve Base')) {
-    if (!description.includes('Reserve Ratio')){ 
-    for (let j = 0; j < dayColumns.length; j++) {
-        const colIndex = dayStartIndex + j;
-        if (colIndex < row.length) {
-          const rawValue = parseFloat(row[colIndex]);
-          if (!isNaN(rawValue) && rawValue !== 0) {
-            values[dayColumns[j]] = rawValue.toFixed(2);
-          } else {
-            values[dayColumns[j]] = '0';
-          }
-        } else {
-          values[dayColumns[j]] = '0';
-        }
-      }
-    } else {
-      // For section headers without data, set all to null
-       for (let j = 0; j < dayColumns.length; j++) {
-        const colIndex = dayStartIndex + j;
-        if (colIndex < row.length) {
-          const rawValue = parseFloat(row[colIndex]);
-          if (!isNaN(rawValue) && rawValue !== 0) {
-            values[dayColumns[j]] = (rawValue * 100).toFixed(2) + '%';
-          } else {
-            values[dayColumns[j]] = '0';
-          }
-        } else {
-          values[dayColumns[j]] = '0';
-        }
-
-       
+    // Extract the value
+    let value = '0';
+    if (valueColumnIndex < row.length) {
+      const rawValue = parseFloat(row[valueColumnIndex]);
+      if (!isNaN(rawValue) && rawValue !== 0) {
+        value = rawValue.toFixed(2);
+      } else {
+        value = '0';
       }
     }
 
     // Determine level
     let level = 0;
     if (code && code !== '') {
-      // Code like "1", "1.1", "1.2"
       const codeParts = code.split('.');
       level = codeParts.length;
+    } else if (isTotalRow) {
+      level = 0;
     } else if (isSectionHeader) {
       level = 0;
-    } else if (isTotalRow) {
-      level = 1;
     }
 
     const entry = {
       id: code || ``,
       sNo: code || '',
       label: description,
-      values: values,
+      values: {
+        'Amount': value
+      },
       rowNumber: i + 1,
       level: level,
       isTotalRow: isTotalRow || false,
@@ -191,19 +139,46 @@ if (cell === 'Day_1') {
     }
 
     if (!code) {
-      if (isSectionHeader) {
-        topLevelNodes.push(entry);
-        currentParent = entry;
-      } else if (isTotalRow) {
-        if (currentParent) {
-          currentParent.children.push(entry);
+      // Rows without code are usually subtotals
+      if (isTotalRow) {
+        if (description.includes('Total substandard loans')) {
+          const parent = nodeMap.get('2');
+          if (parent) {
+            parent.children.push(entry);
+            console.log(`Added ${description} as child of 2`);
+          } else {
+            topLevelNodes.push(entry);
+          }
+        } else if (description.includes('Total doubtful loans')) {
+          const parent = nodeMap.get('3');
+          if (parent) {
+            parent.children.push(entry);
+            console.log(`Added ${description} as child of 3`);
+          } else {
+            topLevelNodes.push(entry);
+          }
+        } else if (description.includes('Total loss loans')) {
+          const parent = nodeMap.get('4');
+          if (parent) {
+            parent.children.push(entry);
+            console.log(`Added ${description} as child of 4`);
+          } else {
+            topLevelNodes.push(entry);
+          }
+        } else if (description.includes('Total non-performing loans')) {
+          const parent = nodeMap.get('1');
+          if (parent) {
+            parent.children.push(entry);
+            console.log(`Added ${description} as child of 1`);
+          } else {
+            topLevelNodes.push(entry);
+          }
         } else {
           topLevelNodes.push(entry);
         }
       } else {
-        if (currentParent && !currentParent.isSectionHeader) {
-          currentParent.children.push(entry);
-        } else if (currentParent) {
+        // Other rows without code - add to current parent
+        if (currentParent) {
           currentParent.children.push(entry);
         } else {
           topLevelNodes.push(entry);
@@ -217,12 +192,14 @@ if (cell === 'Day_1') {
     const codeParts = code.split('.');
     
     if (codeParts.length === 1) {
+      // Top level nodes (1, 2, 3, 4)
       const existing = topLevelNodes.find(n => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
         console.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
+      // Child nodes (2.1, 2.2, etc.)
       const parentCode = codeParts.slice(0, -1).join('.');
       const parent = nodeMap.get(parentCode);
       
@@ -233,6 +210,7 @@ if (cell === 'Day_1') {
           console.log(`Added node ${code} as child of ${parentCode}`);
         }
       } else {
+        // Try to find parent by base code
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
@@ -242,6 +220,7 @@ if (cell === 'Day_1') {
             console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
           }
         } else {
+          // If still no parent, add to top level
           topLevelNodes.push(node);
           console.log(`Added node ${code} as top-level (no parent found)`);
         }
@@ -294,10 +273,9 @@ if (cell === 'Day_1') {
 
   return {
     hierarchicalData: topLevelNodes,
-    columns: dayColumns,
+    columns: ['Amount'],
     additionalColumns: [],
-    noandtitles:noandtitles
+    noandtitles
   };
 };
-
-export default extractReserveBaseData;
+export default extractNplProvisionsData

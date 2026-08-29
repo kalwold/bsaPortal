@@ -31,7 +31,9 @@ const DEPARTMENT_DATA = [
     reportTypes: [
       { id: 'finance-monthly_balance-sheet', name: 'Balance Sheet' },
       { id: 'finance-weekly', name: 'Liquidity Requirement Report' },
-      { id: 'finance-monthly_reserve-base', name:'Monthly Reserve Base Report'}
+      { id: 'finance-monthly_reserve', name:'Monthly Reserve Base Report'},
+      { id: 'finance-monthly_statutory_requirement', name:'Statutory Reserve Requirement Report'},
+      { id: 'finance-monthly_key-balance-sheet', name:'Key Balance Sheet Report'}
       // { id: 'cash_flow', name: 'Cash Flow Statement' },
       // { id: 'financial_ratios', name: 'Financial Ratios' },
     ]
@@ -42,8 +44,15 @@ const DEPARTMENT_DATA = [
     icon: FiBarChart2,
     reportTypes: [
       { id: 'loan-related-parties', name: 'Loans to Related Parties Report' },
-      { id: 'breakdown-loans-advances', name: 'Breakdown of Loans and Advances' },
-      { id: 'loan-portfolio', name: ' Loan and Advances Portfolio Report' },
+      { id: 'credit-monthly_loan-breakdown', name: 'Breakdown of Loans and Advances' },
+      { id: 'credit-monthly_loan-portfolio', name: ' Loan and Advances Portfolio Report' },
+      { id: 'credit-monthly_npl-provisions', name: 'Non-Performing Loans and Advances & Provisions' },
+      { id: 'credit-monthly_loan-disbursement', name: 'Loan & Advance Disbursement, Collection and Outstanding Report' },
+      { id: 'credit-monthly_loan-status', name: 'Loan and Advance by Status' },
+      { id: 'credit-monthly_loan-classification', name: 'Loan Classification and Provisioning' },
+      { id: 'credit-monthly_large-borrowers', name: 'List of Borrowers that Exceed Ten Percent of the Banks Capital' },
+      { id: 'credit-monthly_loan-range-region', name: 'Loans by Range and Region' },
+      { id: 'credit-monthly_loan-sector-region', name: 'Loans by Sector and Region' },
   
     ]
   },
