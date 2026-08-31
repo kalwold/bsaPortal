@@ -18,6 +18,10 @@ import extractKeyBalanceSheetData from "./extractKeyBalanceSheetData";
 import extractCapitalAdequacyData from "./extractCapitalAdequacyData";
 import extractDepositRangeRegionData from "./extractDepositRangeRegionData";
 import extractDepositSectorRegionData from "./extractDepositSectorRegionData";
+import extractIfbDepositRangeRegionData from "./extractIfbDepositRangeRegionData";
+import extractIfbDepositSectorRegionData from "./extractIfbDepositSectorRegionData";
+import extractIfbBalanceSheetData from "./extractIfbBalanceSheetData";
+import extractIfbProfitLossData from "./extractIfbProfitLossData";
 
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily",
@@ -39,6 +43,11 @@ const REPORT_TYPES = {
    LARGE_BORROWERS: 'credit-monthly_large-borrowers',
    LOAN_RANGE_REGION: 'credit-monthly_loan-range-region',
    LOAN_SECTOR_REGION: 'credit-monthly_loan-sector-region',
+   IFB_RANGE_REGION: 'ifb-monthly_deposit-range-region',
+   IFB_SECTOR_REGION: 'ifb-monthly_deposit-sector-region',
+   IFB_BALANCE_SHEET: 'ifb-monthly_balance-sheet',
+   IFB_PROFIT_LOSS: 'ifb-monthly_profit-loss',
+
    
 };
 export const parseExcelReport = (file,reportTypeIn) => {
@@ -200,6 +209,34 @@ export const parseExcelReport = (file,reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles=result.noandtitles;
         }
+         else if (reportType === REPORT_TYPES.IFB_RANGE_REGION) {
+          const result = extractIfbDepositRangeRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.IFB_SECTOR_REGION) {
+          const result = extractIfbDepositSectorRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.IFB_BALANCE_SHEET) {
+          const result = extractIfbBalanceSheetData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
+         else if (reportType === REPORT_TYPES.IFB_PROFIT_LOSS) {
+          const result = extractIfbProfitLossData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+        }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
@@ -307,6 +344,18 @@ const detectReportType = (data) => {
     if (firstCell && firstCell.includes('CD by S and Reg') || firstCell.includes('MD001')) {
       return REPORT_TYPES.DEPOSIT_SECTOR_REGION;
     }
+    if (firstCell && firstCell.includes('DIR RANGE') || firstCell.includes('RD001')) {
+      return REPORT_TYPES.IFB_RANGE_REGION;
+    }
+    if (firstCell && firstCell.includes('DIF') || firstCell.includes('IF001')) {
+      return REPORT_TYPES.IFB_SECTOR_REGION;
+    }
+    if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')) {
+      return REPORT_TYPES.IFB_BALANCE_SHEET;
+    }
+    if (firstCell && firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
+      return REPORT_TYPES.IFB_PROFIT_LOSS;
+    }
   }
   
   return null;
@@ -338,14 +387,14 @@ const extractMetadata = (data) => {
     const eighthCell = String(row[8] || "").trim();
     const tweneeEigntsCell = String(row[33] || "").trim();
 
-    console.log(`Row ${i + 1}:`, {
-      firstCell,
-      secondCell,
-      thirdCell,
-      fourthCell,
-      eighthCell,
-      tweneeEigntsCell
-    });
+    // console.log(`Row ${i + 1}:`, {
+    //   firstCell,
+    //   secondCell,
+    //   thirdCell,
+    //   fourthCell,
+    //   eighthCell,
+    //   tweneeEigntsCell
+    // });
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
@@ -464,6 +513,32 @@ const extractMetadata = (data) => {
         metadata.reportTypeId = 'finance-monthly_deposit-range-region';
         metadata.departmentId = 'finance';
         metadata.departmentName = 'Finance';
+      }
+       else  if (firstCell && firstCell.includes('DIF') || firstCell.includes('IF001')) {
+
+        metadata.reportType = 'ifb-monthly_deposit-sector-region';
+        metadata.reportTypeId = 'ifb-monthly_deposit-sector-region';
+        metadata.departmentId = 'ifb';
+        metadata.departmentName = 'IFB';
+      }
+       else if (firstCell.includes('DIR RANGE') || firstCell.includes('RD001')) {
+        metadata.reportType = 'ifb-monthly_deposit-range-region';
+        metadata.reportTypeId = 'ifb-monthly_deposit-range-region';
+        metadata.departmentId = 'ifb';
+        metadata.departmentName = 'IFB';
+      }
+       else  if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')) {
+
+        metadata.reportType = 'ifb-monthly_balance-sheet';
+        metadata.reportTypeId = 'ifb-monthly_balance-sheet';
+        metadata.departmentId = 'ifb';
+        metadata.departmentName = 'IFB';
+      }
+       else if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
+        metadata.reportType = 'ifb-monthly_profit-loss';
+        metadata.reportTypeId = 'ifb-monthly_profit-loss';
+        metadata.departmentId = 'ifb';
+        metadata.departmentName = 'IFB';
       }
     }
 

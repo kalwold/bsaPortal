@@ -103,7 +103,10 @@ const sanitizeKey = (text) => {
     
     // Skip footer notes
     //if (region.includes('NOTE') || region.includes('Note') || region.includes('Merchandise') || region.includes('Central Ethiopia Regional State') || re) continue;
-if(i >= 76 ) continue;
+//if(i >= 76 ) continue;
+
+if(code.includes('Note') || code.includes('NOTE') || region.includes('NOTE') || region.includes('Note') || region.includes('Central Ethiopia Regional State') || region.includes('South Ethiopia Regional State')) continue;
+
     const normalizedCode = code === '2.' ? '2' : code;
    console.log('code' , normalizedCode)
 const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
@@ -119,11 +122,14 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
 
     // For each loan range, extract Amount and # of Borrowers
     for (let j = 0; j < loanRanges.length; j++) {
-      const amountIndex = 2 + (j * 2);
-      const borrowersIndex = 3 + (j * 2);
+      const amountIndex = 2 + (j * 3);
+      const borrowersIndex = 3 + (j * 3);
+       const accountIndex = 4 + (j * 3);
+
       
       const amountKey = sanitizeKey(`${loanRanges[j]}_Amount`);
       const borrowersKey = sanitizeKey(`${loanRanges[j]}_Borrowers`);
+       const accountKey = sanitizeKey(`${loanRanges[j]}_Accounts`);
 
       // Get Amount
       let amountValue = '0';
@@ -144,6 +150,18 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
         }
       }
       values[borrowersKey] = borrowersValue;
+
+         // Get # of Accounts
+      let accountsValue = '0';
+      if (accountIndex < row.length) {
+        const val = parseFloat(row[accountIndex]);
+        if (!isNaN(val) && val !== 0) {
+          accountsValue = val.toFixed(0);
+        }
+      }
+
+
+      values[accountKey] = accountsValue;
     }
 
     // Create the entry
@@ -256,6 +274,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
   for (const range of loanRanges) {
     columnNames.push(sanitizeKey(`${range}_Amount`));
     columnNames.push(sanitizeKey(`${range}_Borrowers`));
+     columnNames.push(sanitizeKey(`${range}_Accounts`));
   }
 
   return {

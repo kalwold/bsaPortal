@@ -1,4 +1,4 @@
-const extractDepositRangeRegionData = (data) => {
+const extractIfbDepositRangeRegionData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
   let noandtitles = [];
@@ -277,4 +277,5 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     noandtitles
   };
 };
-export default extractDepositRangeRegionData
+
+export default extractIfbDepositRangeRegionData

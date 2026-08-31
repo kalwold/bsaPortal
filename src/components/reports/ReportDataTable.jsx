@@ -6,7 +6,7 @@ const ReportDataTable = ({
   data,
   columns,
   additionalColumns ,
-  showSNo = true,
+  showSNo,
   noandtitles
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
@@ -20,7 +20,7 @@ const ReportDataTable = ({
     }
   }, [data]);
 
-  
+   
    if (additionalColumns.length===0 && columns.length===0 ){
     additionalColumns =  ['OTHER1', 'OTHER2', 'OTHER3','OVERALL_EXPOSURE'];
   
@@ -68,7 +68,7 @@ const ReportDataTable = ({
     return (
       <React.Fragment key={node.id}>
         <tr className={`${rowClass} transition-colors`}>
-          {(showSNo && node.id) && (
+          {(showSNo) && (
             <td className="px-3 py-2 text-sm text-gray-600 text-center font-mono border border-gray-300">
               {node.id || '-'}
             </td>

@@ -6,8 +6,6 @@ import {
   getDepartmentById,
   getReportTypeById,
 } from "../services/reportService";
-import ReportUpload from "../components/reports/ReportUpload";
-import ReportDataTable from "../components/reports/ReportDataTable";
 import StatusBadge from "../components/common/StatusBadge";
 import {
   FiArrowLeft,
@@ -16,6 +14,7 @@ import {
   FiFileText,
   FiInfo,
 } from "react-icons/fi";
+import ReportUpload from "../components/reports/ReportUpload";
 
 const DepartmentReportPage = () => {
   const { deptId, reportTypeId } = useParams();

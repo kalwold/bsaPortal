@@ -258,13 +258,8 @@ const ReportViewer = () => {
                   </button> */}
                 </div>
               </div>
-              <ReportDataTable 
-  data={reportData} 
-  columns={columns} 
-  additionalColumns={additionalColumns}
-  showSNo={true} 
-  noandtitles={noandtitles}
-/>
+  <ReportDataTable data={reportData} columns={columns} showSNo={metadata.reportType ==='finance-monthly_key-balance-sheet'?false: true} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
+
             </div>
           )}
 

@@ -1,4 +1,4 @@
-const extractDepositRangeRegionData = (data) => {
+const extractIfbDepositSectorRegionData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
   let noandtitles = [];
@@ -75,9 +75,11 @@ const sanitizeKey = (text) => {
 
   // Define loan ranges
   const loanRanges = [
-    '100000',
-    '100000 - 1',
-    '1',
+    'Pub_Enterprise',
+    'Private_Coop',
+    'Regional_Gov',
+    'Banks',
+    'Others',
     'Total'
   ];
 
@@ -101,15 +103,17 @@ const sanitizeKey = (text) => {
     
     // Skip footer notes
     //if (region.includes('NOTE') || region.includes('Note') || region.includes('Merchandise') || region.includes('Central Ethiopia Regional State') || re) continue;
-//if(i > 76 ) continue
+// if(i >= 76 ) continue;
 
 if(code.includes('Note') || code.includes('NOTE') || region.includes('NOTE') || region.includes('Note') || region.includes('Central Ethiopia Regional State') || region.includes('South Ethiopia Regional State')) continue;
-  const normalizedCode = code === '2.' ? '2' : code;
+
+    const normalizedCode = code === '2.' ? '2' : code;
+   console.log('code' , normalizedCode)
 const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     // Determine level
     let level = 0;
     if (normalizedCode && normalizedCode !== '') {
-      const codeParts = code.split('.');
+      const codeParts = normalizedCode.split('.');
       level = codeParts.length;
     }
 
@@ -121,8 +125,8 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       const amountIndex = 2 + (j * 3);
       const depositorsIndex = 3 + (j * 3);
       const accountIndex = 4 + (j * 3);
-      
-      const amountKey = sanitizeKey(`${loanRanges[j]}_Amount`);
+
+       const amountKey = sanitizeKey(`${loanRanges[j]}_Amount`);
       const depositorsKey = sanitizeKey(`${loanRanges[j]}_Depositors`);
       const accountKey = sanitizeKey(`${loanRanges[j]}_Accounts`);
 
@@ -136,7 +140,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       }
       values[amountKey] = amountValue;
 
-      // Get # of Depositors
+     // Get # of Depositors
       let depositorsValue = '0';
       if (depositorsIndex < row.length) {
         const val = parseFloat(row[depositorsIndex]);
@@ -145,8 +149,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
         }
       }
       values[depositorsKey] = depositorsValue;
-
-      // Get # of Accounts
+       // Get # of Accounts
       let accountsValue = '0';
       if (accountIndex < row.length) {
         const val = parseFloat(row[accountIndex]);
@@ -154,8 +157,9 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
           accountsValue = val.toFixed(0);
         }
       }
-      values[accountKey] = accountsValue;
+        values[accountKey] = accountsValue;
     }
+     
 
     // Create the entry
     const entry = {
@@ -179,9 +183,10 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
 
   // Build hierarchy for nodes with codes
   for (const [normalizedCode, node] of nodeMap) {
+
     const codeParts = normalizedCode.split('.');
     
-    if (codeParts.length === 1) {
+    if (codeParts.length === 1 ) {
       // Region nodes (1, 2, 3, ...)
       const existing = topLevelNodes.find(n => n.id === normalizedCode);
       if (!existing) {
@@ -206,7 +211,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
         if (baseParent) {
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
-            baseParent.children.push(node);
+            baseParent.children.push(normalizedCode);
             console.log(`Added node ${normalizedCode} as child of ${baseCode} (fallback)`);
           }
         } else {
@@ -264,10 +269,9 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
   // Build column names for columns
   const columnNames = [];
   for (const range of loanRanges) {
-    columnNames.push(sanitizeKey(`${range}_Amount`));
+   columnNames.push(sanitizeKey(`${range}_Amount`));
     columnNames.push(sanitizeKey(`${range}_Depositors`));
     columnNames.push(sanitizeKey(`${range}_Accounts`));
-
   }
 
   return {
@@ -277,4 +281,5 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     noandtitles
   };
 };
-export default extractDepositRangeRegionData
+
+export default extractIfbDepositSectorRegionData

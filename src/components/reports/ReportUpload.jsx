@@ -142,6 +142,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const noandtitles=parsedData?.noandtitles|| [];
 
 console.log('columns', columns, "additionalColumns ", additionalColumns, "noandtitles", noandtitles)
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="space-y-6">
@@ -296,7 +297,7 @@ console.log('columns', columns, "additionalColumns ", additionalColumns, "noandt
               </span>
             </div>
             <div className="max-h-96 overflow-y-auto border rounded-lg">
-              <ReportDataTable data={reportData} columns={columns} showSNo={true} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
+              <ReportDataTable data={reportData} columns={columns} showSNo={metadata.reportType ==='finance-monthly_key-balance-sheet'?false: true} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
             </div>
             <p className="text-xs text-gray-400 mt-2">
               ✓ File validated successfully. Click Submit to upload.

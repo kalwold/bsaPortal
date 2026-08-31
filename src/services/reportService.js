@@ -55,6 +55,17 @@ export const DEPARTMENT_DATA = [
        { id: 'credit-monthly_loan-sector-region', name: 'Loans by Sector and Region' },
     ],
   },
+  {
+      id: 'ifb',
+      name: 'IFB',
+      reportTypes: [
+        { id: 'ifb-monthly_deposit-range-region', name: 'Report on IFB Deposits by Range and Region' },
+        { id: 'ifb-monthly_deposit-sector-region', name: 'Report on IFB Deposits by Sector and Region' },
+        { id: 'ifb-monthly_balance-sheet', name: 'Interest Free Banking Service Balance sheet' },
+        { id: 'ifb-monthly_profit-loss', name: 'Interest Free Banking Service Profit and loss statement' },
+        
+      ]
+    },
 ];
 
 export const getDepartmentById = (deptId) => {
