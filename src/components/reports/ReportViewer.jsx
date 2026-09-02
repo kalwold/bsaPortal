@@ -68,8 +68,8 @@ const ReportViewer = () => {
       approver: approver
     };
 
-    console.log('Approval Data:', approvalData);
-    console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
+    //consol.log('Approval Data:', approvalData);
+    //consol.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
     approveMutation.mutate({ 
       id: report.id || reportId,
       approver: approver
@@ -88,8 +88,8 @@ const ReportViewer = () => {
       rejectReason: comment.trim()
     };
 
-    console.log('Rejection Data:', rejectionData);
-    console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
+    //consol.log('Rejection Data:', rejectionData);
+    //consol.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
     rejectMutation.mutate(rejectionData);
   };
 

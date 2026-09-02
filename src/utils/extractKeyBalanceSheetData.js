@@ -1,3 +1,95 @@
+import { excelDateToISO } from "./excelParser";
+export const extractKeyBalanceSheetMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  //consol.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      //consol.log("Found Return Key:", metadata.ReturnKey);
+  
+
+if (firstCell.includes('Key Balance Sheet') || firstCell.includes('MK001')) {
+        metadata.reportType = 'finance-monthly_key-balance-sheet';
+        metadata.reportTypeId = 'finance-monthly_key-balance-sheet';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
+      }
+    }
+
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
+      //consol.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      (firstCell ) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = secondCell || '';
+      //consol.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = secondCell || '';
+      //consol.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(secondCell) || '';
+      //consol.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(secondCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      //consol.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 12) &&
+      (firstCell )
+    ) {
+      metadata.unit = firstCell  || '';
+      //consol.log("Found Unit:", metadata.unit);
+    }
+  }
+return metadata
+}
 const extractKeyBalanceSheetData = (data) => {
   const hierarchicalData = [];
 
@@ -10,13 +102,13 @@ const extractKeyBalanceSheetData = (data) => {
 };
   let dataTableStart = -1;
 
-  console.log('=== Extracting Key Balance Sheet Data ===');
+  //consol.log('=== Extracting Key Balance Sheet Data ===');
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      //consol.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
 
@@ -27,7 +119,7 @@ const extractKeyBalanceSheetData = (data) => {
     const firstCell = String(row[0] || '').trim();
     if (firstCell === 'Particulars') {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      //consol.log('Found data table at row:', dataTableStart);
       break;
     }
   }
@@ -40,20 +132,20 @@ const extractKeyBalanceSheetData = (data) => {
       const firstCell = String(row[0] || '').trim();
       if (firstCell && firstCell.includes('Total assets')) {
         dataTableStart = i;
-        console.log('Found data table at row (alt):', dataTableStart);
+        //consol.log('Found data table at row (alt):', dataTableStart);
         break;
       }
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    //consol.log('Could not find data table');
     return { hierarchicalData: [], columns: ['Amount'], additionalColumns: [] };
   }
 
   // Get the header row
   const headerRow = data[dataTableStart - 1];
-  console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+  //consol.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
   // Find the value column (column B = index 1)
   const valueColumnIndex = 1;
@@ -114,7 +206,7 @@ const extractKeyBalanceSheetData = (data) => {
         }
   }
 
-  console.log('Total metric entries:', topLevelNodes);
+  //consol.log('Total metric entries:', topLevelNodes);
 
   return {
     hierarchicalData: topLevelNodes,

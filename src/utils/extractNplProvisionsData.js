@@ -1,3 +1,108 @@
+import { excelDateToISO } from "./excelParser";
+export const extractNplProvisionMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  //consol.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const thirtyOneCell = String(row[30] || "").trim();
+
+    // //consol.log(`Row ${i + 1}:`, {
+    //   firstCell,
+    //   secondCell,
+    //   thirdCell,
+    //   fourthCell,
+    //   eighthCell,
+    //   tweneeEigntsCell
+    // });
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      //consol.log("Found Return Key:", metadata.ReturnKey);
+     
+
+if (firstCell.includes('NPL&PRO') || firstCell.includes('NL001')) {
+        metadata.reportType = 'credit-monthly_loan-nonperforming';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-nonperforming';
+      }
+
+    }
+
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
+      //consol.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      (firstCell ) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = thirdCell || '';
+      //consol.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = thirdCell || '';
+      //consol.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(thirdCell) || '';
+      //consol.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(thirdCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      //consol.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 12) &&
+      (thirdCell || thirtyOneCell || firstCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        thirtyOneCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+    ) {
+      metadata.unit = thirdCell  || '';
+      //consol.log("Found Unit:", metadata.unit);
+    }
+  }
+return metadata
+}
 const extractNplProvisionsData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -17,16 +122,16 @@ const extractNplProvisionsData = (data) => {
 
     if (i === 13) {
       noandtitles = [firstCell, secondCell];
-      console.log("Found title:", noandtitles);
+      //consol.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting NPL & Provisions Data ===');
+  //consol.log('=== Extracting NPL & Provisions Data ===');
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      //consol.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
 
@@ -37,7 +142,7 @@ const extractNplProvisionsData = (data) => {
     const firstCell = String(row[0] || '').trim();
     if (firstCell === 'Code') {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      //consol.log('Found data table at row:', dataTableStart);
       break;
     }
   }
@@ -52,7 +157,7 @@ const extractNplProvisionsData = (data) => {
         const secondCell = String(row[1] || '').trim();
         if (secondCell && secondCell.includes('Total non-performing loans')) {
           dataTableStart = i;
-          console.log('Found data table at row (alt):', dataTableStart);
+          //consol.log('Found data table at row (alt):', dataTableStart);
           break;
         }
       }
@@ -60,13 +165,13 @@ const extractNplProvisionsData = (data) => {
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    //consol.log('Could not find data table');
     return { hierarchicalData: [], columns: ['Amount'], additionalColumns: [] };
   }
 
   // Get the header row
   const headerRow = data[dataTableStart - 1];
-  console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+  //consol.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
   // Find the value column (column C = index 2)
   const valueColumnIndex = 2;
@@ -145,7 +250,7 @@ const extractNplProvisionsData = (data) => {
           const parent = nodeMap.get('2');
           if (parent) {
             parent.children.push(entry);
-            console.log(`Added ${description} as child of 2`);
+            //consol.log(`Added ${description} as child of 2`);
           } else {
             topLevelNodes.push(entry);
           }
@@ -153,7 +258,7 @@ const extractNplProvisionsData = (data) => {
           const parent = nodeMap.get('3');
           if (parent) {
             parent.children.push(entry);
-            console.log(`Added ${description} as child of 3`);
+            //consol.log(`Added ${description} as child of 3`);
           } else {
             topLevelNodes.push(entry);
           }
@@ -161,7 +266,7 @@ const extractNplProvisionsData = (data) => {
           const parent = nodeMap.get('4');
           if (parent) {
             parent.children.push(entry);
-            console.log(`Added ${description} as child of 4`);
+            //consol.log(`Added ${description} as child of 4`);
           } else {
             topLevelNodes.push(entry);
           }
@@ -169,7 +274,7 @@ const extractNplProvisionsData = (data) => {
           const parent = nodeMap.get('1');
           if (parent) {
             parent.children.push(entry);
-            console.log(`Added ${description} as child of 1`);
+            //consol.log(`Added ${description} as child of 1`);
           } else {
             topLevelNodes.push(entry);
           }
@@ -196,7 +301,7 @@ const extractNplProvisionsData = (data) => {
       const existing = topLevelNodes.find(n => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
-        console.log(`Added top-level node: ${code} - ${node.label}`);
+        //consol.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Child nodes (2.1, 2.2, etc.)
@@ -207,7 +312,7 @@ const extractNplProvisionsData = (data) => {
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          console.log(`Added node ${code} as child of ${parentCode}`);
+          //consol.log(`Added node ${code} as child of ${parentCode}`);
         }
       } else {
         // Try to find parent by base code
@@ -217,12 +322,12 @@ const extractNplProvisionsData = (data) => {
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(node);
-            console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
+            //consol.log(`Added node ${code} as child of ${baseCode} (fallback)`);
           }
         } else {
           // If still no parent, add to top level
           topLevelNodes.push(node);
-          console.log(`Added node ${code} as top-level (no parent found)`);
+          //consol.log(`Added node ${code} as top-level (no parent found)`);
         }
       }
     }
@@ -268,8 +373,8 @@ const extractNplProvisionsData = (data) => {
   };
   cleanData(topLevelNodes);
 
-  console.log('Final top-level nodes:', topLevelNodes.length);
-  console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+  //consol.log('Final top-level nodes:', topLevelNodes.length);
+  //consol.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
 
   return {
     hierarchicalData: topLevelNodes,

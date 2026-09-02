@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
      // fetchUser();
-      console.log('user:', user); // Debugging line to check user data
+      //consol.log('user:', user); // Debugging line to check user data
     } else {
       setLoading(false);
     }
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 //     "permissions": ["upload", "review", "approve", "manage_users"]
 //   }
 // }
-// console.log('Fetched user data:', response.data); // Debugging line to check fetched user data
+// //consol.log('Fetched user data:', response.data); // Debugging line to check fetched user data
 //       setUser(response.data);
 //     } catch (error) {
 //       localStorage.removeItem('token');

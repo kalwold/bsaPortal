@@ -17,7 +17,7 @@ export const DEPARTMENT_DATA = [
         id: "finance-monthly_reserve",
         name: "Monthly Reserve Base Report",
       },
-      { id: 'finance-monthly_statutory_requirement', name:'Statutory Reserve Requirement Report'},
+      { id: 'finance-monthly_statutory', name:'Statutory Reserve Requirement Report'},
         { id: 'finance-monthly_key-balance-sheet', name:'Key Balance Sheet Report'},
          { id: 'finance-monthly_capital-adequacy', name:'CAPITAL ADEQUACY REPORT (Monthly) - Capital Components'},
                { id: 'finance-monthly_deposit-sector-region', name:'Report on Deposits by Sector and Region'},
@@ -35,7 +35,7 @@ export const DEPARTMENT_DATA = [
       },
       { id: "credit-monthly_loan-portfolio", name: " Loan and Advances Portfolio Report" },
       {
-        id: "credit-monthly_npl-provisions",
+        id: "credit-monthly_loan-nonperforming",
         name: "Non-Performing Loans and Advances & Provisions",
       },
       {

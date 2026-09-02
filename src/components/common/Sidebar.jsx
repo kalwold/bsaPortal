@@ -32,13 +32,11 @@ const DEPARTMENT_DATA = [
       { id: 'finance-monthly_balance-sheet', name: 'Balance Sheet' },
       { id: 'finance-weekly', name: 'Liquidity Requirement Report' },
       { id: 'finance-monthly_reserve', name:'Monthly Reserve Base Report'},
-      { id: 'finance-monthly_statutory_requirement', name:'Statutory Reserve Requirement Report'},
+      { id: 'finance-monthly_statutory', name:'Statutory Reserve Requirement Report'},
       { id: 'finance-monthly_key-balance-sheet', name:'Key Balance Sheet Report'},
       { id: 'finance-monthly_capital-adequacy', name:'CAPITAL ADEQUACY REPORT (Monthly) - Capital Components'},
       { id: 'finance-monthly_deposit-sector-region', name:'Report on Deposits by Sector and Region'},
       { id: 'finance-monthly_deposit-range-region', name:'Report on Deposits by Range and Region'},
-      // { id: 'cash_flow', name: 'Cash Flow Statement' },
-      // { id: 'financial_ratios', name: 'Financial Ratios' },
     ]
   },
   {
@@ -49,7 +47,7 @@ const DEPARTMENT_DATA = [
       { id: 'loan-related-parties', name: 'Loans to Related Parties Report' },
       { id: 'credit-monthly_loan-breakdown', name: 'Breakdown of Loans and Advances' },
       { id: 'credit-monthly_loan-portfolio', name: ' Loan and Advances Portfolio Report' },
-      { id: 'credit-monthly_npl-provisions', name: 'Non-Performing Loans and Advances & Provisions' },
+      { id: 'credit-monthly_loan-nonperforming', name: 'Non-Performing Loans and Advances & Provisions' },
       { id: 'credit-monthly_loan-disbursement', name: 'Loan & Advance Disbursement, Collection and Outstanding Report' },
       { id: 'credit-monthly_loan-status', name: 'Loan and Advance by Status' },
       { id: 'credit-monthly_loan-classification', name: 'Loan Classification and Provisioning' },
@@ -78,7 +76,7 @@ const DEPARTMENT_DATA = [
 const Sidebar = () => {
 
   const { user, logout } = useAuth();
-  console.log('Sidebar user:', user); // Debugging line to check user data
+  //consol.log('Sidebar user:', user); // Debugging line to check user data
   const navigate = useNavigate();
   const [expandedDepartments, setExpandedDepartments] = useState({});
 

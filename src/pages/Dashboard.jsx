@@ -47,7 +47,7 @@ const Dashboard = () => {
         }))
       );
 
-      console.log('Report Types:', reportTypes);
+      //consol.log('Report Types:', reportTypes);
 
       // Fetch all report types at the same time
       const results = await Promise.all(
@@ -88,7 +88,7 @@ const Dashboard = () => {
 
       const allReports = results.flat();
 
-      console.log('All Reports:', allReports);
+      //consol.log('All Reports:', allReports);
 
       return allReports;
     },
@@ -396,7 +396,7 @@ const Dashboard = () => {
               width="100%"
               height="100%"
             >
-              <BarChart data={monthlyData}>
+              <BarChart data={pieData}>
 
                 <CartesianGrid strokeDasharray="3 3" />
 
@@ -563,7 +563,7 @@ export default Dashboard;
 //     const reportTypes = DEPARTMENT_DATA.flatMap(department =>
 //       department.reportTypes
 //     );
-//  console.log("reportTypes ",reportTypes)
+//  //consol.log("reportTypes ",reportTypes)
 //     const results = await Promise.all(
 //       reportTypes.map(async reportType => {
 //         const reports = await reportService.getReports(reportType.id);
@@ -577,7 +577,7 @@ export default Dashboard;
     
 //     )
 //     );
-//  console.log("results.flat()",results.flat())
+//  //consol.log("results.flat()",results.flat())
 //     return results.flat();
 //   },
 // });
@@ -599,7 +599,7 @@ export default Dashboard;
 // //     const reportTypes = DEPARTMENT_DATA.flatMap(department =>
 // //       department.reportTypes
 // //     );
-// // console.log("reportTypes", reportTypes)
+// // //consol.log("reportTypes", reportTypes)
 // //     const results = await Promise.all(
 // //       reportTypes.map( reportType => 
 // //         reportService.getReports(reportType.id)
@@ -612,7 +612,7 @@ export default Dashboard;
 // //       )
 // //     );
 
-// //     console.log("results.flat()",results.flat())
+// //     //consol.log("results.flat()",results.flat())
 
 // //     return results.flat();
 // //   },
@@ -643,7 +643,7 @@ export default Dashboard;
 
       
 //     );
-//  console.log("results.flat()",results.flat())
+//  //consol.log("results.flat()",results.flat())
 //     return results.flat();
 //   },
 // });
@@ -656,7 +656,7 @@ export default Dashboard;
 //   }
 
 //   const COLORS = ['#3b237b', '#F59E0B', '#10B981', '#EF4444'];
-//  console.log("recentReports",stats)
+//  //consol.log("recentReports",stats)
 //   const totalReports = stats?.length || 0;
 //   const pendingCount = stats?.filter((r) => r.status === "PENDING").length || 0;
 //   const inReviewCount = stats?.filter((r) => r.status === "IN_REVIEW").length || 0;

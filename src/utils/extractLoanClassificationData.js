@@ -1,3 +1,97 @@
+import { excelDateToISO } from "./excelParser";
+export const extractLoanClassificationMetaData = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  //consol.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const thirteenCell = String(row[9] || "").trim();
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      //consol.log("Found Return Key:", metadata.ReturnKey);
+
+if (firstCell.includes('M_LCPL') || firstCell.includes('LC001')) {
+        metadata.reportType = 'credit-monthly_loan-classification';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-classification';
+      }
+    }
+
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
+      //consol.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      (firstCell ) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = thirdCell || '';
+      //consol.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = thirdCell || '';
+      //consol.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(thirdCell) || '';
+      //consol.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(thirdCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      //consol.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 12) &&
+      (thirdCell || thirteenCell || firstCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        thirteenCell.toLowerCase().includes("in") || thirteenCell.toLowerCase().includes('In'))
+    ) {
+      metadata.unit = thirteenCell  || '';
+      //consol.log("Found Unit:", metadata.unit);
+    }
+  }
+return metadata
+}
 const extractLoanClassificationData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -12,10 +106,10 @@ const extractLoanClassificationData = (data) => {
 
     if (i === 13) {
       noandtitles = [firstCell, secondCell];
-      console.log("Found title:", noandtitles);
+      //consol.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting Loan Classification Data ===');
+  //consol.log('=== Extracting Loan Classification Data ===');
 
 
   const sanitizeKey = (text) => {
@@ -29,7 +123,7 @@ const extractLoanClassificationData = (data) => {
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      //consol.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
 
@@ -40,7 +134,7 @@ const extractLoanClassificationData = (data) => {
     const firstCell = String(row[0] || '').trim();
     if (firstCell === 'Code') {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      //consol.log('Found data table at row:', dataTableStart);
       break;
     }
   }
@@ -55,7 +149,7 @@ const extractLoanClassificationData = (data) => {
         const secondCell = String(row[1] || '').trim();
         if (secondCell && secondCell.includes('Pass')) {
           dataTableStart = i;
-          console.log('Found data table at row (alt):', dataTableStart);
+          //consol.log('Found data table at row (alt):', dataTableStart);
           break;
         }
       }
@@ -63,13 +157,13 @@ const extractLoanClassificationData = (data) => {
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    //consol.log('Could not find data table');
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
   // Get the header row to identify column positions
   const headerRow = data[dataTableStart - 1];
-  console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+  //consol.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
   // Define column mappings
   // Based on the Excel: Amount(A), Deductible collateral(B), Cash/cash substitute(C), Net recoverable value(D), Total(E), Net loans and advances(F), Provisioning rate(G), Required provision(H), Accumulated provision held(I), Excess/shortfall in provisions(J)
@@ -102,7 +196,7 @@ const extractLoanClassificationData = (data) => {
     if (cell === 'Excess/shortfall in provisions') columnMap.excessShortfall = i;
   }
 
-  console.log('Column map:', columnMap);
+  //consol.log('Column map:', columnMap);
 
   // Define column names for columns
   const columnNames = [
@@ -196,7 +290,7 @@ const extractLoanClassificationData = (data) => {
       children: []
     };
 
-   console.log('lc datas' , entry)
+   //consol.log('lc datas' , entry)
     if (code) {
       nodeMap.set(code, entry);
     }
@@ -252,7 +346,7 @@ const extractLoanClassificationData = (data) => {
       const existing = topLevelNodes.find(n => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
-        console.log(`Added top-level node: ${code} - ${node.label}`);
+        //consol.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Child nodes (1.1, 1.1.1, etc.)
@@ -263,7 +357,7 @@ const extractLoanClassificationData = (data) => {
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          console.log(`Added node ${code} as child of ${parentCode}`);
+          //consol.log(`Added node ${code} as child of ${parentCode}`);
         }
       } else {
         // Try to find parent by base code
@@ -273,12 +367,12 @@ const extractLoanClassificationData = (data) => {
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(node);
-            console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
+            //consol.log(`Added node ${code} as child of ${baseCode} (fallback)`);
           }
         } else {
           // If still no parent, add to top level
           topLevelNodes.push(node);
-          console.log(`Added node ${code} as top-level (no parent found)`);
+          //consol.log(`Added node ${code} as top-level (no parent found)`);
         }
       }
     }
@@ -366,8 +460,8 @@ if (accumulatedIndex !== -1) {
   };
   cleanData(topLevelNodes);
 
-  console.log('Final top-level nodes:', topLevelNodes.length);
-  console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+  //consol.log('Final top-level nodes:', topLevelNodes.length);
+  //consol.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
 
   // Return sanitized column names for columns
   const currencyColumns = columnNames.map(name => sanitizeKey(name));

@@ -1,3 +1,109 @@
+import { excelDateToISO } from "./excelParser";
+
+export const extractBalanceSheetMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  //consol.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const tweneeEigntsCell = String(row[33] || "").trim();
+
+    // //consol.log(`Row ${i + 1}:`, {
+    //   firstCell,
+    //   secondCell,
+    //   thirdCell,
+    //   fourthCell,
+    //   eighthCell,
+    //   tweneeEigntsCell
+    // });
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      //consol.log("Found Return Key:", metadata.ReturnKey);
+
+     if (firstCell.includes("MB001")) {
+        metadata.reportType = "finance-monthly_balance-sheet";
+        metadata.departmentName = "Finance";
+        metadata.departmentId = "finance";
+        metadata.reportTypeId = "finance-monthly_balance-sheet";
+        //consol.log("Found Report Type:", metadata.reportType);
+      } 
+    }
+
+    if (( i === 3) && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || '';
+      //consol.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      (firstCell || secondCell) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = thirdCell || '';
+      //consol.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = thirdCell || '';
+      //consol.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(thirdCell) || '';
+      //consol.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(thirdCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      //consol.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 12) &&
+      (thirdCell || eighthCell || firstCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        eighthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+    ) {
+      metadata.unit = thirdCell  || '';
+      //consol.log("Found Unit:", metadata.unit);
+    }
+  }
+
+  return metadata;
+};
 const extractBalanceSheetData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -10,7 +116,7 @@ const extractBalanceSheetData = (data) => {
 
     if (i === 12) {
       noandtitles = [firstCell, secondCell];
-      console.log("Found title:", noandtitles);
+      //consol.log("Found title:", noandtitles);
     }
   }
 
@@ -128,24 +234,24 @@ const extractBalanceSheetData = (data) => {
         topLevelNodes.push(entry);
         assetsNode = entry;
         currentParent = entry;
-        console.log('Added ASSETS section:', entry.label);
+        //consol.log('Added ASSETS section:', entry.label);
       } else if (isLiabilitiesSection) {
         // LIABILITIES & CAPITAL section - top level
         topLevelNodes.push(entry);
         liabilitiesNode = entry;
         currentParent = entry;
-        console.log('Added LIABILITIES & CAPITAL section:', entry.label);
+        //consol.log('Added LIABILITIES & CAPITAL section:', entry.label);
       } else if (isTotalRow) {
         // Total rows - add to appropriate parent
         if (description.includes('TOTAL ASSETS') && assetsNode) {
           assetsNode.children.push(entry);
-          console.log('Added TOTAL ASSETS to ASSETS section');
+          //consol.log('Added TOTAL ASSETS to ASSETS section');
         } else if (description.includes('TOTAL LIABILITIES') && liabilitiesNode) {
           liabilitiesNode.children.push(entry);
-          console.log('Added TOTAL LIABILITIES to LIABILITIES section');
+          //consol.log('Added TOTAL LIABILITIES to LIABILITIES section');
         } else {
           topLevelNodes.push(entry);
-          console.log('Added total row as top-level:', entry.label);
+          //consol.log('Added total row as top-level:', entry.label);
         }
       } else {
         // Other rows without code - add to current parent
@@ -180,13 +286,13 @@ const extractBalanceSheetData = (data) => {
         const exists = parentSection.children.some(child => child.id === code);
         if (!exists) {
           parentSection.children.push(node);
-          console.log(`Added node ${code} to ${parentSection.label}`);
+          //consol.log(`Added node ${code} to ${parentSection.label}`);
         }
       } else {
         const existing = topLevelNodes.find(n => n.id === code);
         if (!existing) {
           topLevelNodes.push(node);
-          console.log(`Added node ${code} as top-level (no parent found)`);
+          //consol.log(`Added node ${code} as top-level (no parent found)`);
         }
       }
     } else if (codeParts.length > 1) {
@@ -198,7 +304,7 @@ const extractBalanceSheetData = (data) => {
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          console.log(`Added node ${code} as child of ${parentCode}`);
+          //consol.log(`Added node ${code} as child of ${parentCode}`);
         }
       } else {
         // Try to find parent by base code
@@ -208,7 +314,7 @@ const extractBalanceSheetData = (data) => {
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(node);
-            console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
+            //consol.log(`Added node ${code} as child of ${baseCode} (fallback)`);
           }
         }
       }
@@ -219,7 +325,7 @@ const extractBalanceSheetData = (data) => {
   const sortChildren = (nodes) => {
     nodes.sort((a, b) => {
       // Put total rows at the end
-      console.log('description total', a)
+      //consol.log('description total', a)
       if ((a.isTotalRow && !b.isTotalRow)&& a.label.includes('TOTAL LIABILITIES AND NET WORTH')) return 1;
       if ((!a.isTotalRow && b.isTotalRow)&& b.label.includes('TOTAL LIABILITIES AND NET WORTH'))return -1;
       
@@ -258,7 +364,7 @@ const extractBalanceSheetData = (data) => {
   };
   cleanData(topLevelNodes);
 
-  console.log('Final hierarchy:', JSON.stringify(topLevelNodes, null, 2));
+  //consol.log('Final hierarchy:', JSON.stringify(topLevelNodes, null, 2));
 
   return {
     hierarchicalData: topLevelNodes,

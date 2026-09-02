@@ -12,10 +12,10 @@ const ReportDataTable = ({
   const [expandedRows, setExpandedRows] = useState({});
 
     useEffect(() => {
-    console.log('ReportDataTable received data:', data);
+    //consol.log('ReportDataTable received data:', data);
     if (data && data.length > 0) {
-      console.log('First node:', data[0]);
-      console.log('First node values keys:', Object.keys(data[0].values || {}));
+      //consol.log('First node:', data[0]);
+      //consol.log('First node values keys:', Object.keys(data[0].values || {}));
 
     }
   }, [data]);

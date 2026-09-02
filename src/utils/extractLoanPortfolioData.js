@@ -1,3 +1,96 @@
+import { excelDateToISO } from "./excelParser";
+export const extractPortfolioMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  console.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[5] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const thirteenCell = String(row[12] || "").trim();
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      console.log("Found Return Key:", metadata.ReturnKey);
+if (firstCell.includes('LOA_PORT') || firstCell.includes('EP001')) {
+        metadata.reportType = 'credit-monthly_loan-portfolio';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-portfolio';
+      }
+    }
+
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
+      console.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      (firstCell ) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = thirdCell || '';
+      console.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = thirdCell || '';
+      console.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(thirdCell) || '';
+      console.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(thirdCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      console.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 12) &&
+      (thirdCell || fourthCell || firstCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        fourthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+    ) {
+      metadata.unit = fourthCell  || '';
+      console.log("Found Unit:", metadata.unit);
+    }
+  }
+return metadata
+}
 const extractLoanPortfolioData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -192,10 +285,10 @@ const extractLoanPortfolioData = (data) => {
     // 9. Extract values
     // =====================================================
 
-    let disbursementAmount = "0";
-    let disbursementPercentage = "0";
-    let outstandingAmount = "0";
-    let outstandingPercentage = "0";
+    let disbursementAmount = "0.00";
+    let disbursementPercentage = "0.00%";
+    let outstandingAmount = "0.00";
+    let outstandingPercentage = "0.00%";
 
     // -----------------------------------------------------
     // Column C - Disbursement Amount
@@ -224,7 +317,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        disbursementPercentage = val.toFixed(2);
+        disbursementPercentage = (val*100).toFixed(2) + '%';
       }
     }
 
@@ -255,7 +348,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        outstandingPercentage = val.toFixed(2);
+        outstandingPercentage = (val*100).toFixed(2) + '%';
       }
     }
 
@@ -312,10 +405,10 @@ const extractLoanPortfolioData = (data) => {
           label: "Loans by Category",
 
           values: {
-            "Disbursement_Amount": "0",
-            "Disbursement_Percentage": "0",
-            "Outstanding_Amount": "0",
-            "Outstanding_Percentage": "0"
+            "Disbursement_Amount": "0.00",
+            "Disbursement_Percentage": "0.00%",
+            "Outstanding_Amount": "0.00",
+            "Outstanding_Percentage": "0.00%"
           },
 
           rowNumber: dataTableStart,
@@ -365,10 +458,10 @@ const extractLoanPortfolioData = (data) => {
           label: "Loans by Purpose",
 
           values: {
-            "Disbursement_Amount": "0",
-            "Disbursement_Percentage": "0",
-            "Outstanding_Amount": "0",
-            "Outstanding_Percentage": "0"
+            "Disbursement_Amount": "0.00",
+            "Disbursement_Percentage": "0.00%",
+            "Outstanding_Amount": "0.00",
+            "Outstanding_Percentage": "0.00%"
           },
 
           rowNumber: i + 1,

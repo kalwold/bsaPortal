@@ -1,3 +1,107 @@
+import { excelDateToISO } from "./excelParser";
+export const extractLoanStatusMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  //consol.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const eleventhCell = String(row[10] || "").trim();
+
+    // //consol.log(`Row ${i + 1}:`, {
+    //   firstCell,
+    //   secondCell,
+    //   thirdCell,
+    //   fourthCell,
+    //   eighthCell,
+    //   tweneeEigntsCell
+    // });
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      //consol.log("Found Return Key:", metadata.ReturnKey);
+
+if (firstCell.includes('LA_STAT') || firstCell.includes('LS001')) {
+        metadata.reportType = 'credit-monthly_loan-status';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-status';
+      }
+    }
+
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
+      //consol.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      (firstCell ) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = thirdCell || '';
+      //consol.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = thirdCell || '';
+      //consol.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(thirdCell) || '';
+      //consol.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(thirdCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      //consol.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 12) &&
+      (thirdCell || eleventhCell || firstCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        eleventhCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+    ) {
+      metadata.unit = eleventhCell  || '';
+      //consol.log("Found Unit:", metadata.unit);
+    }
+  }
+return metadata
+}
+
 const extractLoanStatusData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -19,16 +123,16 @@ const sanitizeKey = (text) => {
 
     if (i === 13) {
       noandtitles = [firstCell, secondCell];
-      console.log("Found title:", noandtitles);
+      //consol.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting Loan Status Data ===');
+  //consol.log('=== Extracting Loan Status Data ===');
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      //consol.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
 
@@ -39,7 +143,7 @@ const sanitizeKey = (text) => {
     const firstCell = String(row[0] || '').trim();
     if (firstCell === 'Code') {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      //consol.log('Found data table at row:', dataTableStart);
       break;
     }
   }
@@ -54,7 +158,7 @@ const sanitizeKey = (text) => {
         const secondCell = String(row[1] || '').trim();
         if (secondCell && secondCell.includes('Agriculture')) {
           dataTableStart = i;
-          console.log('Found data table at row (alt):', dataTableStart);
+          //consol.log('Found data table at row (alt):', dataTableStart);
           break;
         }
       }
@@ -62,13 +166,13 @@ const sanitizeKey = (text) => {
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    //consol.log('Could not find data table');
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
   // Get the header row to identify column positions
   const headerRow = data[dataTableStart - 1];
-  console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+  //consol.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
   // Define column groups with sanitized keys
   const columnGroups = [
@@ -101,7 +205,7 @@ const sanitizeKey = (text) => {
     });
   }
 
-  console.log('Columns mapping:', columns);
+  //consol.log('Columns mapping:', columns);
 
   const topLevelNodes = [];
   const nodeMap = new Map();
@@ -118,7 +222,7 @@ const sanitizeKey = (text) => {
     if (!description) continue;
 
     // Skip footer rows or notes
-    if (description.includes('Note:') || description.includes('Note') || description.includes('Total')) continue;
+    if (description.includes('Note:') || description.includes('Note')) continue;
 
     // Check if this is a total row
     const isTotalRow = description === 'Total';
@@ -154,7 +258,7 @@ const sanitizeKey = (text) => {
     const isSectionHeader = isParent && !isTotalRow;
 
     const entry = {
-      id: code || `row-${i}`,
+      id: code || ``,
       sNo: code || '',
       label: description,
       values: values,
@@ -169,22 +273,27 @@ const sanitizeKey = (text) => {
       nodeMap.set(code, entry);
     }
 
-    if (!code) {
-      // Rows without code - add to top level
-      if (isTotalRow) {
-        // Find the appropriate parent for total
-        const totalParent = nodeMap.get('13');
-        if (totalParent) {
-          totalParent.children.push(entry);
-          console.log(`Added ${description} as child of 13`);
-        } else {
-          topLevelNodes.push(entry);
-        }
-      } else {
-        topLevelNodes.push(entry);
-      }
-    }
-  }
+  //   if (!code) {
+  //     // Rows without code - add to top level
+  //     if (isTotalRow) {
+  //       // Find the appropriate parent for total
+  //       const totalParent = nodeMap.get('13');
+  //       if (totalParent) {
+  //         totalParent.children.push(entry);
+  //         //consol.log(`Added ${description} as child of 13`);
+  //       } else {
+  //         topLevelNodes.push(entry);
+  //       }
+  //     } else {
+  //       topLevelNodes.push(entry);
+  //     }
+  //   }
+  // }
+   if (!code) {
+     if (isTotalRow) {
+      topLevelNodes.push(entry);
+     }}
+   }
 
   // Build hierarchy for nodes with codes
   for (const [code, node] of nodeMap) {
@@ -195,7 +304,7 @@ const sanitizeKey = (text) => {
       const existing = topLevelNodes.find(n => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
-        console.log(`Added top-level node: ${code} - ${node.label}`);
+        //consol.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Child nodes (4.1, 4.2, etc.)
@@ -206,7 +315,7 @@ const sanitizeKey = (text) => {
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          console.log(`Added node ${code} as child of ${parentCode} , ${node}`);
+          //consol.log(`Added node ${code} as child of ${parentCode} , ${node}`);
         }
       } else {
         // Try to find parent by base code
@@ -216,12 +325,12 @@ const sanitizeKey = (text) => {
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(node);
-            console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
+            //consol.log(`Added node ${code} as child of ${baseCode} (fallback)`);
           }
         } else {
           // If still no parent, add to top level
           topLevelNodes.push(node);
-          console.log(`Added node ${code} as top-level (no parent found)`);
+          //consol.log(`Added node ${code} as top-level (no parent found)`);
         }
       }
     }
@@ -267,8 +376,8 @@ const sanitizeKey = (text) => {
   };
   cleanData(topLevelNodes);
 
-  console.log('Final top-level nodes:', topLevelNodes.length);
-  console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+  //consol.log('Final top-level nodes:', topLevelNodes.length);
+  //consol.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
 
   // Get sanitized column names for columns
   const currencyColumns = columns.map(c => c.key);

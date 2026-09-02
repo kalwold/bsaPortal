@@ -17,7 +17,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState([]);
 
-  console.log('ReportUpload props:', { departmentId, reportType });
+  //consol.log('ReportUpload props:', { departmentId, reportType });
 
   useEffect(() => {
   // Cleanup function - runs when component unmounts or before next render
@@ -54,10 +54,10 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
       setValidationErrors([]);
       
       const parsed = await parseExcelReport(file,reportType);
-      console.log('Parsed report:', parsed);
+      //consol.log('Parsed report:', parsed);
       
       const validation = validateReportStructure(parsed);
-      console.log('Validation result:', validation);
+      //consol.log('Validation result:', validation);
       
       if (!validation.isValid) {
         setValidationErrors(validation.errors);
@@ -141,7 +141,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const additionalColumns =parsedData?.additionalColumns || [];
   const noandtitles=parsedData?.noandtitles|| [];
 
-console.log('columns', columns, "additionalColumns ", additionalColumns, "noandtitles", noandtitles)
+//consol.log('columns', columns, "additionalColumns ", additionalColumns, "noandtitles", noandtitles)
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
@@ -277,11 +277,11 @@ console.log('columns', columns, "additionalColumns ", additionalColumns, "noandt
               </div>
               <div>
                 <p className="text-xs text-gray-500">Unit</p>
-                <p className="text-sm font-semibold text-gray-900">{metadata.unit || 'In Thousands'}</p>
+                <p className="text-sm font-semibold text-gray-900">{metadata.unit }</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Template ID</p>
-                <p className="text-sm font-semibold text-gray-900">{metadata.templateId || 'OP001'}</p>
+                <p className="text-sm font-semibold text-gray-900">{metadata.templateId}</p>
               </div>
             </div>
           </div>

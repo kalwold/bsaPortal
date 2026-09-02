@@ -1,3 +1,97 @@
+import { excelDateToISO } from "./excelParser";
+export const extractDisbursementMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  //consol.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const thirteenCell = String(row[11] || "").trim();
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      //consol.log("Found Return Key:", metadata.ReturnKey);
+
+if (firstCell.includes('LOA_ADV_OUT') || firstCell.includes('LA001')) {
+        metadata.reportType = 'credit-monthly_loan-disbursement';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+        metadata.reportTypeId = 'credit-monthly_loan-disbursement';
+      }
+    }
+
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
+      //consol.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      (firstCell ) &&
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = thirdCell || '';
+      //consol.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = thirdCell || '';
+      //consol.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(thirdCell) || '';
+      //consol.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(thirdCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      //consol.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 13) &&
+      (thirdCell || thirteenCell || firstCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        thirteenCell.toLowerCase().includes("in") || thirteenCell.toLowerCase().includes('In'))
+    ) {
+      metadata.unit = thirteenCell  || '';
+      //consol.log("Found Unit:", metadata.unit);
+    }
+  }
+return metadata
+}
 const extractLoanDisbursementData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -13,16 +107,16 @@ const extractLoanDisbursementData = (data) => {
 
     if (i === 14) {
       noandtitles = [firstCell, secondCell];
-      console.log("Found title:", noandtitles);
+      //consol.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting Loan Disbursement Data ===');
+  //consol.log('=== Extracting Loan Disbursement Data ===');
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      //consol.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
 
@@ -33,7 +127,7 @@ const extractLoanDisbursementData = (data) => {
     const firstCell = String(row[0] || '').trim();
     if (firstCell === 'Code') {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      //consol.log('Found data table at row:', dataTableStart);
       break;
     }
   }
@@ -48,7 +142,7 @@ const extractLoanDisbursementData = (data) => {
         const secondCell = String(row[1] || '').trim();
         if (secondCell && secondCell.includes('Agriculture')) {
           dataTableStart = i;
-          console.log('Found data table at row (alt):', dataTableStart);
+          //consol.log('Found data table at row (alt):', dataTableStart);
           break;
         }
       }
@@ -56,13 +150,13 @@ const extractLoanDisbursementData = (data) => {
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    //consol.log('Could not find data table');
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
   // Get the header row to identify column positions
   const headerRow = data[dataTableStart - 1];
-  console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+  //consol.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
     const sanitizeKey = (text) => {
     return text
@@ -103,7 +197,7 @@ const extractLoanDisbursementData = (data) => {
     });
   }
 
-  console.log('Columns mapping:', columns);
+  //consol.log('Columns mapping:', columns);
 
   const topLevelNodes = [];
   const nodeMap = new Map();
@@ -124,15 +218,15 @@ if (i>40) continue;
 
     // Check if this is a total row
     const isTotalRow = description === 'Total' || 
-                       description.includes('Total') ||
-                       description === 'Lending to Government' ||
-                       description === 'Direct Advance' ||
-                       description === 'Government Bonds' ||
-                       description === 'Special Bank' ||
-                       description === 'Treasury bills' ||
-                       description === 'Loans & Advances in legal' ||
-                       description === 'Interbank lending' ||
-                       description === 'others';
+                       description.includes('Total') ;
+                      //  description === 'Lending to Government' ||
+                      //  description === 'Direct Advance' ||
+                      //  description === 'Government Bonds' ||
+                      //  description === 'Special Bank' ||
+                      //  description === 'Treasury bills' ||
+                      //  description === 'Loans & Advances in legal' ||
+                      //  description === 'Interbank lending' ||
+                      //  description === 'others';
 
     // Check if this is a parent section (like 4 International Trade)
     const isParent = code && code.includes('.') && !code.match(/\.\d+$/);
@@ -190,7 +284,7 @@ if (i>40) continue;
           const totalParent = nodeMap.get('13');
           if (totalParent) {
             totalParent.children.push(entry);
-            console.log(`Added ${description} as child of 13`);
+            //consol.log(`Added ${description} as child of 13`);
           } else {
             topLevelNodes.push(entry);
           }
@@ -236,7 +330,7 @@ if (i>40) continue;
       const existing = topLevelNodes.find(n => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
-        console.log(`Added top-level node: ${code} - ${node.label}`);
+        //consol.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Child nodes (4.1, 4.2, etc.)
@@ -247,7 +341,7 @@ if (i>40) continue;
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          console.log(`Added node ${code} as child of ${parentCode}`);
+          //consol.log(`Added node ${code} as child of ${parentCode}`);
         }
       } else {
         // Try to find parent by base code
@@ -257,12 +351,12 @@ if (i>40) continue;
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(node);
-            console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
+            //consol.log(`Added node ${code} as child of ${baseCode} (fallback)`);
           }
         } else {
           // If still no parent, add to top level
           topLevelNodes.push(node);
-          console.log(`Added node ${code} as top-level (no parent found)`);
+          //consol.log(`Added node ${code} as top-level (no parent found)`);
         }
       }
     }
@@ -271,8 +365,8 @@ if (i>40) continue;
   // Sort children by code
   const sortChildren = (nodes) => {
     nodes.sort((a, b) => {
-      if (a.isTotalRow && !b.isTotalRow) return 1;
-      if (!a.isTotalRow && b.isTotalRow) return -1;
+      // if (a.isTotalRow && !b.isTotalRow) return 1;
+      // if (!a.isTotalRow && b.isTotalRow) return -1;
       
       if (a.sNo && b.sNo) {
         const aParts = a.sNo.split('.').map(Number);
@@ -308,8 +402,8 @@ if (i>40) continue;
   };
   cleanData(topLevelNodes);
 
-  console.log('Final top-level nodes:', topLevelNodes.length);
-  console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+  //consol.log('Final top-level nodes:', topLevelNodes.length);
+  //consol.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
 
   // Get column names for columns
   const currencyColumns = columns.map(c => c.key);

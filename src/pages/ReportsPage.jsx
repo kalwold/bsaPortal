@@ -41,7 +41,7 @@ const ReportsPage = () => {
         }))
       );
 
-      console.log('Report Types:', reportTypes);
+      //consol.log('Report Types:', reportTypes);
 
       // Fetch all report types at the same time
       const results = await Promise.all(
@@ -82,14 +82,14 @@ const ReportsPage = () => {
 
       const allReports = results.flat();
 
-      console.log('All Reports:', allReports);
+      //consol.log('All Reports:', allReports);
 
       return allReports;
     },
 
     staleTime: 5 * 60 * 1000,
   });
-  console.log("reports:", reports);
+  //consol.log("reports:", reports);
   const filteredReports = reports?.filter(report => 
    ( report.reportTypeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     report.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,9 +97,9 @@ const ReportsPage = () => {
     report.status?.toLowerCase().includes(statusFilter.toLowerCase())
   );
 
-  console.log("reports:", reports);
-console.log("searchTerm:", searchTerm, statusFilter);
-console.log("filteredReports:", filteredReports);
+  //consol.log("reports:", reports);
+//consol.log("searchTerm:", searchTerm, statusFilter);
+//consol.log("filteredReports:", filteredReports);
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">

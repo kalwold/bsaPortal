@@ -1,3 +1,98 @@
+import { excelDateToISO } from "./excelParser";
+export const extractLargeBorrowersMetadata = (data) => {
+  const metadata = {
+    reportTitle: "",
+    ReturnKey: "",
+    institutionCode: "",
+    financialYear: "",
+    startDate: "",
+    endDate: "",
+    reportType: "",
+    unit: "",
+    departmentName: "",
+    departmentId: "",
+  };
+
+  //consol.log("data.length  ", data.length)
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    const firstCell = String(row[0] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    const thirdCell = String(row[2] || "").trim();
+    const fourthCell = String(row[3] || "").trim();
+    const eighthCell = String(row[8] || "").trim();
+    const thirtytwoCell = String(row[32] || "").trim();
+
+    if (i === 0 && firstCell) {
+      metadata.ReturnKey = firstCell;
+      //consol.log("Found Return Key:", metadata.ReturnKey);
+
+if (firstCell.includes('BOR_TEN_PER') || firstCell.includes('LB001')) {
+        metadata.reportType = 'credit-monthly_large-borrowers';
+        metadata.reportTypeId = 'credit-monthly_large-borrowers';
+        metadata.departmentId = 'credit';
+        metadata.departmentName = 'Credit';
+      }
+    }
+
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
+      //consol.log("Found Report Title:", metadata.reportTitle);
+    }
+
+    if (
+     (i === 7 )&&
+      
+     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+    ) {
+      metadata.institutionCode = fourthCell || '';
+      //consol.log("Found Institution Code:", metadata.institutionCode);
+    }
+
+    if (
+      (i === 8)&&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Financial Year")
+    ) {
+      metadata.financialYear = fourthCell || '';
+      //consol.log("Found Financial Year:", metadata.financialYear);
+    }
+
+    if (
+      ( i === 9) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("Start Date")
+    ) {
+     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+     metadata.startDate = excelDateToISO(fourthCell) || '';
+      //consol.log("Found Start Date:", metadata.startDate);
+    }
+
+    if (
+      (i === 10 ) &&
+      (firstCell || secondCell) &&
+      (firstCell || secondCell).includes("End Date")
+    ) {
+      metadata.endDate = excelDateToISO(fourthCell) || "";
+      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      //consol.log("Found End Date:", metadata.endDate);
+    }
+
+    if (
+      ( i === 12) &&
+      (thirdCell || thirtytwoCell || firstCell) &&
+      (thirdCell.toLowerCase().includes("in") ||
+        thirtytwoCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+    ) {
+      metadata.unit = thirtytwoCell  || '';
+      //consol.log("Found Unit:", metadata.unit);
+    }
+  }
+return metadata
+}
+
 const extractLargeBorrowersData = (data) => {
    const hierarchicalData = [];
   let dataTableStart = -1;
@@ -15,18 +110,18 @@ const extractLargeBorrowersData = (data) => {
 
     if (i === 13) {
       noandtitles = [firstCell, secondCell];
-      console.log("Found title:", noandtitles);
+      //consol.log("Found title:", noandtitles);
     }
   }
   
-  console.log("Found title:", noandtitles[0]);
-  console.log('=== Extracting Loan Related Parties Data ===');
+  //consol.log("Found title:", noandtitles[0]);
+  //consol.log('=== Extracting Loan Related Parties Data ===');
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.slice(0, 10).map(c => String(c || '').trim()));
+      //consol.log(`Row ${i}:`, row.slice(0, 10).map(c => String(c || '').trim()));
     }
   }
 
@@ -37,7 +132,7 @@ const extractLargeBorrowersData = (data) => {
     const firstCell = String(row[1] || '').trim();
     if (firstCell === 'S.No.') {
       dataTableStart = i + 2;
-      console.log('Found data table at row:', dataTableStart);
+      //consol.log('Found data table at row:', dataTableStart);
       break;
     }
   }
@@ -53,20 +148,20 @@ const extractLargeBorrowersData = (data) => {
     
     if (fifthCell === 'Borrower' && i > 130) {
       extraDataStart = i+1;
-      console.log('Found extra data section at row:', extraDataStart);
+      //consol.log('Found extra data section at row:', extraDataStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    //consol.log('Could not find data table');
     return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
   }
 
   // Get the header row to identify column positions
   const headerRow = data[dataTableStart - 1];
   
-  console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+  //consol.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
   // Define column mappings with descriptive names
   let colMap = {
@@ -108,7 +203,7 @@ const extractLargeBorrowersData = (data) => {
   // Find actual column indices from header by matching patterns
   for (let i = 0; i < headerRow.length; i++) {
     const cell = String(headerRow[i] || '').trim();
-    console.log(`Column ${i}: "${cell}"`);
+    //consol.log(`Column ${i}: "${cell}"`);
     
     if (cell === 'Term Loans' && i < 5) colMap.approvedTermLoans = i;
     if (cell === 'Merchandise Loans*' && i < 5) colMap.approvedMerchandiseLoans = i;
@@ -160,7 +255,7 @@ const extractLargeBorrowersData = (data) => {
     if (cell === 'Pass') colMap.pass = i;
   }
 
-  console.log('Final Column Map:', colMap);
+  //consol.log('Final Column Map:', colMap);
 
   // Column names for the main data
   const columnNames = [
@@ -213,7 +308,7 @@ const extractLargeBorrowersData = (data) => {
     if (borrowerName === 'Grand Total') continue;
     if (i > 135) continue;
 
-    console.log(`Processing main row ${i}: S.No=${sNo}, Borrower=${borrowerName}`);
+    //consol.log(`Processing main row ${i}: S.No=${sNo}, Borrower=${borrowerName}`);
 
     const values = {};
 
@@ -292,11 +387,11 @@ const extractLargeBorrowersData = (data) => {
 
   // ============ PARSE EXTRA DATA SECTION (Rows 141+) ============
   if (extraDataStart !== -1) {
-    console.log('=== Extracting Extra Data Section ===');
+    //consol.log('=== Extracting Extra Data Section ===');
     
     // Get the extra data header row
     const extraHeaderRow = data[extraDataStart - 1];
-    console.log('Extra Header row:', extraHeaderRow);
+    //consol.log('Extra Header row:', extraHeaderRow);
 
     // Column mapping for extra data
     let extraColMap = {
@@ -319,7 +414,7 @@ const extractLargeBorrowersData = (data) => {
       if (cell && cell.includes('Percent of Capital')) extraColMap.percentCapital = i;
     }
 
-    console.log('Extra Column Map:', extraColMap);
+    //consol.log('Extra Column Map:', extraColMap);
 
     // Parse extra data rows
     for (let i = extraDataStart; i < data.length; i++) {
@@ -331,7 +426,7 @@ const extractLargeBorrowersData = (data) => {
       // Skip if no borrower or if it's empty
       if (!borrower) continue;
 
-      console.log(`Processing extra row ${i}: Borrower=${borrower}`);
+      //consol.log(`Processing extra row ${i}: Borrower=${borrower}`);
 
       const values = {};
 
@@ -391,8 +486,8 @@ const extractLargeBorrowersData = (data) => {
     return a.rowNumber - b.rowNumber;
   });
 
-  console.log('Main loan entries:', mainDataNodes.length);
-  console.log('Extra loan entries:', extraDataNodes.length);
+  //consol.log('Main loan entries:', mainDataNodes.length);
+  //consol.log('Extra loan entries:', extraDataNodes.length);
 
   // Create a section node for extra data
   const extraSection = {
@@ -426,7 +521,7 @@ const extractLargeBorrowersData = (data) => {
    
   ];
 
-  console.log('Total entries:', finalData.length);
+  //consol.log('Total entries:', finalData.length);
 
   return {
     hierarchicalData: finalData,
