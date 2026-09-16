@@ -158,6 +158,10 @@ const DEPARTMENT_DATA = [
             id: "credit-quarterly_collateralized-property-acquired-last18",
             name: "Collateralized Properties Acquired during the last 18 Consecutive Months",
           },
+          {
+            id: "credit-quarterly_range-region",
+            name: "Quarterly Conventional Loans by Range and Region",
+          },
         ],
       },
     ],

@@ -191,7 +191,7 @@ const extractCollateralizedPropertySoldLast18Data = (data) => {
       columnMap.collateralDisposalExpenses,
     );
     values["Collateral_Net_Value"] = getValue(columnMap.collateralNetValue);
-
+  const isTotalRow = (borrowerName === "Total");
     const entry = {
       id: sNo,
       sNo: sNo,
@@ -199,7 +199,7 @@ const extractCollateralizedPropertySoldLast18Data = (data) => {
       values: values,
       rowNumber: i + 1,
       level: 1,
-      isTotalRow: false,
+      isTotalRow: isTotalRow,
       isSectionHeader: false,
       children: [],
     };
