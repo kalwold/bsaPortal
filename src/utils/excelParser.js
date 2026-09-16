@@ -22,12 +22,17 @@ import extractIfbDepositRangeRegionData,{extractIfbDepositRangeRegionMetadata} f
 import extractIfbDepositSectorRegionData,{extractIfbDepositSectorMetadata} from "./extractIfbDepositSectorRegionData";
 import extractIfbBalanceSheetData,{extractIfbBalanceSheetMetadata} from "./extractIfbBalanceSheetData";
 import extractIfbProfitLossData,{extractIfbProfitLossMetadata} from "./extractIfbProfitLossData";
-
+import extractIfbLoanRangeRegionData,{extractIfbLoanRangeRegionMetadata} from "./extractIfbLoanRangeRegionData";
+import extractIfbLoanSectorRegionData,{extractIfbLoanSectorRegionMetadata} from "./extractIfbLoanSectorRegionData";
+import extractCollateralizedPropertySoldLast18Data,{extractCollateralizedPropertySoldLast18Metadata} from "./extractCollateralizedPropertySoldLast18Data";
+import extractLoanClassificationProvisioningData,{extractLoanClassificationProvisioningMetadata} from "./extractLoanClassificationProvisioningData";
+import extractNplSectorBranchData, {extractNplSectorBranchMetadata} from './extractNplSectorBranchData'
+import extractCollateralizedPropertyAcquiredLast18Data,{extractCollateralizedPropertyAcquiredLast18Metadata} from "./extractCollateralizedPropertyAcquiredLast18Data";
 const REPORT_TYPES = {
-  DAILY_FOREX: "ibd-daily",
+  DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
-  LIQUIDITY_WEEKLY: "finance-weekly",
-  LOAN_RELATED_PARTIES: 'loan-related-parties',
+  LIQUIDITY_WEEKLY: "finance-weekly_liquidity",
+  LOAN_RELATED_PARTIES: 'credit-monthy_loan-related',
   RESERVE_BASE: 'finance-monthly_reserve',
   STATUTORY_REQ: 'finance-monthly_statutory',
    KEY_BALANCE_SHEET: 'finance-monthly_key-balance-sheet',
@@ -47,6 +52,12 @@ const REPORT_TYPES = {
    IFB_SECTOR_REGION: 'ifb-monthly_deposit-sector-region',
    IFB_BALANCE_SHEET: 'ifb-monthly_balance-sheet',
    IFB_PROFIT_LOSS: 'ifb-monthly_profit-loss',
+   IFB_LOAN_RANGE_REGION: 'ifb-monthly_loan-range-region',
+   IFB_LOAN_SECTOR_REGION: 'ifb-monthly_loan-sector-region',
+   COLLATERALIZED_PROPERTY_SOLD_LAST18: 'credit-quarterly_loan-collateralized-properties',
+   LOAN_CLASSIFICATION_PROVISIONING: 'credit-quarterly_loan-classification-provisioning',
+   NPL_SECTOR_BRANCH: 'credit-quarterly_npl-sector-branch',
+  COLLATERALIZED_PROPERTY_ACQUIRED_LAST18: 'credit-quarterly_collateralized-property-acquired-last18',
 
    
 };
@@ -87,17 +98,17 @@ export const parseExcelReport = (file,reportTypeIn) => {
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-        //consol.log("Raw Excel Data:", jsonData);
+        //console.log("Raw Excel Data:", jsonData);
 
         const reportType = detectReportType(jsonData);
-        //consol.log("Detected Report Type:", reportType , "SS", reportTypeIn);
+        //console.log("Detected Report Type:", reportType , "SS", reportTypeIn);
 
 
         if (reportTypeIn !== reportType ){
           throw new Error('Unsupported report type');}
 
       //  const metadata = extractMetadata(jsonData);
-        ////consol.log("Extracted Metadata:", metadata);
+        ////console.log("Extracted Metadata:", metadata);
 
         let hierarchicalData = [];
         let columns = [];
@@ -112,7 +123,7 @@ export const parseExcelReport = (file,reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles=result.noandtitles
           metadata = extractForexMetadata(jsonData);
-          //consol.log("Extracted Metadata:", metadata);
+          //console.log("Extracted Metadata:", metadata);
           } else if (reportType === REPORT_TYPES.MONTHLY_BALANCE) {
           const result = extractBalanceSheetData(jsonData);
           hierarchicalData = result.hierarchicalData;
@@ -127,7 +138,7 @@ export const parseExcelReport = (file,reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles=result.noandtitles
           metadata = extractLiquidityMetadata(jsonData);
-           //consol.log("Found title on return:", noandtitles);
+           //console.log("Found title on return:", noandtitles);
         }else if(reportType === REPORT_TYPES.LOAN_RELATED_PARTIES){
           const result = extractLoanRelatedPartiesData(jsonData);
           hierarchicalData = result.hierarchicalData;
@@ -135,7 +146,7 @@ export const parseExcelReport = (file,reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles=result.noandtitles;
           metadata = extractRelatedPartiesMetadata(jsonData);
-           //consol.log("Found hierarchicalData  on return:", hierarchicalData );
+           //console.log("Found hierarchicalData  on return:", hierarchicalData );
         } else if (reportType === REPORT_TYPES.RESERVE_BASE) {
           const result = extractReserveBaseData(jsonData);
           hierarchicalData = result.hierarchicalData;
@@ -287,12 +298,60 @@ export const parseExcelReport = (file,reportTypeIn) => {
           noandtitles=result.noandtitles;
           metadata = extractIfbProfitLossMetadata(jsonData);
         }
+        else if (reportType === REPORT_TYPES.IFB_LOAN_RANGE_REGION) {
+          const result = extractIfbLoanRangeRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+          metadata = extractIfbLoanRangeRegionMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.IFB_LOAN_SECTOR_REGION) {
+          const result = extractIfbLoanSectorRegionData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+          metadata = extractIfbLoanSectorRegionMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.COLLATERALIZED_PROPERTY_SOLD_LAST18){
+          const result = extractCollateralizedPropertySoldLast18Data(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+          metadata = extractCollateralizedPropertySoldLast18Metadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.LOAN_CLASSIFICATION_PROVISIONING ){
+          const result = extractLoanClassificationProvisioningData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+          metadata = extractLoanClassificationProvisioningMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.NPL_SECTOR_BRANCH){
+          const result = extractNplSectorBranchData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+          metadata = extractNplSectorBranchMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.COLLATERALIZED_PROPERTY_ACQUIRED_LAST18){
+          const result = extractCollateralizedPropertyAcquiredLast18Data(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles=result.noandtitles;
+          metadata = extractCollateralizedPropertyAcquiredLast18Metadata(jsonData);
+        }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
 
         // const hierarchicalData = extractHierarchicalData(jsonData);
-        // //consol.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
+        // //console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
 
         const flatData = flattenData(hierarchicalData);
 
@@ -340,13 +399,13 @@ const detectReportType = (data) => {
     if (firstCell && firstCell.includes("SINGLE CURRENCY")) {
       return REPORT_TYPES.DAILY_FOREX;
     }
-    if (firstCell && firstCell.includes("MB001")) {
+    if (firstCell && firstCell.includes("FASDBSFABS001")) {
       return REPORT_TYPES.MONTHLY_BALANCE;
     }
     if (firstCell && firstCell.includes("ZS001")) {
       return REPORT_TYPES.LIQUIDITY_WEEKLY;
     }
-    if (firstCell && firstCell.includes("BSD_LOAN_PART13001")){
+    if (firstCell && firstCell.includes("BSD_LOAN_PART13002")){
       return REPORT_TYPES.LOAN_RELATED_PARTIES;
     }
     if (firstCell && (firstCell.includes('Reserve Base') || firstCell.includes('RB001'))) {
@@ -355,7 +414,7 @@ const detectReportType = (data) => {
      if (firstCell && (firstCell.includes('BD_L&A') || firstCell.includes('BD001'))) {
       return REPORT_TYPES.LOAN_BREAKDOWN;
     }
-     if (firstCell && (firstCell.includes('Loan and Advances Portfolio Report') || firstCell.includes('LOA_PORT'))) {
+     if (firstCell && (firstCell.includes('EP001') || firstCell.includes('LOA_PORT'))) {
         return REPORT_TYPES.LOAN_PORTFOLIO;
       }
        if (firstCell && (firstCell.includes('NPL&PRO') || firstCell.includes('NL001'))) {
@@ -370,13 +429,13 @@ const detectReportType = (data) => {
     if (firstCell && (firstCell.includes('M_LCPL') || firstCell.includes('LC001'))) {
       return REPORT_TYPES.LOAN_CLASSIFICATION;
     }
-      if (firstCell && (firstCell.includes('BOR_TEN_PER') || firstCell.includes('LB001'))) {
+      if (firstCell && (firstCell.includes('BOR_TEN_PER') || firstCell.includes('LB002'))) {
       return REPORT_TYPES.LARGE_BORROWERS;
     }
-    if (firstCell && (firstCell.includes('LOAN_RAN & REG') || firstCell.includes('RL001'))) {
+    if (firstCell && (firstCell.includes('LOAN_RAN & REG') || firstCell.includes('RL002'))) {
       return REPORT_TYPES.LOAN_RANGE_REGION;
     }
-    if (firstCell && (firstCell.includes('LOAN_SEC & REG') || firstCell.includes('RS001'))) {
+    if (firstCell && (firstCell.includes('LOAN_SEC & REG') || firstCell.includes('RS002'))) {
       return REPORT_TYPES.LOAN_SECTOR_REGION;
     }
     if (firstCell && (firstCell.includes('SRRYY001') )) {
@@ -388,16 +447,16 @@ const detectReportType = (data) => {
     if (firstCell && firstCell.includes('M_CC-On & Off') || firstCell.includes('KK001')) {
       return REPORT_TYPES.CAPITAL_ADEQUACY;
     }
-    if (firstCell && firstCell.includes('CDby Range and Reg') || firstCell.includes('CM001')) {
+    if (firstCell && firstCell.includes('CDby Range and Reg') || firstCell.includes('CM002')) {
       return REPORT_TYPES.DEPOSIT_RANGE_REGION;
     }
-    if (firstCell && firstCell.includes('CD by S and Reg') || firstCell.includes('MD001')) {
+    if (firstCell && firstCell.includes('CDby Sector and RegMD002') || firstCell.includes('MD002')) {
       return REPORT_TYPES.DEPOSIT_SECTOR_REGION;
     }
     if (firstCell && firstCell.includes('DIR RANGE') || firstCell.includes('RD001')) {
       return REPORT_TYPES.IFB_RANGE_REGION;
     }
-    if (firstCell && firstCell.includes('DIF') || firstCell.includes('IF001')) {
+    if (firstCell && firstCell.includes('DIF') || firstCell.includes('IF002')) {
       return REPORT_TYPES.IFB_SECTOR_REGION;
     }
     if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')) {
@@ -405,6 +464,24 @@ const detectReportType = (data) => {
     }
     if (firstCell && firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
       return REPORT_TYPES.IFB_PROFIT_LOSS;
+    }
+    if (firstCell && firstCell.includes('IFB_LON_R & R') || firstCell.includes('WW002')) {
+      return REPORT_TYPES.IFB_LOAN_RANGE_REGION;
+    }
+    if (firstCell && firstCell.includes('IFB_LON_S & R') || firstCell.includes('ZZ002')) {
+      return REPORT_TYPES.IFB_LOAN_SECTOR_REGION;
+    }
+    if (firstCell && firstCell.includes('COL_SOL_18M') || firstCell.includes('LL001')) {
+      return REPORT_TYPES.COLLATERALIZED_PROPERTY_SOLD_LAST18;
+    }
+    if (firstCell && firstCell.includes('LOAN_CLA&PROV') || firstCell.includes('LP001')) {
+      return REPORT_TYPES.LOAN_CLASSIFICATION_PROVISIONING;
+    }
+    if (firstCell && firstCell.includes('NPL_ECPOM') || firstCell.includes('NE001')) {
+      return REPORT_TYPES.NPL_SECTOR_BRANCH
+    }
+    if (firstCell && firstCell.includes('COL_ACQ_18M') || firstCell.includes('OL001')) {
+      return REPORT_TYPES.COLLATERALIZED_PROPERTY_ACQUIRED_LAST18
     }
   }
   

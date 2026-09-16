@@ -18,7 +18,7 @@ const ReportsPage = () => {
   //   //   status: statusFilter || undefined,
   //   // }),
   //   queryFn: () =>  reportService.getReports(
-  //           'ibd-daily'
+  //           'ibd-daily_single-currency'
   //         ),
   //   //enabled: !!user,
   // });
@@ -41,7 +41,7 @@ const ReportsPage = () => {
         }))
       );
 
-      //consol.log('Report Types:', reportTypes);
+      //console.log('Report Types:', reportTypes);
 
       // Fetch all report types at the same time
       const results = await Promise.all(
@@ -82,14 +82,14 @@ const ReportsPage = () => {
 
       const allReports = results.flat();
 
-      //consol.log('All Reports:', allReports);
+      //console.log('All Reports:', allReports);
 
       return allReports;
     },
 
     staleTime: 5 * 60 * 1000,
   });
-  //consol.log("reports:", reports);
+  //console.log("reports:", reports);
   const filteredReports = reports?.filter(report => 
    ( report.reportTypeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     report.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,9 +97,9 @@ const ReportsPage = () => {
     report.status?.toLowerCase().includes(statusFilter.toLowerCase())
   );
 
-  //consol.log("reports:", reports);
-//consol.log("searchTerm:", searchTerm, statusFilter);
-//consol.log("filteredReports:", filteredReports);
+  //console.log("reports:", reports);
+//console.log("searchTerm:", searchTerm, statusFilter);
+//console.log("filteredReports:", filteredReports);
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">

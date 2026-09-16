@@ -13,7 +13,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
     departmentId: "",
   };
 
-  //consol.log("data.length  ", data.length)
+  //console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -25,7 +25,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
     const eighthCell = String(row[8] || "").trim();
     const therteenCell = String(row[10] || "").trim();
 
-    // //consol.log(`Row ${i + 1}:`, {
+    // //console.log(`Row ${i + 1}:`, {
     //   firstCell,
     //   secondCell,
     //   thirdCell,
@@ -36,9 +36,9 @@ export const extractDepositSectorRegionMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      //consol.log("Found Return Key:", metadata.ReturnKey);
+      //console.log("Found Return Key:", metadata.ReturnKey);
 
-       if (firstCell.includes('CD by S and Reg') || firstCell.includes('MD001')) {
+       if (firstCell.includes('CDby Sector and RegMD002') || firstCell.includes('MD002')) {
         metadata.reportType = 'finance-monthly_deposit-sector-region';
         metadata.reportTypeId = 'finance-monthly_deposit-sector-region';
         metadata.departmentId = 'finance';
@@ -49,7 +49,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
 
     if (( i === 3) && (firstCell || secondCell)) {
       metadata.reportTitle = firstCell || '';
-      //consol.log("Found Report Title:", metadata.reportTitle);
+      //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
@@ -58,7 +58,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
       metadata.institutionCode = thirdCell || '';
-      //consol.log("Found Institution Code:", metadata.institutionCode);
+      //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
@@ -67,7 +67,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
       (firstCell || secondCell).includes("Financial Year")
     ) {
       metadata.financialYear = thirdCell || '';
-      //consol.log("Found Financial Year:", metadata.financialYear);
+      //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
@@ -77,7 +77,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
     ) {
      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
      metadata.startDate = excelDateToISO(thirdCell) || '';
-      //consol.log("Found Start Date:", metadata.startDate);
+      //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
@@ -87,7 +87,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
     ) {
       metadata.endDate = excelDateToISO(thirdCell) || "";
       // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-      //consol.log("Found End Date:", metadata.endDate);
+      //console.log("Found End Date:", metadata.endDate);
     }
 
     if (
@@ -96,7 +96,7 @@ export const extractDepositSectorRegionMetadata = (data) => {
  
     ) {
       metadata.unit = therteenCell  || '';
-      //consol.log("Found Unit:", metadata.unit);
+      //console.log("Found Unit:", metadata.unit);
     }
   }
 
@@ -117,10 +117,10 @@ const extractDepositSectorRegionData = (data) => {
 
     if (i === 13) {
       noandtitles = [firstCell, secondCell];
-      //consol.log("Found title:", noandtitles);
+      //console.log("Found title:", noandtitles);
     }
   }
-  //consol.log('=== Extracting Loan Range Region Data ===');
+  //console.log('=== Extracting Loan Range Region Data ===');
 const sanitizeKey = (text) => {
   return text
     .trim()
@@ -133,7 +133,7 @@ const sanitizeKey = (text) => {
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
-      //consol.log(`Row ${i}:`, row.slice(0, 10).map(c => String(c || '').trim()));
+      //console.log(`Row ${i}:`, row.slice(0, 10).map(c => String(c || '').trim()));
     }
   }
 
@@ -144,7 +144,7 @@ const sanitizeKey = (text) => {
     const firstCell = String(row[0] || '').trim();
     if (firstCell === 'Code') {
       dataTableStart = i + 1;
-      //consol.log('Found data table at row:', dataTableStart);
+      //console.log('Found data table at row:', dataTableStart);
       break;
     }
   }
@@ -159,7 +159,7 @@ const sanitizeKey = (text) => {
         const secondCell = String(row[1] || '').trim();
         if (secondCell && secondCell.includes('Addis Ababa')) {
           dataTableStart = i;
-          //consol.log('Found data table at row (alt):', dataTableStart);
+          //console.log('Found data table at row (alt):', dataTableStart);
           break;
         }
       }
@@ -167,7 +167,7 @@ const sanitizeKey = (text) => {
   }
 
   if (dataTableStart === -1) {
-    //consol.log('Could not find data table');
+    //console.log('Could not find data table');
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -175,8 +175,8 @@ const sanitizeKey = (text) => {
   const headerRow1 = data[dataTableStart - 2];
   const headerRow2 = data[dataTableStart - 1];
 
-  //consol.log('Header Row 1:', headerRow1 ? headerRow1.map(c => String(c || '').trim()) : []);
-  //consol.log('Header Row 2:', headerRow2 ? headerRow2.map(c => String(c || '').trim()) : []);
+  //console.log('Header Row 1:', headerRow1 ? headerRow1.map(c => String(c || '').trim()) : []);
+  //console.log('Header Row 2:', headerRow2 ? headerRow2.map(c => String(c || '').trim()) : []);
 
   // Define loan ranges
   const loanRanges = [
@@ -213,7 +213,7 @@ const sanitizeKey = (text) => {
 if(code.includes('Note') || code.includes('NOTE') || region.includes('NOTE') || region.includes('Note') || region.includes('Central Ethiopia Regional State') || region.includes('South Ethiopia Regional State')) continue;
 
     const normalizedCode = code === '2.' ? '2' : code;
-   //consol.log('code' , normalizedCode)
+   //console.log('code' , normalizedCode)
 const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     // Determine level
     let level = 0;
@@ -296,7 +296,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       const existing = topLevelNodes.find(n => n.id === normalizedCode);
       if (!existing) {
         topLevelNodes.push(node);
-        //consol.log(`Added region node: ${normalizedCode} - ${node.label}`);
+        //console.log(`Added region node: ${normalizedCode} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Loan type nodes (1.1, 1.2, etc.)
@@ -307,7 +307,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          //consol.log(`Added node ${normalizedCode} as child of ${parentCode}`);
+          //console.log(`Added node ${normalizedCode} as child of ${parentCode}`);
         }
       } else {
         // Try to find parent by base code
@@ -317,12 +317,12 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(normalizedCode);
-            //consol.log(`Added node ${normalizedCode} as child of ${baseCode} (fallback)`);
+            //console.log(`Added node ${normalizedCode} as child of ${baseCode} (fallback)`);
           }
         } else {
           // If still no parent, add to top level
           topLevelNodes.push(node);
-          //consol.log(`Added node ${normalizedCode} as top-level (no parent found)`);
+          //console.log(`Added node ${normalizedCode} as top-level (no parent found)`);
         }
       }
     }
@@ -368,8 +368,8 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
   };
   cleanData(topLevelNodes);
 
-  //consol.log('Final top-level nodes:', topLevelNodes.length);
-  //consol.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+  //console.log('Final top-level nodes:', topLevelNodes.length);
+  //console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
 
   // Build column names for columns
   const columnNames = [];

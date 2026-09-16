@@ -1,5 +1,5 @@
 import { excelDateToISO } from "./excelParser";
-export const extractLoanClassificationMetaData = (data) => {
+export const extractLoanClassificationProvisioningMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -13,88 +13,55 @@ export const extractLoanClassificationMetaData = (data) => {
     departmentId: "",
   };
 
-  //console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    if (!row || row.length === 0) continue;
-
-    const firstCell = String(row[0] || "").trim();
-    const secondCell = String(row[1] || "").trim();
-    const thirdCell = String(row[2] || "").trim();
-    const fourthCell = String(row[3] || "").trim();
-    const eighthCell = String(row[8] || "").trim();
-    const thirteenCell = String(row[9] || "").trim();
-
+    if (row.length === 0) continue;
+    const firstCell = String(row[0]).trim();
+    const secondCell = String(row[1]).trim();
+    const thirdCell = String(row[2]).trim();
+    const fourthCell = String(row[3]).trim();
+    const nineCell = String(row[9]).trim();
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      //console.log("Found Return Key:", metadata.ReturnKey);
 
-if (firstCell.includes('M_LCPL') || firstCell.includes('LC001')) {
-        metadata.reportType = 'credit-monthly_loan-classification';
-        metadata.departmentId = 'credit';
-        metadata.departmentName = 'Credit';
-        metadata.reportTypeId = 'credit-monthly_loan-classification';
+      if (firstCell.includes("LOAN_CLA&PROV") || firstCell.includes("LP001")) {
+        metadata.reportType = "credit-quarterly_loan-classification-provisioning";
+        metadata.reportTypeId =
+          "credit-quarterly_loan-classification-provisioning";
+        metadata.departmentName = "Credit";
+        metadata.departmentId = "credit";
       }
     }
 
-    if (( i === 3) && (firstCell)) {
-       metadata.reportTitle = firstCell || '';
-      //console.log("Found Report Title:", metadata.reportTitle);
-    }
 
-    if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
-    ) {
-      metadata.institutionCode = thirdCell || '';
-      //console.log("Found Institution Code:", metadata.institutionCode);
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell;
     }
-
     if (
-      (i === 8)&&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("Financial Year")
+      i === 7 &&
+      (firstCell.includes("Institution") || firstCell.includes("Instiution"))
     ) {
-      metadata.financialYear = thirdCell || '';
-      //console.log("Found Financial Year:", metadata.financialYear);
+      metadata.institutionCode = thirdCell;
     }
-
-    if (
-      ( i === 9) &&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("Start Date")
-    ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
-      //console.log("Found Start Date:", metadata.startDate);
+    if (i === 8 && firstCell.includes("Financial Year")) {
+      metadata.financialYear = thirdCell;
     }
-
-    if (
-      (i === 10 ) &&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("End Date")
-    ) {
-      metadata.endDate = excelDateToISO(thirdCell) || "";
-      // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-      //console.log("Found End Date:", metadata.endDate);
+    if (i === 9 && firstCell.includes("Start Date")) {
+      metadata.startDate = excelDateToISO(thirdCell);
     }
-
-    if (
-      ( i === 12) &&
-      (thirdCell || thirteenCell || firstCell) &&
-      (thirdCell.toLowerCase().includes("in") ||
-        thirteenCell.toLowerCase().includes("in") || thirteenCell.toLowerCase().includes('In'))
-    ) {
-      metadata.unit = thirteenCell  || '';
-      //console.log("Found Unit:", metadata.unit);
+    if (i === 10 && firstCell.includes("End Date")) {
+      metadata.endDate = excelDateToISO(thirdCell);
+    }
+    if (i === 12 && (nineCell.includes("in") || nineCell.includes("In"))) {
+      metadata.unit = nineCell;
     }
   }
-return metadata
-}
-const extractLoanClassificationData = (data) => {
-  const hierarchicalData = [];
-  let dataTableStart = -1;
+
+  return metadata;
+};
+
+const extractLoanClassificationProvisioningData = (data) => {
+ let dataTableStart = -1;
  let noandtitles = [];
 
 
@@ -474,4 +441,4 @@ if (accumulatedIndex !== -1) {
   };
 };
 
-export default extractLoanClassificationData
+export default extractLoanClassificationProvisioningData;

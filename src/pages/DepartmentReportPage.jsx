@@ -24,7 +24,7 @@ const DepartmentReportPage = () => {
 
   const department = getDepartmentById(deptId);
   const reportType = getReportTypeById(deptId, reportTypeId);
-  //consol.log("report type", reportTypeId)
+  //console.log("report type", reportTypeId)
 
   useEffect(() => { 
   
@@ -57,7 +57,7 @@ const DepartmentReportPage = () => {
     const handleReportClick = (report) => {
     // Navigate to report viewer with report data in state
 
-    //consol.log("report in report click",)
+    //console.log("report in report click",)
     navigate(`/report/${report.id}`, {
       state: { report: report }
     });

@@ -5,14 +5,14 @@ export const DEPARTMENT_DATA = [
   {
     id: "ibd",
     name: "IBD",
-    reportTypes: [{ id: "ibd-daily", name: "Daily Foreign Currency Exposure" }],
+    reportTypes: [{ id: "ibd-daily_single-currency", name: "Daily Foreign Currency Exposure" }],
   },
   {
     id: "finance",
     name: "Finance",
     reportTypes: [
       { id: "finance-monthly_balance-sheet", name: "Balance Sheet" },
-      { id: "finance-weekly", name: "Liquidity Requirement Report" },
+      { id: "finance-weekly_liquidity", name: "Liquidity Requirement Report" },
       {
         id: "finance-monthly_reserve",
         name: "Monthly Reserve Base Report",
@@ -28,7 +28,7 @@ export const DEPARTMENT_DATA = [
     id: "credit",
     name: "Credit",
     reportTypes: [
-      { id: "loan-related-parties", name: "Loans to Related Parties Report" },
+      { id: "credit-monthy_loan-related", name: "Loans to Related Parties Report" },
       {
         id: "credit-monthly_loan-breakdown",
         name: "Breakdown of Loans and Advances",
@@ -53,6 +53,21 @@ export const DEPARTMENT_DATA = [
       },
        { id: 'credit-monthly_loan-range-region', name: 'Loans by Range and Region' },
        { id: 'credit-monthly_loan-sector-region', name: 'Loans by Sector and Region' },
+       {
+        id: "credit-quarterly_loan-collateralized-properties",
+        name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months"},
+        {
+        id: "credit-quarterly_loan-classification-provisioning",
+        name: "Loan Classification and Provisioning",
+        },
+            {
+            id: "credit-quarterly_npl-sector-branch",
+            name: "BSD Quarterly NPLs Report by Economic Sector and Branch",
+          },
+            {
+            id: "credit-quarterly_collateralized-property-acquired-last18",
+            name: "Collateralized Properties Acquired during the last 18 Consecutive Months",
+          },
     ],
   },
   {
@@ -63,6 +78,8 @@ export const DEPARTMENT_DATA = [
         { id: 'ifb-monthly_deposit-sector-region', name: 'Report on IFB Deposits by Sector and Region' },
         { id: 'ifb-monthly_balance-sheet', name: 'Interest Free Banking Service Balance sheet' },
         { id: 'ifb-monthly_profit-loss', name: 'Interest Free Banking Service Profit and loss statement' },
+         { id: 'ifb-monthly_loan-range-region', name: 'IFB Loans by Range and Region' },
+      { id: 'ifb-monthly_loan-sector-region', name: 'IFB Loans by Sector and Region' },
         
       ]
     },

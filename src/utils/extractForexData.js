@@ -34,7 +34,7 @@ export const extractForexMetadata = (data) => {
     departmentId: "",
   };
 
-  //consol.log("data.length  ", data.length)
+  //console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -46,7 +46,7 @@ export const extractForexMetadata = (data) => {
     const eighthCell = String(row[8] || "").trim();
     const thirteenCell = String(row[12] || "").trim();
 
-    // //consol.log(`Row ${i + 1}:`, {
+    // //console.log(`Row ${i + 1}:`, {
     //   firstCell,
     //   secondCell,
     //   thirdCell,
@@ -57,21 +57,21 @@ export const extractForexMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      //consol.log("Found Return Key:", metadata.ReturnKey);
+      //console.log("Found Return Key:", metadata.ReturnKey);
 
      
       if (firstCell.includes("SINGLE CURRENCY")) {
         metadata.reportType = "single-currency-exposure";
         metadata.departmentName = "IBD";
         metadata.departmentId = "ibd";
-        metadata.reportTypeId = "ibd-daily";
-        //consol.log("Found Report Type:", metadata.reportType);
+        metadata.reportTypeId = "ibd-daily_single-currency";
+        //console.log("Found Report Type:", metadata.reportType);
       }
     }
 
     if (( i === 3) && (secondCell)) {
        metadata.reportTitle = secondCell || '';
-      //consol.log("Found Report Title:", metadata.reportTitle);
+      //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
@@ -80,7 +80,7 @@ export const extractForexMetadata = (data) => {
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
       metadata.institutionCode = thirdCell || '';
-      //consol.log("Found Institution Code:", metadata.institutionCode);
+      //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
@@ -89,7 +89,7 @@ export const extractForexMetadata = (data) => {
       (firstCell || secondCell).includes("Financial Year")
     ) {
       metadata.financialYear = thirdCell || '';
-      //consol.log("Found Financial Year:", metadata.financialYear);
+      //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
@@ -99,7 +99,7 @@ export const extractForexMetadata = (data) => {
     ) {
      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
      metadata.startDate = excelDateToISO(thirdCell) || '';
-      //consol.log("Found Start Date:", metadata.startDate);
+      //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
@@ -109,7 +109,7 @@ export const extractForexMetadata = (data) => {
     ) {
       metadata.endDate = excelDateToISO(thirdCell) || "";
       // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-      //consol.log("Found End Date:", metadata.endDate);
+      //console.log("Found End Date:", metadata.endDate);
     }
 
     if (
@@ -119,7 +119,7 @@ export const extractForexMetadata = (data) => {
         thirteenCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
     ) {
       metadata.unit = thirteenCell  || '';
-      //consol.log("Found Unit:", metadata.unit);
+      //console.log("Found Unit:", metadata.unit);
     }
   }
 return metadata
@@ -136,10 +136,10 @@ const extractForexData = (data) => {
 
     if(i === 13){
       noandtitles = [firstCell,secondCell]
-      //consol.log("Found title:", noandtitles);
+      //console.log("Found title:", noandtitles);
     }
   }
-  //consol.log("=== Extracting Foreground Data ===");
+  //console.log("=== Extracting Foreground Data ===");
 
   // Find the data table start
   for (let i = 0; i < data.length; i++) {
@@ -148,13 +148,13 @@ const extractForexData = (data) => {
     const firstCell = String(row[0] || "").trim();
     if (firstCell === "S/No") {
       dataTableStart = i + 1;
-      //consol.log("Found data table at row:", dataTableStart);
+      //console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   // if (dataTableStart === -1) {
-  //   //consol.log("Could not find data table");
+  //   //console.log("Could not find data table");
   //   return result;
   // }
 
@@ -171,26 +171,26 @@ const extractForexData = (data) => {
 
   for (let i = 0; i < headerRow.length; i++) {
     const cell = String(headerRow[i] || "").trim();
-    //consol.log(`Header column ${i}: "${cell}"`);
+    //console.log(`Header column ${i}: "${cell}"`);
 
     if (cell === "USD") {
       currencyStartIndex = i;
-      //consol.log("Found USD at column:", i);
+      //console.log("Found USD at column:", i);
     }
     if (cell === "Others in Single Currency") {
       othersStartIndex = i;
-      //consol.log("Found Others in Single Currency at column:", i);
+      //console.log("Found Others in Single Currency at column:", i);
     }
     if (cell === "Overall Exposure" || cell.includes("Overall")) {
       overallExposureIndex = i;
-      //consol.log("Found Overall Exposure at column:", i);
+      //console.log("Found Overall Exposure at column:", i);
     }
   }
 
   // Fallback if headers not found
   if (currencyStartIndex === -1) {
     currencyStartIndex = 2;
-    //consol.log("Using default currency start index:", currencyStartIndex);
+    //console.log("Using default currency start index:", currencyStartIndex);
   }
 
   // IMPORTANT: The "Others in Single Currency" columns are at fixed positions
@@ -202,7 +202,7 @@ const extractForexData = (data) => {
       const cell = String(headerRow[i] || "").trim();
       if (cell === "Others in Single Currency") {
         othersStartIndex = i;
-        //consol.log("Found Others in Single Currency at column:", i);
+        //console.log("Found Others in Single Currency at column:", i);
         break;
       }
     }
@@ -212,18 +212,18 @@ const extractForexData = (data) => {
       // But they are separated by some empty columns
       // In your Excel, they start at column T (index 19)
       othersStartIndex = 19;
-      //consol.log("Using fixed others start index:", othersStartIndex);
+      //console.log("Using fixed others start index:", othersStartIndex);
     }
   }
 
   if (overallExposureIndex === -1) {
     overallExposureIndex = headerRow.length - 1;
-    //consol.log("Using last column as Overall Exposure:", overallExposureIndex);
+    //console.log("Using last column as Overall Exposure:", overallExposureIndex);
   }
 
-  //consol.log("Currency start index:", currencyStartIndex);
-  //consol.log("Others start index:", othersStartIndex);
-  //consol.log("Overall Exposure index:", overallExposureIndex);
+  //console.log("Currency start index:", currencyStartIndex);
+  //console.log("Others start index:", othersStartIndex);
+  //console.log("Overall Exposure index:", overallExposureIndex);
 
   // First pass: Create all nodes with their S/No
   for (let i = dataTableStart; i < data.length; i++) {
@@ -316,7 +316,7 @@ const extractForexData = (data) => {
     const parts = sNo.split(".");
     const level = parts.length;
 
-    //consol.log(`Row ${i}: S/No=${sNo}, Label=${label}, Level=${level}`);
+    //console.log(`Row ${i}: S/No=${sNo}, Label=${label}, Level=${level}`);
 
     const entry = {
       id: sNo,
@@ -422,7 +422,7 @@ const extractForexData = (data) => {
       const parent = nodeMap.get(parentId);
       if (parent) {
         parent.children.push(entry);
-        //consol.log(`Added total row "${label}" to parent "${parentId}"`);
+        //console.log(`Added total row "${label}" to parent "${parentId}"`);
       } else {
         nodeMap.set(entry.id, entry);
       }
@@ -478,7 +478,7 @@ const extractForexData = (data) => {
 
         // if (!nodeMap.has(sNo)) {
         //   nodeMap.set(sNo, entry);
-        //   //consol.log(`Added special node ${sNo}: ${label} with OVERALL_EXPOSURE:`, values.OVERALL_EXPOSURE);
+        //   //console.log(`Added special node ${sNo}: ${label} with OVERALL_EXPOSURE:`, values.OVERALL_EXPOSURE);
         // }
       }
     }
@@ -518,7 +518,7 @@ const extractForexData = (data) => {
 
       // if (!nodeMap.has('8')) {
       //   nodeMap.set('8', entry);
-      //   //consol.log(`Added section node 8: ${label}`);
+      //   //console.log(`Added section node 8: ${label}`);
       // }
     }
   }
@@ -537,7 +537,7 @@ const extractForexData = (data) => {
 
     if (parts.length === 1) {
       topLevelNodes.push(node);
-      //consol.log(`Added top-level node: ${sNo} - ${node.label}`);
+      //console.log(`Added top-level node: ${sNo} - ${node.label}`);
     } else if (parts.length > 1) {
       const parentSNo = parts.slice(0, -1).join(".");
       const parent = nodeMap.get(parentSNo);
@@ -546,7 +546,7 @@ const extractForexData = (data) => {
         const exists = parent.children.some((child) => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          //consol.log(`Added node ${sNo} as child of ${parentSNo}`);
+          //console.log(`Added node ${sNo} as child of ${parentSNo}`);
         }
       } else {
         const baseSNo = parts[0];
@@ -557,11 +557,11 @@ const extractForexData = (data) => {
           );
           if (!exists) {
             baseParent.children.push(node);
-            //consol.log(`Added node ${sNo} as child of ${baseSNo} (fallback)`);
+            //console.log(`Added node ${sNo} as child of ${baseSNo} (fallback)`);
           }
         } else {
           topLevelNodes.push(node);
-          //consol.log(`Added node ${sNo} as top-level (no parent found)`);
+          //console.log(`Added node ${sNo} as top-level (no parent found)`);
         }
       }
     }
@@ -612,8 +612,8 @@ const extractForexData = (data) => {
   };
   cleanData(topLevelNodes);
 
-  //consol.log("Final top-level nodes:", topLevelNodes.length);
-  // consol.log(
+  //console.log("Final top-level nodes:", topLevelNodes.length);
+  // console.log(
   //   "Top-level nodes:",
   //   topLevelNodes.map((n) => n.sNo + " - " + n.label),
   // );

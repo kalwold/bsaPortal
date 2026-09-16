@@ -14,7 +14,7 @@ export const extractLiquidityMetadata = (data) => {
     departmentId: "",
   };
 
-  //consol.log("data.length  ", data.length)
+  //console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -28,20 +28,20 @@ export const extractLiquidityMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      //consol.log("Found Return Key:", metadata.ReturnKey);
+      //console.log("Found Return Key:", metadata.ReturnKey);
 
 if (firstCell.includes("ZS001")) {
-        metadata.reportType = "finance-weekly";
+        metadata.reportType = "finance-weekly_liquidity";
         metadata.departmentName = "Finance";
         metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-weekly";
-        //consol.log("Found Report Type:", metadata.reportType);
+        metadata.reportTypeId = "finance-weekly_liquidity";
+        //console.log("Found Report Type:", metadata.reportType);
       } 
     }
 
     if (( i === 3) && (firstCell)) {
        metadata.reportTitle = firstCell || '';
-      //consol.log("Found Report Title:", metadata.reportTitle);
+      //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
@@ -50,7 +50,7 @@ if (firstCell.includes("ZS001")) {
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
       metadata.institutionCode = thirdCell || '';
-      //consol.log("Found Institution Code:", metadata.institutionCode);
+      //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
@@ -59,7 +59,7 @@ if (firstCell.includes("ZS001")) {
       (firstCell || secondCell).includes("Financial Year")
     ) {
       metadata.financialYear = thirdCell || '';
-      //consol.log("Found Financial Year:", metadata.financialYear);
+      //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
@@ -69,7 +69,7 @@ if (firstCell.includes("ZS001")) {
     ) {
      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
      metadata.startDate = excelDateToISO(thirdCell) || '';
-      //consol.log("Found Start Date:", metadata.startDate);
+      //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
@@ -79,7 +79,7 @@ if (firstCell.includes("ZS001")) {
     ) {
       metadata.endDate = excelDateToISO(thirdCell) || "";
       // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-      //consol.log("Found End Date:", metadata.endDate);
+      //console.log("Found End Date:", metadata.endDate);
     }
 
     if (
@@ -89,7 +89,7 @@ if (firstCell.includes("ZS001")) {
         thirteenCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
     ) {
       metadata.unit = thirteenCell  || '';
-      //consol.log("Found Unit:", metadata.unit);
+      //console.log("Found Unit:", metadata.unit);
     }
   }
 return metadata
@@ -106,7 +106,7 @@ const extractLiquidityRequirementData = (data) => {
 
     if(i === 13){
       noandtitles = [firstCell,secondCell]
-      //consol.log("Found title:", noandtitles);
+      //console.log("Found title:", noandtitles);
     }
   }
   for (let i = 0; i < data.length; i++) {

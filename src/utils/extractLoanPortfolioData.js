@@ -286,9 +286,9 @@ const extractLoanPortfolioData = (data) => {
     // =====================================================
 
     let disbursementAmount = "0.00";
-    let disbursementPercentage = "0.00%";
+    let disbursementPercentage = "0.00";
     let outstandingAmount = "0.00";
-    let outstandingPercentage = "0.00%";
+    let outstandingPercentage = "0.00";
 
     // -----------------------------------------------------
     // Column C - Disbursement Amount
@@ -317,7 +317,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        disbursementPercentage = (val*100).toFixed(2) + '%';
+        disbursementPercentage = (val*100).toFixed(2) ;
       }
     }
 
@@ -348,7 +348,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        outstandingPercentage = (val*100).toFixed(2) + '%';
+        outstandingPercentage = (val*100).toFixed(2) ;
       }
     }
 
@@ -406,9 +406,9 @@ const extractLoanPortfolioData = (data) => {
 
           values: {
             "Disbursement_Amount": "0.00",
-            "Disbursement_Percentage": "0.00%",
+            "Disbursement_Percentage": "0.00",
             "Outstanding_Amount": "0.00",
-            "Outstanding_Percentage": "0.00%"
+            "Outstanding_Percentage": "0.00"
           },
 
           rowNumber: dataTableStart,
@@ -459,9 +459,9 @@ const extractLoanPortfolioData = (data) => {
 
           values: {
             "Disbursement_Amount": "0.00",
-            "Disbursement_Percentage": "0.00%",
+            "Disbursement_Percentage": "0.00",
             "Outstanding_Amount": "0.00",
-            "Outstanding_Percentage": "0.00%"
+            "Outstanding_Percentage": "0.00"
           },
 
           rowNumber: i + 1,

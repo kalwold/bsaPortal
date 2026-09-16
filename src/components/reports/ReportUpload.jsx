@@ -17,7 +17,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState([]);
 
-  //consol.log('ReportUpload props:', { departmentId, reportType });
+  //console.log('ReportUpload props:', { departmentId, reportType });
 
   useEffect(() => {
   // Cleanup function - runs when component unmounts or before next render
@@ -54,10 +54,10 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
       setValidationErrors([]);
       
       const parsed = await parseExcelReport(file,reportType);
-      //consol.log('Parsed report:', parsed);
+      //console.log('Parsed report:', parsed);
       
       const validation = validateReportStructure(parsed);
-      //consol.log('Validation result:', validation);
+      //console.log('Validation result:', validation);
       
       if (!validation.isValid) {
         setValidationErrors(validation.errors);
@@ -141,7 +141,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const additionalColumns =parsedData?.additionalColumns || [];
   const noandtitles=parsedData?.noandtitles|| [];
 
-//consol.log('columns', columns, "additionalColumns ", additionalColumns, "noandtitles", noandtitles)
+//console.log('columns', columns, "additionalColumns ", additionalColumns, "noandtitles", noandtitles)
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">

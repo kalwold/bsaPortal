@@ -68,8 +68,8 @@ const ReportViewer = () => {
       approver: approver
     };
 
-    //consol.log('Approval Data:', approvalData);
-    //consol.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
+    //console.log('Approval Data:', approvalData);
+    //console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
     approveMutation.mutate({ 
       id: report.id || reportId,
       approver: approver
@@ -88,8 +88,8 @@ const ReportViewer = () => {
       rejectReason: comment.trim()
     };
 
-    //consol.log('Rejection Data:', rejectionData);
-    //consol.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
+    //console.log('Rejection Data:', rejectionData);
+    //console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
     rejectMutation.mutate(rejectionData);
   };
 
@@ -226,7 +226,7 @@ const ReportViewer = () => {
             </div>
             <div>
               <p className="text-xs text-gray-500">Report Type</p>
-              <p className="text-sm font-medium text-gray-700">{report.reportTypeId || 'ibd-daily'}</p>
+              <p className="text-sm font-medium text-gray-700">{report.reportTypeId || 'ibd-daily_single-currency'}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Uploaded By</p>

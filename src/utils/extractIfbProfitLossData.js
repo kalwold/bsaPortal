@@ -15,7 +15,7 @@ export const extractIfbProfitLossMetadata = (data) => {
     departmentId: "",
   };
 
-  //consol.log("data.length  ", data.length)
+  //console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -29,7 +29,7 @@ export const extractIfbProfitLossMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      //consol.log("Found Return Key:", metadata.ReturnKey);
+      //console.log("Found Return Key:", metadata.ReturnKey);
 
 if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
         metadata.reportType = 'ifb-monthly_profit-loss';
@@ -41,7 +41,7 @@ if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
 
     if (( i === 3) && (firstCell)) {
        metadata.reportTitle = firstCell || '';
-      //consol.log("Found Report Title:", metadata.reportTitle);
+      //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
@@ -50,7 +50,7 @@ if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
       metadata.institutionCode = thirdCell || '';
-      //consol.log("Found Institution Code:", metadata.institutionCode);
+      //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
@@ -59,7 +59,7 @@ if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
       (firstCell || secondCell).includes("Financial Year")
     ) {
       metadata.financialYear = thirdCell || '';
-      //consol.log("Found Financial Year:", metadata.financialYear);
+      //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
@@ -68,10 +68,10 @@ if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
     //   (firstCell || secondCell) &&
     //   (firstCell || secondCell).includes("Start Date")
     ) {
-        //consol.log('thirdCell', thirdCell)
+        //console.log('thirdCell', thirdCell)
      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
      metadata.startDate = excelDateToISO(thirdCell) || '';
-      //consol.log("Found Start Date:", metadata.startDate);
+      //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
@@ -81,7 +81,7 @@ if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
     ) {
       metadata.endDate = excelDateToISO(thirdCell) || "";
       // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-      //consol.log("Found End Date:", metadata.endDate);
+      //console.log("Found End Date:", metadata.endDate);
     }
 
     if (
@@ -91,7 +91,7 @@ if (firstCell.includes('INT_FRE_SP') || firstCell.includes('BP001')) {
         eighthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
     ) {
       metadata.unit = thirdCell  || '';
-      //consol.log("Found Unit:", metadata.unit);
+      //console.log("Found Unit:", metadata.unit);
     }
   }
 return metadata
@@ -108,14 +108,14 @@ const extractIfbProfitLossData=(data)=>{
 
     if(i === 13){
       noandtitles = [firstCell,secondCell]
-      //consol.log("Found title:", noandtitles);
+      //console.log("Found title:", noandtitles);
     }
   }
 
    for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      //consol.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      //console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
   // Find the data table start - look for "Code" column
@@ -125,18 +125,18 @@ const extractIfbProfitLossData=(data)=>{
     const firstCell = String(row[0] || '').trim();
     if (firstCell === 'S.No.') {
       dataTableStart = i + 1;
-      //consol.log('Found data table at row:', dataTableStart);
+      //console.log('Found data table at row:', dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    //consol.log('Could not find data table');
+    //console.log('Could not find data table');
     return { hierarchicalData: [], currencies: ['Amount'], additionalColumns: [] , noandtitles};
   }
 
   const headerRow = data[dataTableStart - 1];
-  //consol.log('Header row:', headerRow.map(c => String(c || '').trim()));
+  //console.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
    // Find the value column (column C = index 2)
   const valueColumnIndex = 2;
@@ -211,7 +211,7 @@ const extractIfbProfitLossData=(data)=>{
       const existing = topLevelNodes.find(n => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
-        //consol.log(`Added top-level node: ${code} - ${node.label}`);
+        //console.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Child nodes (2.1, 2.4.1, etc.)
@@ -222,7 +222,7 @@ const extractIfbProfitLossData=(data)=>{
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          //consol.log(`Added node ${code} as child of ${parentCode}`);
+          //console.log(`Added node ${code} as child of ${parentCode}`);
         }
       } else {
         // Try to find parent by base code
@@ -232,12 +232,12 @@ const extractIfbProfitLossData=(data)=>{
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(node);
-            //consol.log(`Added node ${code} as child of ${baseCode} (fallback)`);
+            //console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
           }
         } else {
           // If still no parent, add to top level
           topLevelNodes.push(node);
-          //consol.log(`Added node ${code} as top-level (no parent found)`);
+          //console.log(`Added node ${code} as top-level (no parent found)`);
         }
       }
     }
@@ -282,8 +282,8 @@ const extractIfbProfitLossData=(data)=>{
   };
   cleanData(topLevelNodes);
 
-  //consol.log('Final top-level nodes:', topLevelNodes.length);
-  //consol.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
+  //console.log('Final top-level nodes:', topLevelNodes.length);
+  //console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
 
   return {
     hierarchicalData: topLevelNodes,

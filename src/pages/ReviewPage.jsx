@@ -15,7 +15,7 @@ const ReviewPage = () => {
     //   status: filter,
     //   role: 'reviewer',
     // }),
-    queryFn: () => reportService.getReports(  'ibd-daily' ),
+    queryFn: () => reportService.getReports(  'ibd-daily_single-currency' ),
     //enabled: !!user,
   });
 

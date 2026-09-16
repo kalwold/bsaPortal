@@ -13,7 +13,7 @@ export const extractIfbBalanceSheetMetadata = (data) => {
     departmentId: "",
   };
 
-  //consol.log("data.length  ", data.length)
+  //console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -25,7 +25,7 @@ export const extractIfbBalanceSheetMetadata = (data) => {
     const eighthCell = String(row[8] || "").trim();
     const tweneeEigntsCell = String(row[33] || "").trim();
 
-    // //consol.log(`Row ${i + 1}:`, {
+    // //console.log(`Row ${i + 1}:`, {
     //   firstCell,
     //   secondCell,
     //   thirdCell,
@@ -36,7 +36,7 @@ export const extractIfbBalanceSheetMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      //consol.log("Found Return Key:", metadata.ReturnKey);
+      //console.log("Found Return Key:", metadata.ReturnKey);
 
 if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')) {
 
@@ -49,7 +49,7 @@ if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')
 
     if (( i === 3) && (firstCell)) {
        metadata.reportTitle = firstCell || '';
-      //consol.log("Found Report Title:", metadata.reportTitle);
+      //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
@@ -58,7 +58,7 @@ if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
       metadata.institutionCode = thirdCell || '';
-      //consol.log("Found Institution Code:", metadata.institutionCode);
+      //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
@@ -67,7 +67,7 @@ if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')
       (firstCell || secondCell).includes("Financial Year")
     ) {
       metadata.financialYear = thirdCell || '';
-      //consol.log("Found Financial Year:", metadata.financialYear);
+      //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
@@ -77,7 +77,7 @@ if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')
     ) {
      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
      metadata.startDate = excelDateToISO(thirdCell) || '';
-      //consol.log("Found Start Date:", metadata.startDate);
+      //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
@@ -87,7 +87,7 @@ if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')
     ) {
       metadata.endDate = excelDateToISO(thirdCell) || "";
       // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-      //consol.log("Found End Date:", metadata.endDate);
+      //console.log("Found End Date:", metadata.endDate);
     }
 
     if (
@@ -97,7 +97,7 @@ if (firstCell && firstCell.includes('INT_FRE_BS') || firstCell.includes('FB001')
         eighthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
     ) {
       metadata.unit = thirdCell  || '';
-      //consol.log("Found Unit:", metadata.unit);
+      //console.log("Found Unit:", metadata.unit);
     }
   }
 return metadata
@@ -114,7 +114,7 @@ const extractIfbBalanceSheetData=(data)=> {
 
     if (i === 13) {
       noandtitles = [firstCell, secondCell];
-      //consol.log("Found title:", noandtitles);
+      //console.log("Found title:", noandtitles);
     }
   }
 
@@ -174,6 +174,7 @@ const valueColumnIndex = 2;
     const description = String(row[1] || '').trim();
 
     if (!description) continue;
+    const normalizedCode = code.replace(/\s*\./g, '.').replace(/\.$/, '');
 
     // === IDENTIFY SECTION HEADERS ===
     const isAssetsSection = description === 'Assets';
@@ -197,8 +198,8 @@ const valueColumnIndex = 2;
 
     // Determine level
     let level = 0;
-    if (code && code !== '') {
-      const codeParts = code.split('.');
+    if (normalizedCode && normalizedCode !== '') {
+      const codeParts = normalizedCode.split('.');
       level = codeParts.length;
     } else if (isSectionHeader) {
       level = 0;
@@ -207,8 +208,8 @@ const valueColumnIndex = 2;
     }
 
     const entry = {
-      id: code || ``,
-      sNo: code || '',
+      id: normalizedCode || ``,
+      sNo: normalizedCode || '',
       label: description,
       values: {
         'Current_Month': value !== null ? value.toFixed(2) : '0'
@@ -222,37 +223,37 @@ const valueColumnIndex = 2;
       children: []
     };
 
-    if (code) {
-      nodeMap.set(code, entry);
+    if (normalizedCode) {
+      nodeMap.set(normalizedCode, entry);
     }
 
     // === BUILD HIERARCHY ===
-    if (!code) {
+    if (!normalizedCode) {
       if (isAssetsSection) {
         // ASSETS section - top level
         topLevelNodes.push(entry);
         assetsNode = entry;
         currentParent = entry;
-        //consol.log('Added ASSETS section:', entry.label);
+        //console.log('Added ASSETS section:', entry.label);
       } else if (isLiabilitiesSection) {
         // LIABILITIES & CAPITAL section - top level
         topLevelNodes.push(entry);
         liabilitiesNode = entry;
         currentParent = entry;
-        //consol.log('Added LIABILITIES & CAPITAL section:', entry.label);
+        //console.log('Added LIABILITIES & CAPITAL section:', entry.label);
       } else if (isTotalRow) {
         // Total rows - add to appropriate parent
         if (description.includes('Total Assets') && assetsNode) {
           assetsNode.children.push(entry);
-          //consol.log('Added TOTAL ASSETS to ASSETS section');
+          //console.log('Added TOTAL ASSETS to ASSETS section');
         } 
         else if (description.includes("Liabilities and owners’ Equity (16+17)") && liabilitiesNode) {
           liabilitiesNode.children.push(entry);
-          //consol.log('Added TOTAL LIABILITIES to LIABILITIES section');
+          //console.log('Added TOTAL LIABILITIES to LIABILITIES section');
         } 
         //else {
         //   topLevelNodes.push(entry);
-        //   //consol.log('Added total row as top-level:', entry.label);
+        //   //console.log('Added total row as top-level:', entry.label);
         // }
       } else {
         // Other rows without code - add to current parent
@@ -266,8 +267,8 @@ const valueColumnIndex = 2;
   }
 
   // === BUILD HIERARCHY FOR CODED NODES ===
-  for (const [code, node] of nodeMap) {
-    const codeParts = code.split('.');
+  for (const [normalizedCode, node] of nodeMap) {
+    const codeParts = normalizedCode.split('.');
     
     if (codeParts.length === 1) {
       // Top level codes (1, 2, 3, ...)
@@ -284,16 +285,16 @@ const valueColumnIndex = 2;
       }
 
       if (parentSection) {
-        const exists = parentSection.children.some(child => child.id === code);
+        const exists = parentSection.children.some(child => child.id === normalizedCode);
         if (!exists) {
           parentSection.children.push(node);
-          //consol.log(`Added node ${code} to ${parentSection.label}`);
+          //console.log(`Added node ${normalizedCode} to ${parentSection.label}`);
         }
       } else {
-        const existing = topLevelNodes.find(n => n.id === code);
+        const existing = topLevelNodes.find(n => n.id === normalizedCode);
         if (!existing) {
           topLevelNodes.push(node);
-          //consol.log(`Added node ${code} as top-level (no parent found)`);
+          //console.log(`Added node ${normalizedCode} as top-level (no parent found)`);
         }
       }
     } else if (codeParts.length > 1) {
@@ -305,7 +306,7 @@ const valueColumnIndex = 2;
         const exists = parent.children.some(child => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
-          //consol.log(`Added node ${code} as child of ${parentCode}`);
+          //console.log(`Added node ${normalizedCode} as child of ${parentCode}`);
         }
       } else {
         // Try to find parent by base code
@@ -315,7 +316,7 @@ const valueColumnIndex = 2;
           const exists = baseParent.children.some(child => child.id === node.id);
           if (!exists) {
             baseParent.children.push(node);
-            //consol.log(`Added node ${code} as child of ${baseCode} (fallback)`);
+            //console.log(`Added node ${normalizedCode} as child of ${baseCode} (fallback)`);
           }
         }
       }
@@ -326,7 +327,7 @@ const valueColumnIndex = 2;
   const sortChildren = (nodes) => {
     nodes.sort((a, b) => {
       // Put total rows at the end
-      //consol.log('description total', a)
+      //console.log('description total', a)
       if ((a.isTotalRow && !b.isTotalRow)) return 1;
       if ((!a.isTotalRow && b.isTotalRow))return -1;
     //   if ((a.isTotalRow && !b.isTotalRow)&& a.label.includes('TOTAL LIABILITIES AND NET WORTH')) return 1;
@@ -367,7 +368,7 @@ const valueColumnIndex = 2;
   };
   cleanData(topLevelNodes);
 
-  //consol.log('Final hierarchy:', JSON.stringify(topLevelNodes, null, 2));
+  //console.log('Final hierarchy:', JSON.stringify(topLevelNodes, null, 2));
 
   return {
     hierarchicalData: topLevelNodes,
