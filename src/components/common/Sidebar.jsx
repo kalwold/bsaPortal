@@ -162,6 +162,10 @@ const DEPARTMENT_DATA = [
             id: "credit-quarterly_range-region",
             name: "Quarterly Conventional Loans by Range and Region",
           },
+          {
+            id: "credit-quarterly_loan-nonperforming-top20",
+            name: "Quarterly Top Twenty (20) NPLs Report",
+          }
         ],
       },
     ],
