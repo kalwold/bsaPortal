@@ -88,6 +88,13 @@ import extractLoanRangeRegionQuarterlyData, {extractLoanRangeRegionQuarterlyMeta
 import extractExpenseBreakdownData,{extractExpenseBreakdownMetadata} from "./extractExpenseBreakdownData";
 import extractIncomeAccountBreakdownData,{extractIncomeAccountBreakdownMetadata} from "./extractIncomeAccountBreakdownData";
 import extractCapitalAdequacyOffBalanceSheetData,{extractCapitalAdequacyOffBalanceSheetMetadata} from "./extractCapitalAdequacyOffBalanceSheetData";
+import extractTop20BorrowersData, {
+  extractTop20BorrowersMetadata,
+} from "./extractTop20BorrowersData";
+import extractBuildingConstructionLoansData, {
+  extractBuildingConstructionMetadata,
+} from "./extractBuildingConstructionLoansData";
+
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
@@ -124,7 +131,9 @@ const REPORT_TYPES = {
     LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region',
     EXPENSE_BREAKDOWN_QUARTERLY:'finance-quarterly_expense-breakdown',
     INCOME_ACCOUNT_BREAKDOWN:'finance-quarterly_income-account-breakdown',
-    CAPITAL_ADEQUACY_OFFBALANCESHEET:'finance-quarterly_capital-adequacy-off'
+    CAPITAL_ADEQUACY_OFFBALANCESHEET:'finance-quarterly_capital-adequacy-off',
+    TOP20_BORROWERS: 'credit-quarterly_top20-borrowers',
+    BUILDING_CONSTRUCTION: 'credit-quarterly_building-construction',
 };
 
 // const excelDateToISO = (serial) => {
@@ -435,6 +444,22 @@ export const parseExcelReport = (file, reportTypeIn) => {
           noandtitles = result.noandtitles;
           metadata = extractCapitalAdequacyOffBalanceSheetMetadata(jsonData);
         }
+        else if (reportType === REPORT_TYPES.TOP20_BORROWERS) {
+          const result = extractTop20BorrowersData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractTop20BorrowersMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.BUILDING_CONSTRUCTION) {
+          const result = extractBuildingConstructionLoansData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractBuildingConstructionMetadata(jsonData);
+        }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
@@ -662,6 +687,18 @@ const detectReportType = (data) => {
       (firstCell && firstCell.includes("CAP_ADQ_OFB_QO001"))
     ) {
       return REPORT_TYPES.CAPITAL_ADEQUACY_OFFBALANCESHEET;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("TOP_20_BOR_TB001") || firstCell.includes("TB001"))
+    ) {
+      return REPORT_TYPES.TOP20_BORROWERS;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("BUIL_CONSTXW002") || firstCell.includes("XW002"))
+    ) {
+      return REPORT_TYPES.BUILDING_CONSTRUCTION;
     }
   }
 

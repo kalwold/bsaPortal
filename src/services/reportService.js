@@ -84,6 +84,14 @@ export const DEPARTMENT_DATA = [
             id: "credit-quarterly_range-region",
             name: "Quarterly Conventional Loans by Range and Region",
           },
+           {
+            id: "credit-quarterly_top20-borrowers",
+            name: "Quarterly Top Twenty (20) Borrowers Report",
+          },
+          {
+            id: "credit-quarterly_building-construction",
+            name: "Loans to Building and Construction",
+          },
           
     ],
   },
