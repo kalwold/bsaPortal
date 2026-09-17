@@ -99,7 +99,7 @@ const ReportDataTable = ({
                   {node.values[column].toLocaleString()}
                 </span>
               ) : (
-                <span className="text-gray-300">-</span>
+                <span className="text-blue-300">-</span>
               )}
             </td>
           ))}

@@ -181,6 +181,10 @@ const DEPARTMENT_DATA = [
             name: "Quarterly Conventional Loans by Range and Region",
           },
           {
+            id: "credit-quarterly_loan-nonperforming-top20",
+            name: "Quarterly Top Twenty (20) NPLs Report",
+          },
+            {
             id: "credit-quarterly_top20-borrowers",
             name: "Quarterly Top Twenty (20) Borrowers Report",
           },
@@ -188,7 +192,6 @@ const DEPARTMENT_DATA = [
             id: "credit-quarterly_building-construction",
             name: "Loans to Building and Construction",
           },
-          
         ],
       },
     ],

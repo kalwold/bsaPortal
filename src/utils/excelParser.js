@@ -84,7 +84,11 @@ import extractNplSectorBranchData, {
 import extractCollateralizedPropertyAcquiredLast18Data, {
   extractCollateralizedPropertyAcquiredLast18Metadata,
 } from "./extractCollateralizedPropertyAcquiredLast18Data";
-import extractLoanRangeRegionQuarterlyData, {extractLoanRangeRegionQuarterlyMetadata} from "./extractLoanRangeRegionQuarterlyData";
+import extractLoanRangeRegionQuarterlyData, { extractLoanRangeRegionQuarterlyMetadata } from "./extractLoanRangeRegionQuarterlyData";
+import extractQTopTwentyNplData, {
+  extractQTopTwentyNplMetadata,
+} from "./extractQTopTwentyNplData";
+
 import extractExpenseBreakdownData,{extractExpenseBreakdownMetadata} from "./extractExpenseBreakdownData";
 import extractIncomeAccountBreakdownData,{extractIncomeAccountBreakdownMetadata} from "./extractIncomeAccountBreakdownData";
 import extractCapitalAdequacyOffBalanceSheetData,{extractCapitalAdequacyOffBalanceSheetMetadata} from "./extractCapitalAdequacyOffBalanceSheetData";
@@ -128,7 +132,8 @@ const REPORT_TYPES = {
   NPL_SECTOR_BRANCH: "credit-quarterly_npl-sector-branch",
   COLLATERALIZED_PROPERTY_ACQUIRED_LAST18:
     "credit-quarterly_collateralized-property-acquired-last18",
-    LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region',
+  LOAN_RANGE_REGION_QUARTERLY: 'credit-quarterly_range-region',
+  Q_TOP_TWENTY_NPL: "credit-quarterly_loan-nonperforming-top20",
     EXPENSE_BREAKDOWN_QUARTERLY:'finance-quarterly_expense-breakdown',
     INCOME_ACCOUNT_BREAKDOWN:'finance-quarterly_income-account-breakdown',
     CAPITAL_ADEQUACY_OFFBALANCESHEET:'finance-quarterly_capital-adequacy-off',
@@ -395,25 +400,33 @@ export const parseExcelReport = (file, reportTypeIn) => {
         } else if (
           reportType === REPORT_TYPES.COLLATERALIZED_PROPERTY_ACQUIRED_LAST18
         ) {
-          const result =extractCollateralizedPropertyAcquiredLast18Data(jsonData);
+          const result = extractCollateralizedPropertyAcquiredLast18Data(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata =
             extractCollateralizedPropertyAcquiredLast18Metadata(jsonData);
-        } 
-         else if (
+        }
+        else if (
           reportType === REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY
         ) {
-          const result =extractLoanRangeRegionQuarterlyData(jsonData);
+          const result = extractLoanRangeRegionQuarterlyData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata =
             extractLoanRangeRegionQuarterlyMetadata(jsonData);
-        }
+        } else if (
+          reportType === REPORT_TYPES.Q_TOP_TWENTY_NPL
+        ) {
+          const result = extractQTopTwentyNplData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQTopTwentyNplMetadata(jsonData);}
          else if (
           reportType === REPORT_TYPES.EXPENSE_BREAKDOWN_QUARTERLY
         ) {
@@ -672,6 +685,12 @@ const detectReportType = (data) => {
       (firstCell && firstCell.includes("LOAN_RAN&REG_RA002"))
     ) {
       return REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY;
+    }
+    if (
+      (firstCell && firstCell.includes("TOP_TWENTY_NPL")) ||
+      firstCell.includes("TN001")
+    ) {
+      return REPORT_TYPES.Q_TOP_TWENTY_NPL;
     }
     if (
       (firstCell && firstCell.includes("BRE_EXPE_BE001"))
