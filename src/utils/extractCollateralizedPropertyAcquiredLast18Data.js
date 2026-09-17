@@ -183,7 +183,7 @@ if (dataTableStartIndex === -1) {
     values["Acquired_Date"] = getStringValue(
       columnMap.acquiredDate
     );
-    values["Reevaluation_Date"] = getDateValue(columnMap.reevaluationDate);
+    values["Reevaluation_Date"] = getStringValue(columnMap.reevaluationDate);
     values["Expenses_related_to_the_acquisition"] = getValue(columnMap.acquisitionExpenses)
     values["Net_Market_Value"]=getValue(columnMap.netMarketValue)
 

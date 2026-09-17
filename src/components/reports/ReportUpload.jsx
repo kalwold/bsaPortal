@@ -279,10 +279,6 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
                 <p className="text-xs text-gray-500">Unit</p>
                 <p className="text-sm font-semibold text-gray-900">{metadata.unit }</p>
               </div>
-              <div>
-                <p className="text-xs text-gray-500">Template ID</p>
-                <p className="text-sm font-semibold text-gray-900">{metadata.templateId}</p>
-              </div>
             </div>
           </div>
         )}

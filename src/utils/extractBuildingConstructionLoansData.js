@@ -108,6 +108,8 @@ const extractBuildingConstructionLoansData = (data) => {
   let headerRowIdx = -1;
   let noandtitles = [];
 
+  console.log("inout data", data)
+
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -163,7 +165,7 @@ const extractBuildingConstructionLoansData = (data) => {
     const code = sanitizeCode(codeRaw);
     const name = getStr(row, 1);
     const loanType = getStr(row, 2);
-    const label = name || loanType || `Item ${code}`;
+    const label = name;
 
     if (loggedRows < 30) {
       console.log(`[XW002] row[${i}] (Excel row ${i + 1}) included — code="${code}", name="${name}", loanType="${loanType}"`);
@@ -185,7 +187,7 @@ const extractBuildingConstructionLoansData = (data) => {
     const entry = {
       id: code,
       sNo: code,
-      label,
+      label:name,
       values,
       rowNumber: i + 1,
       level,
@@ -222,15 +224,54 @@ const extractBuildingConstructionLoansData = (data) => {
 
   topLevelNodes.push(...summaryRows);
 
-  const sortChildren = (nodes) => {
-    nodes.sort((a, b) => {
-      const aNum = parseFloat(a.sNo);
-      const bNum = parseFloat(b.sNo);
-      if (isNaN(aNum) || isNaN(bNum)) return 0;
-      return aNum - bNum;
-    });
-    nodes.forEach((n) => n.children && n.children.length && sortChildren(n.children));
-  };
+  // const sortChildren = (nodes) => {
+  //   nodes.sort((a, b) => {
+  //     const aNum = parseFloat(a.sNo);
+  //     const bNum = parseFloat(b.sNo);
+  //     if (isNaN(aNum) || isNaN(bNum)) return 0;
+  //     return aNum - bNum;
+  //   });
+  //   nodes.forEach((n) => n.children && n.children.length && sortChildren(n.children));
+  // };
+  const compareSNo = (a, b) => {
+  const aParts = String(a.sNo ?? "")
+    .trim()
+    .split(".")
+    .map(part => Number(part));
+
+  const bParts = String(b.sNo ?? "")
+    .trim()
+    .split(".")
+    .map(part => Number(part));
+
+  // Keep original order if either sNo is invalid
+  if (aParts.some(Number.isNaN) || bParts.some(Number.isNaN)) {
+    return 0;
+  }
+
+  const maxLength = Math.max(aParts.length, bParts.length);
+
+  for (let i = 0; i < maxLength; i++) {
+    const aPart = aParts[i] ?? 0;
+    const bPart = bParts[i] ?? 0;
+
+    if (aPart !== bPart) {
+      return aPart - bPart;
+    }
+  }
+
+  return 0;
+};
+
+const sortChildren = (nodes) => {
+  nodes.sort(compareSNo);
+
+  nodes.forEach((n) => {
+    if (n.children?.length) {
+      sortChildren(n.children);
+    }
+  });
+};
   sortChildren(topLevelNodes);
 
   const cleanData = (nodes) => {

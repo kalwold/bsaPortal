@@ -33,7 +33,6 @@ const DEPARTMENT_DATA = [
       },
     ],
   },
-
   {
     id: "finance",
     name: "Finance",
@@ -77,6 +76,24 @@ const DEPARTMENT_DATA = [
           {
             id: "finance-monthly_deposit-range-region",
             name: "Report on Deposits by Range and Region",
+          },
+        ],
+      },
+     {
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          {
+            id: "finance-quarterly_expense-breakdown",
+            name: "BREAKDOWN OF EXPENSES",
+          },
+           {
+            id: "finance-quarterly_income-account-breakdown",
+            name: "Breakdown of Income Accounts",
+          },
+          {
+            id: "finance-quarterly_off-balancesheet",
+            name: "CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
           },
         ],
       },
@@ -164,6 +181,18 @@ const DEPARTMENT_DATA = [
           },
           { id: 'credit-quarterly_loans-sector-region', 
           name: 'Conventional Loans by Sector and Region' },
+          {
+        id: "credit-quarterly_loan-nonperforming-top20",
+        name: "Quarterly Top Twenty (20) NPLs Report",
+      },
+           {
+            id: "credit-quarterly_top20-borrowers",
+            name: "Quarterly Top Twenty (20) Borrowers Report",
+          },
+          {
+            id: "credit-quarterly_building-construction",
+            name: "Loans to Building and Construction",
+          },
         ],
       },
     ],
