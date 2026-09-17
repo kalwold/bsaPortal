@@ -25,8 +25,8 @@ export const extractNplSectorBranchMetadata = (data) => {
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("NPL_ECPOM") || firstCell.includes("NE001")) {
-        metadata.reportType = "credit-quarterly_npl-sector-branch";
-        metadata.reportTypeId = "credit-quarterly_npl-sector-branch";
+        metadata.reportType = "credit-quarterly_loan-npl-ecosec-branch";
+        metadata.reportTypeId = "credit-quarterly_loan-npl-ecosec-branch";
         metadata.departmentName = "Credit";
         metadata.departmentId = "credit";
       }

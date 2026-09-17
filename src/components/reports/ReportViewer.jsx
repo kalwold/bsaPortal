@@ -221,10 +221,6 @@ const ReportViewer = () => {
               <p className="text-sm font-medium text-gray-700">{metadata.unit || 'In Thousands'}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Template ID</p>
-              <p className="text-sm font-medium text-gray-700">{metadata.templateId || 'OP001'}</p>
-            </div>
-            <div>
               <p className="text-xs text-gray-500">Report Type</p>
               <p className="text-sm font-medium text-gray-700">{report.reportTypeId || 'ibd-daily_single-currency'}</p>
             </div>

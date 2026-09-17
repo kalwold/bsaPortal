@@ -26,8 +26,8 @@ export const extractCapitalAdequacyOffBalanceSheetMetadata =(data)=>{
    metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("CAP_ADQ_OFB_QO001") ) {
-        metadata.reportType = "finance-quarterly_capital-adequacy-off";
-        metadata.reportTypeId = "finance-quarterly_capital-adequacy-off";
+        metadata.reportType = "finance-quarterly_off-balancesheet";
+        metadata.reportTypeId = "finance-quarterly_off-balancesheet";
         metadata.departmentName = "Finance";
         metadata.departmentId = "finance";
       }

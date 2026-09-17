@@ -25,9 +25,9 @@ export const extractLoanClassificationProvisioningMetadata = (data) => {
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("LOAN_CLA&PROV") || firstCell.includes("LP001")) {
-        metadata.reportType = "credit-quarterly_loan-classification-provisioning";
+        metadata.reportType = "credit-quarterly_loan-classification";
         metadata.reportTypeId =
-          "credit-quarterly_loan-classification-provisioning";
+          "credit-quarterly_loan-classification";
         metadata.departmentName = "Credit";
         metadata.departmentId = "credit";
       }

@@ -1,3 +1,4 @@
+
 import api from "./api";
 
 // Hardcoded department data for reference
@@ -31,7 +32,7 @@ export const DEPARTMENT_DATA = [
             name: " Breakdown of Income Accounts",
           },
           {
-            id: "finance-quarterly_capital-adequacy-off",
+            id: "finance-quarterly_off-balancesheet",
             name: "CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
           },
     ],
@@ -70,11 +71,11 @@ export const DEPARTMENT_DATA = [
         name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months"
       },
       {
-        id: "credit-quarterly_loan-classification-provisioning",
+        id: "credit-quarterly_loan-classification",
         name: "Loan Classification and Provisioning",
       },
       {
-        id: "credit-quarterly_npl-sector-branch",
+        id: "credit-quarterly_loan-npl-ecosec-branch",
         name: "BSD Quarterly NPLs Report by Economic Sector and Branch",
       },
       {
@@ -85,6 +86,7 @@ export const DEPARTMENT_DATA = [
         id: "credit-quarterly_range-region",
         name: "Quarterly Conventional Loans by Range and Region",
       },
+      { id: 'credit-quarterly_loans-sector-region', name: 'Conventional Loans by Sector and Region' },
       {
         id: "credit-quarterly_loan-nonperforming-top20",
         name: "Quarterly Top Twenty (20) NPLs Report",

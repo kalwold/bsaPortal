@@ -80,24 +80,6 @@ const DEPARTMENT_DATA = [
           },
         ],
       },
-        {
-        id: "quarterly",
-        name: "Quarterly",
-        reportTypes: [
-          {
-            id: "finance-quarterly_expense-breakdown",
-            name: "BREAKDOWN OF EXPENSES",
-          },
-          {
-            id: "finance-quarterly_income-account-breakdown",
-            name: " Breakdown of Income Accounts",
-          },
-          {
-            id: "finance-quarterly_capital-adequacy-off",
-            name: " CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
-          },
-        ],
-      },
     ],
   },
   {
@@ -165,11 +147,11 @@ const DEPARTMENT_DATA = [
             name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months",
           },
           {
-            id: "credit-quarterly_loan-classification-provisioning",
+            id: "credit-quarterly_loan-classification",
             name: "Loan Classification and Provisioning",
           },
           {
-            id: "credit-quarterly_npl-sector-branch",
+            id: "credit-quarterly_loan-npl-ecosec-branch",
             name: "BSD Quarterly NPLs Report by Economic Sector and Branch",
           },
           {
@@ -180,18 +162,8 @@ const DEPARTMENT_DATA = [
             id: "credit-quarterly_range-region",
             name: "Quarterly Conventional Loans by Range and Region",
           },
-          {
-            id: "credit-quarterly_loan-nonperforming-top20",
-            name: "Quarterly Top Twenty (20) NPLs Report",
-          },
-            {
-            id: "credit-quarterly_top20-borrowers",
-            name: "Quarterly Top Twenty (20) Borrowers Report",
-          },
-          {
-            id: "credit-quarterly_building-construction",
-            name: "Loans to Building and Construction",
-          },
+          { id: 'credit-quarterly_loans-sector-region', 
+          name: 'Conventional Loans by Sector and Region' },
         ],
       },
     ],
