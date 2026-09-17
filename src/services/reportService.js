@@ -22,6 +22,18 @@ export const DEPARTMENT_DATA = [
          { id: 'finance-monthly_capital-adequacy', name:'CAPITAL ADEQUACY REPORT (Monthly) - Capital Components'},
                { id: 'finance-monthly_deposit-sector-region', name:'Report on Deposits by Sector and Region'},
       { id: 'finance-monthly_deposit-range-region', name:'Report on Deposits by Range and Region'},
+         {
+            id: "finance-quarterly_expense-breakdown",
+            name: "BREAKDOWN OF EXPENSES",
+          },
+           {
+            id: "finance-quarterly_income-account-breakdown",
+            name: " Breakdown of Income Accounts",
+          },
+          {
+            id: "finance-quarterly_capital-adequacy-off",
+            name: "CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
+          },
     ],
   },
   {
@@ -72,6 +84,7 @@ export const DEPARTMENT_DATA = [
             id: "credit-quarterly_range-region",
             name: "Quarterly Conventional Loans by Range and Region",
           },
+          
     ],
   },
   {

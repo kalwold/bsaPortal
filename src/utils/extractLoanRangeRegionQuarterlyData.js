@@ -180,7 +180,7 @@ const sanitizeKey = (text) => {
 
     const code = String(row[0] || '').trim();
     const region = String(row[1] || '').trim();
-
+  const isTotalRow = region.includes('Total Amount')
     // Skip if no region
     if (!region) continue;
     
@@ -196,6 +196,8 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     if (normalizedCode && normalizedCode !== '') {
       const codeParts = code.split('.');
       level = codeParts.length;
+    }else if (isTotalRow) {
+      level = 0;
     }
 
     // Extract values for each loan range
@@ -243,7 +245,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
        values[accountKey] = accountsValue;
     }
 
-    const isTotalRow = region.include('Total Amount')
+  
     // Create the entry
     const entry = {
       id: normalizedCode || ``,
@@ -257,12 +259,24 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       children: []
     };
 
+    console.log("each entry:" , entry)
+
     if (normalizedCode) {
       nodeMap.set(normalizedCode, entry);
     }
 
- 
+   if (!code) {
+      if (isTotalRow) {
+      
+          topLevelNodes.push(entry);
+          //console.log('Added total row as top-level:', entry.label);
+        
+      } 
+    }
   }
+
+
+  
 
   // Build hierarchy for nodes with codes
   for (const [normalizedCode, node] of nodeMap) {

@@ -85,6 +85,9 @@ import extractCollateralizedPropertyAcquiredLast18Data, {
   extractCollateralizedPropertyAcquiredLast18Metadata,
 } from "./extractCollateralizedPropertyAcquiredLast18Data";
 import extractLoanRangeRegionQuarterlyData, {extractLoanRangeRegionQuarterlyMetadata} from "./extractLoanRangeRegionQuarterlyData";
+import extractExpenseBreakdownData,{extractExpenseBreakdownMetadata} from "./extractExpenseBreakdownData";
+import extractIncomeAccountBreakdownData,{extractIncomeAccountBreakdownMetadata} from "./extractIncomeAccountBreakdownData";
+import extractCapitalAdequacyOffBalanceSheetData,{extractCapitalAdequacyOffBalanceSheetMetadata} from "./extractCapitalAdequacyOffBalanceSheetData";
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
@@ -118,7 +121,10 @@ const REPORT_TYPES = {
   NPL_SECTOR_BRANCH: "credit-quarterly_npl-sector-branch",
   COLLATERALIZED_PROPERTY_ACQUIRED_LAST18:
     "credit-quarterly_collateralized-property-acquired-last18",
-    LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region'
+    LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region',
+    EXPENSE_BREAKDOWN_QUARTERLY:'finance-quarterly_expense-breakdown',
+    INCOME_ACCOUNT_BREAKDOWN:'finance-quarterly_income-account-breakdown',
+    CAPITAL_ADEQUACY_OFFBALANCESHEET:'finance-quarterly_capital-adequacy-off'
 };
 
 // const excelDateToISO = (serial) => {
@@ -399,6 +405,36 @@ export const parseExcelReport = (file, reportTypeIn) => {
           metadata =
             extractLoanRangeRegionQuarterlyMetadata(jsonData);
         }
+         else if (
+          reportType === REPORT_TYPES.EXPENSE_BREAKDOWN_QUARTERLY
+        ) {
+          const result =extractExpenseBreakdownData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractExpenseBreakdownMetadata(jsonData);
+        }
+         else if (
+          reportType === REPORT_TYPES.INCOME_ACCOUNT_BREAKDOWN
+        ) {
+          const result =extractIncomeAccountBreakdownData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractIncomeAccountBreakdownMetadata(jsonData);
+        }
+         else if (
+          reportType === REPORT_TYPES.CAPITAL_ADEQUACY_OFFBALANCESHEET
+        ) {
+          const result =extractCapitalAdequacyOffBalanceSheetData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractCapitalAdequacyOffBalanceSheetMetadata(jsonData);
+        }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
@@ -611,6 +647,21 @@ const detectReportType = (data) => {
       (firstCell && firstCell.includes("LOAN_RAN&REG_RA002"))
     ) {
       return REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY;
+    }
+    if (
+      (firstCell && firstCell.includes("BRE_EXPE_BE001"))
+    ) {
+      return REPORT_TYPES.EXPENSE_BREAKDOWN_QUARTERLY;
+    }
+    if (
+      (firstCell && firstCell.includes("BRE_INCO_BA001"))
+    ) {
+      return REPORT_TYPES.INCOME_ACCOUNT_BREAKDOWN;
+    }
+    if (
+      (firstCell && firstCell.includes("CAP_ADQ_OFB_QO001"))
+    ) {
+      return REPORT_TYPES.CAPITAL_ADEQUACY_OFFBALANCESHEET;
     }
   }
 

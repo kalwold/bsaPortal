@@ -80,6 +80,24 @@ const DEPARTMENT_DATA = [
           },
         ],
       },
+        {
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          {
+            id: "finance-quarterly_expense-breakdown",
+            name: "BREAKDOWN OF EXPENSES",
+          },
+          {
+            id: "finance-quarterly_income-account-breakdown",
+            name: " Breakdown of Income Accounts",
+          },
+          {
+            id: "finance-quarterly_capital-adequacy-off",
+            name: " CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
+          },
+        ],
+      },
     ],
   },
   {
