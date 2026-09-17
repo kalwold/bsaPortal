@@ -227,8 +227,9 @@ const extractQTopTwentyNplData = (data) => {
         Loans_Outstanding: toNumber(row[COL.loansOutstanding]),
         Collateral_Value: toNumber(row[COL.collateralValue]),
         Provision_Held: toNumber(row[COL.provisionHeld]),
+        Loan_Status: String(row[COL.loanStatus] || '').trim(),
       },
-      loanStatus: String(row[COL.loanStatus] || '').trim(),
+      
       rowNumber: i + 1,
       level: 0,
       isTotalRow,
@@ -249,8 +250,8 @@ const extractQTopTwentyNplData = (data) => {
 
   return {
     hierarchicalData: topLevelNodes,
-    columns: ['Loans_Approved', 'Loans_Outstanding', 'Collateral_Value', 'Provision_Held'],
-    additionalColumns: ['Loan_Status'],
+    columns: ['Loans_Approved', 'Loans_Outstanding', 'Collateral_Value', 'Provision_Held', 'Loan_Status'],
+    additionalColumns: [],
     noandtitles,
   };
 };
