@@ -45,25 +45,19 @@ export const AuthProvider = ({ children }) => {
 //   };
 
   const login = async (email, password) => {
-    const response = await axios.post('http://10.6.13.37:9091/api/auth/login', { userName: email, password });
-    const { username, accessToken,refreshToken,roleId,permissions } = response.data;
-  //   const { token, user } = {
-  //   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  //   "user": {
-  //     "id": "usr_001",
-  //     "name": "Admin User",
-  //     "email": "admin@example.com",
-  //     "role": "admin",
-  //     "departmentId": "treasury",
-  //     "departmentName": "Treasury Department",
-  //     "permissions": ["upload", "review", "approve", "manage_users"]
-    
-  // }
-//}
+    // NOTE: originally hardcoded to http://10.6.13.37:9091/api/auth/login,
+    // which only exists on the internal network. Using the configured API
+    // base URL instead so this works against any backend (mock or real).
+    const baseUrl = process.env.REACT_APP_API_URL_BASE || process.env.REACT_APP_API_URL;
+    const response = await axios.post(`${baseUrl}auth/login`, { userName: email, password });
+    const { username, accessToken, refreshToken, roleId, permissions, user } = response.data;
 
     localStorage.setItem('token', accessToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    setUser(user);
+    // NOTE: originally called setUser(user) where `user` was never destructured
+    // from the response, so it always set the state to its own previous value
+    // (null) and every route behind PrivateRoute redirected back to /login.
+    setUser(user || { name: username, role: roleId, permissions });
     return user;
   };
 

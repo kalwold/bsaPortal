@@ -14,7 +14,6 @@ export const extractBalanceSheetMetadata = (data) => {
     departmentId: "",
   };
 
-  //console.log("data.length  ", data.length)
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;

@@ -85,6 +85,18 @@ import extractCollateralizedPropertyAcquiredLast18Data, {
   extractCollateralizedPropertyAcquiredLast18Metadata,
 } from "./extractCollateralizedPropertyAcquiredLast18Data";
 import extractLoanRangeRegionQuarterlyData, {extractLoanRangeRegionQuarterlyMetadata} from "./extractLoanRangeRegionQuarterlyData";
+import extractLoanSectorRegionQuarterlyData, {
+  extractLoanSectorRegionQuarterlyMetadata,
+} from "./extractLoanSectorRegionQuarterlyData";
+import extractTop20BorrowersData, {
+  extractTop20BorrowersMetadata,
+} from "./extractTop20BorrowersData";
+import extractTop20NplsData, {
+  extractTop20NplsMetadata,
+} from "./extractTop20NplsData";
+import extractBuildingConstructionLoansData, {
+  extractBuildingConstructionMetadata,
+} from "./extractBuildingConstructionLoansData";
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
@@ -118,7 +130,11 @@ const REPORT_TYPES = {
   NPL_SECTOR_BRANCH: "credit-quarterly_npl-sector-branch",
   COLLATERALIZED_PROPERTY_ACQUIRED_LAST18:
     "credit-quarterly_collateralized-property-acquired-last18",
-    LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region'
+    LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region',
+    LOAN_SECTOR_REGION_QUARTERLY: 'credit-quarterly_sector-region',
+    TOP20_BORROWERS: 'credit-quarterly_top20-borrowers',
+    TOP20_NPLS: 'credit-quarterly_top20-npls',
+    BUILDING_CONSTRUCTION: 'credit-quarterly_building-construction',
 };
 
 // const excelDateToISO = (serial) => {
@@ -156,12 +172,29 @@ export const parseExcelReport = (file, reportTypeIn) => {
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-        //console.log("Raw Excel Data:", jsonData);
+        // ===== DEBUG LOGGING =====
+        // Shows exactly what SheetJS read from the file, row by row and
+        // cell by cell, so mismatches between what a metadata function
+        // expects (e.g. "row 8, column C") and what's actually in the
+        // file are easy to spot in the browser console.
+        console.log("========== EXCEL PARSER DEBUG ==========");
+        console.log("File name:", file.name);
+        console.log("Expected report type (from dropdown):", reportTypeIn);
+        console.log("Raw rows 0-19 (0-indexed; row N here = Excel row N+1):");
+        jsonData.slice(0, 20).forEach((row, idx) => {
+          console.log(`  row[${idx}] (Excel row ${idx + 1}):`, row);
+        });
+        console.log("Total rows in sheet:", jsonData.length);
+        console.log("Cell A1 (used for report-type detection):", jsonData[0] && jsonData[0][0]);
 
         const reportType = detectReportType(jsonData);
-        //console.log("Detected Report Type:", reportType , "SS", reportTypeIn);
+        console.log("Detected report type (from A1):", reportType);
 
         if (reportTypeIn !== reportType) {
+          console.error(
+            `Mismatch: dropdown expects "${reportTypeIn}" but A1 was detected as "${reportType}". ` +
+            `Check detectReportType() in excelParser.js against the actual A1 value logged above.`
+          );
           throw new Error("Unsupported report type");
         }
 
@@ -399,12 +432,50 @@ export const parseExcelReport = (file, reportTypeIn) => {
           metadata =
             extractLoanRangeRegionQuarterlyMetadata(jsonData);
         }
+        else if (reportType === REPORT_TYPES.LOAN_SECTOR_REGION_QUARTERLY) {
+          const result = extractLoanSectorRegionQuarterlyData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractLoanSectorRegionQuarterlyMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.TOP20_BORROWERS) {
+          const result = extractTop20BorrowersData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractTop20BorrowersMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.TOP20_NPLS) {
+          const result = extractTop20NplsData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractTop20NplsMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.BUILDING_CONSTRUCTION) {
+          const result = extractBuildingConstructionLoansData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractBuildingConstructionMetadata(jsonData);
+        }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
 
         // const hierarchicalData = extractHierarchicalData(jsonData);
         // //console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
+
+        console.log("Extracted metadata:", metadata);
+        console.log("Extracted columns:", columns);
+        console.log("Extracted hierarchicalData (first 5 nodes):", hierarchicalData.slice(0, 5));
+        console.log("noandtitles:", noandtitles);
+        console.log("=========================================");
 
         const flatData = flattenData(hierarchicalData);
 
@@ -611,6 +682,30 @@ const detectReportType = (data) => {
       (firstCell && firstCell.includes("LOAN_RAN&REG_RA002"))
     ) {
       return REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("LOAN_SEC&REG_SE002") || firstCell.includes("SE002"))
+    ) {
+      return REPORT_TYPES.LOAN_SECTOR_REGION_QUARTERLY;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("TOP_20_BOR_TB001") || firstCell.includes("TB001"))
+    ) {
+      return REPORT_TYPES.TOP20_BORROWERS;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("TOP_20_NPLs_TN001") || firstCell.includes("TN001"))
+    ) {
+      return REPORT_TYPES.TOP20_NPLS;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("BUIL_CONSTXW002") || firstCell.includes("XW002"))
+    ) {
+      return REPORT_TYPES.BUILDING_CONSTRUCTION;
     }
   }
 
