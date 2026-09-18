@@ -317,7 +317,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        disbursementPercentage = (val*100).toFixed(2) ;
+        disbursementPercentage = (val).toFixed(2) ;
       }
     }
 
@@ -348,7 +348,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        outstandingPercentage = (val*100).toFixed(2) ;
+        outstandingPercentage = (val).toFixed(2) ;
       }
     }
 

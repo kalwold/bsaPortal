@@ -256,7 +256,7 @@ const isSectionHeader =  code && !code.includes('.')
         if (colIndex < row.length) {
           const rawValue = parseFloat(row[colIndex]);
           if (!isNaN(rawValue) && rawValue !== 0) {
-            values[dayColumns[j]] = (rawValue * 100).toFixed(2) ;
+            values[dayColumns[j]] = (rawValue).toFixed(2) ;
           } else {
             values[dayColumns[j]] = '0';
           }

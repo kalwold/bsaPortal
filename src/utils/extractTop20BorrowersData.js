@@ -132,9 +132,19 @@ const extractTop20BorrowersData = (data) => {
   const dataTableStart = headerRowIdx + 4;
   console.log('[TB001] data rows expected to start at index:', dataTableStart, `(Excel row ${dataTableStart + 1})`);
 
-  const getNum = (row, idx) => {
+    const getNum = (row, idx) => {
     if (idx < row.length) {
-      const val = parseFloat(row[idx]);
+      const raw = row[idx];
+      if (raw === undefined || raw === null || String(raw).trim() === "") return "0";
+      // Cells arrive from XLSX as formatted display strings (the parser
+      // calls sheet_to_json with raw:false), e.g. "7,877,545.00" for a
+      // number formatted with thousands separators. parseFloat() stops
+      // at the first non-numeric character, so parseFloat("7,877,545.00")
+      // silently returns 7 instead of 7877545 — that's the bug that was
+      // truncating every value in the GUI (7.00, 54.00, 6.00, 447.00...).
+      // Strip commas (and any stray whitespace) before parsing.
+      const cleaned = String(raw).replace(/,/g, "").trim();
+      const val = parseFloat(cleaned);
       if (!isNaN(val) && val !== 0) return val.toFixed(2);
     }
     return "0";
