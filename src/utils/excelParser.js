@@ -145,20 +145,44 @@ const REPORT_TYPES = {
 // };
 
 export const excelDateToISO = (value) => {
-  if (!value) return "";
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
 
   const str = String(value).trim();
 
-  // Already ISO format → return as it is
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(str)) {
+  // Already full ISO datetime → return as is
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(str)) {
     return str;
   }
 
-  // Excel serial date
-  const date = new Date(Date.UTC(1899, 11, 30));
-  date.setUTCDate(date.getUTCDate() + Number(value));
+  // Date-only string (YYYY-MM-DD) → normalize to full ISO
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const date = new Date(`${str}T00:00:00.000Z`);
+    return isNaN(date.getTime()) ? "" : date.toISOString();
+  }
 
-  return date.toISOString().slice(0, 19);
+  // Excel serial date
+  if (typeof value === "number" || /^\d+(\.\d+)?$/.test(str)) {
+    const numericValue = Number(value);
+
+    if (numericValue < 1000) {
+      return str;
+    }
+
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const excelEpochUTC = Date.UTC(1899, 11, 30);
+    const date = new Date(excelEpochUTC + numericValue * msPerDay);
+
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+
+    return date.toISOString();
+  }
+
+  // Non-date string → return as is
+  return str;
 };
 
 export const parseExcelReport = (file, reportTypeIn) => {
@@ -168,9 +192,10 @@ export const parseExcelReport = (file, reportTypeIn) => {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
+          const workbook = XLSX.read(data, { type: "array", cellText: true, cellNF: true });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw:false});
 
         // ===== DEBUG LOGGING =====
         // Shows exactly what SheetJS read from the file, row by row and

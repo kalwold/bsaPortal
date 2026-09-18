@@ -134,7 +134,17 @@ const extractBuildingConstructionLoansData = (data) => {
 
   const getNum = (row, idx) => {
     if (idx < row.length) {
-      const val = parseFloat(row[idx]);
+      const raw = row[idx];
+      if (raw === undefined || raw === null || raw === "") return "0";
+      // The parser reads cells with `raw:false`, which returns the cell's
+      // *formatted display string*. Most data cells have no thousands
+      // separator in their number format, so parseFloat works fine on
+      // them — but rows like "Sub Total" are formatted with "#,##0.00",
+      // so SheetJS hands back e.g. "7,646,621,934.00", and parseFloat()
+      // stops at the first comma (giving 7 instead of 7646621934).
+      // Strip commas before parsing so both cases work.
+      const cleaned = String(raw).replace(/,/g, "").trim();
+      const val = parseFloat(cleaned);
       if (!isNaN(val) && val !== 0) return val.toFixed(2);
     }
     return "0";
@@ -146,14 +156,59 @@ const extractBuildingConstructionLoansData = (data) => {
   const topLevelNodes = [];
   const nodeMap = new Map();
   const summaryRows = []; // trailing rows like "Sub Grand total", "Total construction loans", etc.
+  let lastTopLevelCode = null; // tracks the current top-level group (e.g. "1", "2") for attaching subtotal rows
 
+  // Loop 1: scan data rows, build nodeMap / summaryRows, and attach
+  // blank-S.No. "Sub Total" style rows as trailing children of the
+  // current top-level group instead of dropping them.
   for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
     const codeRaw = row[0];
-    if (codeRaw === undefined || codeRaw === "" || isNaN(parseFloat(codeRaw))) {
-      if (loggedRows < 30) {
+    const name = getStr(row, 1);
+    const isBlankCode =
+      codeRaw === undefined || codeRaw === "" || isNaN(parseFloat(codeRaw));
+
+    if (isBlankCode) {
+      // Blank S.No. but a "Sub Total"/"Total" style label -> attach it as
+      // a trailing child of the last top-level group instead of dropping it.
+      if (/total/i.test(name) && lastTopLevelCode) {
+        const values = {
+          Loan_Type: getStr(row, 2),
+          Outstanding_Balance: getNum(row, 3),
+          Loan_Status: getStr(row, 4),
+          Collateral_Type: getStr(row, 5),
+          Collateral_Value: getNum(row, 6),
+          Provision_Held: getNum(row, 7),
+        };
+
+        const subtotalEntry = {
+          // The UI renders `id` as the S.No. column, so `id` must be
+          // blank too (matching `sNo`) for the cell to show empty.
+          // `_key` is a private, internal-only identifier — never
+          // rendered — kept solely so this entry stays distinguishable
+          // from others during processing if that's ever needed later.
+          id: "",
+          sNo: "",
+          _key: `${lastTopLevelCode}.subtotal-${i}`,
+          label: name,
+          values,
+          rowNumber: i + 1,
+          level: 2,
+          isTotalRow: true,
+          isSectionHeader: false,
+          isSubtotalRow: true,
+          children: [],
+        };
+
+        const parent = nodeMap.get(lastTopLevelCode);
+        if (parent) {
+          parent.children.push(subtotalEntry);
+        } else {
+          topLevelNodes.push(subtotalEntry);
+        }
+      } else if (loggedRows < 30) {
         console.log(`[XW002] row[${i}] (Excel row ${i + 1}) skipped — no numeric S.No.:`, row);
         loggedRows++;
       }
@@ -161,9 +216,8 @@ const extractBuildingConstructionLoansData = (data) => {
     }
 
     const code = sanitizeCode(codeRaw);
-    const name = getStr(row, 1);
     const loanType = getStr(row, 2);
-    const label = name || loanType || `Item ${code}`;
+    const label = name;
 
     if (loggedRows < 30) {
       console.log(`[XW002] row[${i}] (Excel row ${i + 1}) included — code="${code}", name="${name}", loanType="${loanType}"`);
@@ -185,7 +239,7 @@ const extractBuildingConstructionLoansData = (data) => {
     const entry = {
       id: code,
       sNo: code,
-      label,
+      label: name,
       values,
       rowNumber: i + 1,
       level,
@@ -201,8 +255,13 @@ const extractBuildingConstructionLoansData = (data) => {
     } else {
       nodeMap.set(code, entry);
     }
+
+    // Remember the current top-level group so a following blank-code
+    // subtotal row knows which parent to attach to.
+    lastTopLevelCode = code.split(".")[0];
   }
 
+  // Loop 2: walk nodeMap and assemble topLevelNodes / parent-child links.
   for (const [code, node] of nodeMap) {
     const codeParts = code.split(".");
     if (codeParts.length === 1) {
@@ -221,15 +280,51 @@ const extractBuildingConstructionLoansData = (data) => {
   }
 
   topLevelNodes.push(...summaryRows);
+  const compareSNo = (a, b) => {
+    // Subtotal rows have a blank sNo (nothing to parse), so ordering
+    // for them can't come from sNo at all — they're always forced to
+    // the end of their sibling group via isSubtotalRow instead.
+    if (a.isSubtotalRow && !b.isSubtotalRow) return 1;
+    if (!a.isSubtotalRow && b.isSubtotalRow) return -1;
+    if (a.isSubtotalRow && b.isSubtotalRow) return 0;
 
+    // A segment that isn't a plain number is mapped to Infinity instead
+    // of NaN, so it always sorts *after* every numbered sibling at that
+    // level, rather than freezing whatever order entries happened to be
+    // inserted in.
+    const toParts = (sNo) =>
+      String(sNo ?? "")
+        .trim()
+        .split(".")
+        .map((part) => {
+          const n = Number(part);
+          return Number.isNaN(n) ? Infinity : n;
+        });
+
+    const aParts = toParts(a.sNo);
+    const bParts = toParts(b.sNo);
+
+    const maxLength = Math.max(aParts.length, bParts.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      const aPart = aParts[i] ?? 0;
+      const bPart = bParts[i] ?? 0;
+
+      if (aPart !== bPart) {
+        return aPart - bPart;
+      }
+    }
+
+    return 0;
+  };
   const sortChildren = (nodes) => {
-    nodes.sort((a, b) => {
-      const aNum = parseFloat(a.sNo);
-      const bNum = parseFloat(b.sNo);
-      if (isNaN(aNum) || isNaN(bNum)) return 0;
-      return aNum - bNum;
+    nodes.sort(compareSNo);
+
+    nodes.forEach((n) => {
+      if (n.children?.length) {
+        sortChildren(n.children);
+      }
     });
-    nodes.forEach((n) => n.children && n.children.length && sortChildren(n.children));
   };
   sortChildren(topLevelNodes);
 
