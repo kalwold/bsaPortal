@@ -40,10 +40,10 @@ export const extractExpenseBreakdownMetadata=(data)=>{
       //console.log("Found Return Key:", metadata.ReturnKey);
 
      if (firstCell.includes("BRE_EXPE_BE001")) {
-        metadata.reportType = "finance-quarterly_expense-breakdown";
+        metadata.reportType = "finance-quarterly_breakdown-expenses";
         metadata.departmentName = "Finance";
         metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-quarterly_expense-breakdown";
+        metadata.reportTypeId = "finance-quarterly_breakdown-expenses";
         //console.log("Found Report Type:", metadata.reportType);
       } 
     }

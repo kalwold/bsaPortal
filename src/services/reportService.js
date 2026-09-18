@@ -24,24 +24,55 @@ export const DEPARTMENT_DATA = [
       { id: 'finance-monthly_deposit-sector-region', name: 'Report on Deposits by Sector and Region' },
       { id: 'finance-monthly_deposit-range-region', name: 'Report on Deposits by Range and Region' },
          {
-            id: "finance-quarterly_expense-breakdown",
+            id: "finance-quarterly_breakdown-expenses",
             name: "BREAKDOWN OF EXPENSES",
           },
            {
-            id: "finance-quarterly_income-account-breakdown",
+            id: "finance-quarterly_breakdown-income-account",
             name: " Breakdown of Income Accounts",
           },
           {
             id: "finance-quarterly_off-balancesheet",
             name: "CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
           },
+          {
+            id: "finance-quarterly_deposit-range-region",
+            name: "Quarterly Report on Deposits by Range and Region",
+          },
+          {
+            id: "finance-quarterly_profit_loss",
+            name: "PROFIT AND LOSS STATEMENT",
+          },
+          {
+            id: "finance-quarterly_on-balancesheet",
+            name: " CAPITAL ADEQUACY REPORT - On Balance Sheet",
+          },
+          
+          {
+            id: "finance-quarterly_capital-adequacy",
+            name: "CAPITAL ADEQUACY REPORT (QUARTERLY) - Capital Components",
+          },
+             {
+        id: "finance-quarterly_balance-sheet",
+        name: "Quarterly Balance Sheet",
+      },{
+        id: "finance-quarterly_top-twenty-depositors",
+        name: "Quarterly Top Twenty Depositors",
+      },{
+        id: "finance-quarterly_maturity-assets-liabilities",
+        name: "Quarterly Maturity of Assets & Liabilities",
+      },{
+        id: "finance-quarterly_memorandum",
+        name: "Quarterly Memorandum and Contingent Accounts",
+      },
+          
     ],
   },
   {
     id: "credit",
     name: "Credit",
     reportTypes: [
-      { id: "credit-monthy_loan-related", name: "Loans to Related Parties Report" },
+      { id: "credit-monthly_loan-related", name: "Loans to Related Parties Report" },
       {
         id: "credit-monthly_loan-breakdown",
         name: "Breakdown of Loans and Advances",
@@ -112,6 +143,10 @@ export const DEPARTMENT_DATA = [
       { id: 'ifb-monthly_profit-loss', name: 'Interest Free Banking Service Profit and loss statement' },
       { id: 'ifb-monthly_loan-range-region', name: 'IFB Loans by Range and Region' },
       { id: 'ifb-monthly_loan-sector-region', name: 'IFB Loans by Sector and Region' },
+      { id: 'ifb-quarterly_loan-range-region', name: 'Quarterly Interest Free Loans by Range and Region	' },
+      { id: 'ifb-quarterly_loan-sector-region', name: 'Quarterly Interest Free Loans by Sector and Region' },
+     { id: 'ifb-quarterly_deposit-range-region', name: 'Quarterly Interest Free Deposits by Range and Region	' },
+      { id: 'ifb-quarterly_deposit-sector-region', name: 'Quarterly Interest Free Deposits by Sector and Region' },
 
     ]
   },

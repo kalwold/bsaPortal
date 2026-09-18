@@ -1,6 +1,7 @@
-import { excelDateToISO } from "./excelParser";
-export const extractIncomeAccountBreakdownMetadata =(data)=>{
 
+
+import { excelDateToISO } from "./excelParser";
+export const extractFinanceProfitLossMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -24,38 +25,28 @@ export const extractIncomeAccountBreakdownMetadata =(data)=>{
     const thirdCell = String(row[2] || "").trim();
     const fourthCell = String(row[3] || "").trim();
     const eighthCell = String(row[8] || "").trim();
-    const tweneeEigntsCell = String(row[33] || "").trim();
-
-    // //console.log(`Row ${i + 1}:`, {
-    //   firstCell,
-    //   secondCell,
-    //   thirdCell,
-    //   fourthCell,
-    //   eighthCell,
-    //   tweneeEigntsCell
-    // });
+    const thirteenCell = String(row[12] || "").trim();
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
 
-     if (firstCell.includes("BRE_INCO_BA001")) {
-        metadata.reportType = "finance-quarterly_breakdown-expenses";
-        metadata.departmentName = "Finance";
-        metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-quarterly_breakdown-expenses";
-        //console.log("Found Report Type:", metadata.reportType);
-      } 
+if (firstCell.includes('PRO&LOS_PL001')) {
+        metadata.reportType = 'finance-quarterly_profit_loss';
+        metadata.reportTypeId = 'finance-quarterly_profit_loss';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
+      }
     }
 
-    if (( i === 3) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
      (i === 7 )&&
-      (firstCell || secondCell) &&
+      (firstCell ) &&
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
       metadata.institutionCode = thirdCell || '';
@@ -72,10 +63,12 @@ export const extractIncomeAccountBreakdownMetadata =(data)=>{
     }
 
     if (
-      ( i === 9) &&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("Start Date")
+      ( i === 9) 
+      //&&
+    //   (firstCell || secondCell) &&
+    //   (firstCell || secondCell).includes("Start Date")
     ) {
+        //console.log('thirdCell', thirdCell)
      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
      metadata.startDate = excelDateToISO(thirdCell) || '';
       //console.log("Found Start Date:", metadata.startDate);
@@ -94,58 +87,63 @@ export const extractIncomeAccountBreakdownMetadata =(data)=>{
     if (
       ( i === 12) &&
       (thirdCell || eighthCell || firstCell) &&
-      (thirdCell.toLowerCase().includes("in") || thirdCell.toLowerCase().includes('In'))
+      (thirdCell.toLowerCase().includes("in") ||
+        eighthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
     ) {
       metadata.unit = thirdCell  || '';
       //console.log("Found Unit:", metadata.unit);
     }
   }
+return metadata
+}
 
-  return metadata;
-};
-const extractIncomeAccountBreakdownData=(data)=>{
-
-  let dataTableStart = -1;
-
-  let noandtitles = [];
-  for (let i = 0; i < data.length; i++) {
+const extractFinanceProfitLossData=(data)=>{
+    let dataTableStart = -1;
+   let noandtitles = [];
+    for (let i = 0; i < data.length; i++) {
     const row = data[i];
+    
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if (i === 13) {
-      noandtitles = [firstCell, secondCell];
+    if(i === 13){
+      noandtitles = [firstCell,secondCell]
       //console.log("Found title:", noandtitles);
     }
-
   }
 
-   // Log first few rows to understand structure
-  for (let i = 0; i < Math.min(data.length, 20); i++) {
+   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
       //console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
     }
   }
-
-    // Find the data table start
+  // Find the data table start - look for "Code" column
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || '').trim();
-    const secondCell = String(row[1] || '').trim();
-    if (firstCell === 'Code' || secondCell === 'Description') {
+    if (firstCell === 'Code') {
       dataTableStart = i + 1;
+      //console.log('Found data table at row:', dataTableStart);
       break;
     }
   }
-const headerRow = data[dataTableStart - 1];
- const valueColumnIndex = 2;
-const topLevelNodes = [];
+
+  if (dataTableStart === -1) {
+    //console.log('Could not find data table');
+    return { hierarchicalData: [], currencies: ['Amount'], additionalColumns: [] , noandtitles};
+  }
+
+  const headerRow = data[dataTableStart - 1];
+  //console.log('Header row:', headerRow.map(c => String(c || '').trim()));
+
+   // Find the value column (column C = index 2)
+  const valueColumnIndex = 2;
+  const topLevelNodes = [];
   const nodeMap = new Map();
   let currentParent = null;
 
-   // Parse each row
   for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -153,21 +151,29 @@ const topLevelNodes = [];
     const code = String(row[0] || '').trim();
     const description = String(row[1] || '').trim();
 
-    // Skip if no description
+     // Skip if no description
     if (!description) continue;
 
+    // Skip footer rows
+    if (description.includes('Note:') || description.includes('Note')) continue;
 
+        // Check if this is a total row
+    const isTotalRow = code === '3' ||
+                       code === '4' ||
+                       code === '4.1' ||
+                       code === '5' ||
+                       code === '6' ||
+                       code === '7'||
+                       code === '8' ||
+                       code === '9' ||
+                       code === '11'||
+                       code === '12'||
+                       code === '13' ||
+                       code === '15';
 
-    // Check if this is a total row
-    const isTotalRow = code === '1' ||   code === '1.2' || code ==='2' || code ==='3' || code=== '3.2' || code ==='4';
-                     
-                
-
-
-    // Check if this is a parent section (like 2.4 International trade)
     const isParent = code && code.includes('.') && !code.match(/\.\d+$/);
 
-    // Extract the value
+       // Extract the value
     let value = '0';
     if (valueColumnIndex < row.length) {
       const rawValue = parseFloat(row[valueColumnIndex]);
@@ -178,18 +184,15 @@ const topLevelNodes = [];
       }
     }
 
-   
-
-    // Determine level
+// Determine level
     let level = 0;
     if (code && code !== '') {
       const codeParts = code.split('.');
       level = codeParts.length;
     }
 
-    // Determine if this is a section header (like 2.4 International trade)
-    const isSectionHeader = isParent && !isTotalRow;
-
+    // Determine if this is a section header
+    const isSectionHeader = isParent;
     const entry = {
       id: code || ``,
       sNo: code || '',
@@ -204,13 +207,10 @@ const topLevelNodes = [];
       children: []
     };
 
-    if (code) {
-      nodeMap.set(code, entry);
-    }
+ nodeMap.set(code, entry);
+}
 
-  
-  }
-    // Build hierarchy for nodes with codes
+   // Build hierarchy for nodes with codes
   for (const [code, node] of nodeMap) {
     const codeParts = code.split('.');
     
@@ -250,11 +250,12 @@ const topLevelNodes = [];
       }
     }
   }
-
   // Sort children by code
   const sortChildren = (nodes) => {
     nodes.sort((a, b) => {
-     
+    //   if (a.isTotalRow && !b.isTotalRow) return 1;
+    //   if (!a.isTotalRow && b.isTotalRow) return -1;
+      
       if (a.sNo && b.sNo) {
         const aParts = a.sNo.split('.').map(Number);
         const bParts = b.sNo.split('.').map(Number);
@@ -298,5 +299,7 @@ const topLevelNodes = [];
     additionalColumns: [],
     noandtitles
   };
+  
 }
-export default extractIncomeAccountBreakdownData
+
+export default extractFinanceProfitLossData

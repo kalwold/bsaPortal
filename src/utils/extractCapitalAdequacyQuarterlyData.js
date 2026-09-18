@@ -1,6 +1,5 @@
 import { excelDateToISO } from "./excelParser";
-export const extractIncomeAccountBreakdownMetadata =(data)=>{
-
+export const extractCapitalAdequacyQuarterlyMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -39,23 +38,23 @@ export const extractIncomeAccountBreakdownMetadata =(data)=>{
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
 
-     if (firstCell.includes("BRE_INCO_BA001")) {
-        metadata.reportType = "finance-quarterly_breakdown-expenses";
-        metadata.departmentName = "Finance";
-        metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-quarterly_breakdown-expenses";
-        //console.log("Found Report Type:", metadata.reportType);
-      } 
+     
+        if (firstCell.includes('CAP_ADQ_CAP_QC001')) {
+        metadata.reportType = 'finance-quarterly_capital-adequacy';
+        metadata.reportTypeId = 'finance-quarterly_capital-adequacy';
+        metadata.departmentId = 'finance';
+        metadata.departmentName = 'Finance';
+      }
     }
 
-    if (( i === 3) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (( i === 3) && (firstCell)) {
+       metadata.reportTitle = firstCell || '';
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
      (i === 7 )&&
-      (firstCell || secondCell) &&
+      (firstCell ) &&
      ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
     ) {
       metadata.institutionCode = thirdCell || '';
@@ -94,7 +93,8 @@ export const extractIncomeAccountBreakdownMetadata =(data)=>{
     if (
       ( i === 12) &&
       (thirdCell || eighthCell || firstCell) &&
-      (thirdCell.toLowerCase().includes("in") || thirdCell.toLowerCase().includes('In'))
+      (thirdCell.toLowerCase().includes("in") ||
+        eighthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
     ) {
       metadata.unit = thirdCell  || '';
       //console.log("Found Unit:", metadata.unit);
@@ -103,8 +103,14 @@ export const extractIncomeAccountBreakdownMetadata =(data)=>{
 
   return metadata;
 };
-const extractIncomeAccountBreakdownData=(data)=>{
-
+const extractCapitalAdequacyQuarterlyData = (data)=>{
+  const sanitizeKey = (text) => {
+  return text
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-zA-Z0-9_]/g, '')
+    .replace(/_+/g, '_');
+};
   let dataTableStart = -1;
 
   let noandtitles = [];
@@ -156,13 +162,14 @@ const topLevelNodes = [];
     // Skip if no description
     if (!description) continue;
 
-
+    // Skip footer rows
+    if (description.includes('Note:') || description.includes('Note')) continue;
 
     // Check if this is a total row
-    const isTotalRow = code === '1' ||   code === '1.2' || code ==='2' || code ==='3' || code=== '3.2' || code ==='4';
-                     
+    // const isTotalRow = description === 'TOTAL CAPITAL(17.1+17.2)' ||
+    //                    description === 'Risk-weighted assets (RWA) (18.1+18.2)';
                 
-
+    const isTotalRow = description.includes('Total') || description.includes('TOTAL')
 
     // Check if this is a parent section (like 2.4 International trade)
     const isParent = code && code.includes('.') && !code.match(/\.\d+$/);
@@ -178,13 +185,16 @@ const topLevelNodes = [];
       }
     }
 
-   
+    // For formulas like =C21+C22, we need to check if there's a value
+    // The value is in column C (index 2)
 
     // Determine level
     let level = 0;
     if (code && code !== '') {
       const codeParts = code.split('.');
       level = codeParts.length;
+    } else if (isTotalRow) {
+      level = 0;
     }
 
     // Determine if this is a section header (like 2.4 International trade)
@@ -254,7 +264,7 @@ const topLevelNodes = [];
   // Sort children by code
   const sortChildren = (nodes) => {
     nodes.sort((a, b) => {
-     
+      
       if (a.sNo && b.sNo) {
         const aParts = a.sNo.split('.').map(Number);
         const bParts = b.sNo.split('.').map(Number);
@@ -299,4 +309,5 @@ const topLevelNodes = [];
     noandtitles
   };
 }
-export default extractIncomeAccountBreakdownData
+
+export default extractCapitalAdequacyQuarterlyData

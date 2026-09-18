@@ -42,10 +42,10 @@ export const extractRelatedPartiesMetadata = (data) => {
      
 
      if(firstCell.includes('BSD_LOAN_PART13002')){
-        metadata.reportType = "credit-monthy_loan-related";
+        metadata.reportType = "credit-monthly_loan-related";
         metadata.departmentName = "Credit";
         metadata.departmentId = "credit";
-        metadata.reportTypeId = "credit-monthy_loan-related";
+        metadata.reportTypeId = "credit-monthly_loan-related";
         //console.log("Found Report Type:", metadata.reportType);
       }
     }
