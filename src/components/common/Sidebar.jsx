@@ -79,6 +79,16 @@ const DEPARTMENT_DATA = [
             name: "Report on Deposits by Range and Region",
           },
         ],
+      },{
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          { id: "finance-quarterly_balance-sheet", name: "Quarterly Balance Sheet" },
+          { id: "finance-quarterly_top-twenty-depositors", name: "Quarterly Top Twenty Depositors" },
+          { id: "finance-quarterly_maturity-assets-liabilities", name: "Quarterly Maturity of Assets & Liabilities" },
+          { id: "finance-quarterly_memorandum-contingent-accounts", name: "Quarterly Memorandum and Contingent Accounts" },
+
+        ],
       },
     ],
   },

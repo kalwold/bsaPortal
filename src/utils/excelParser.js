@@ -84,7 +84,9 @@ import extractNplSectorBranchData, {
 import extractCollateralizedPropertyAcquiredLast18Data, {
   extractCollateralizedPropertyAcquiredLast18Metadata,
 } from "./extractCollateralizedPropertyAcquiredLast18Data";
-import extractLoanRangeRegionQuarterlyData, {extractLoanRangeRegionQuarterlyMetadata} from "./extractLoanRangeRegionQuarterlyData";
+import extractLoanRangeRegionQuarterlyData, {
+  extractLoanRangeRegionQuarterlyMetadata,
+} from "./extractLoanRangeRegionQuarterlyData";
 import extractLoanSectorRegionQuarterlyData, {
   extractLoanSectorRegionQuarterlyMetadata,
 } from "./extractLoanSectorRegionQuarterlyData";
@@ -97,6 +99,19 @@ import extractTop20NplsData, {
 import extractBuildingConstructionLoansData, {
   extractBuildingConstructionMetadata,
 } from "./extractBuildingConstructionLoansData";
+import extractQuarterlyBalanceSheetData, {
+  extractQuarterlyBalanceSheetMetadata,
+} from "./extractQuarterlyBalanceSheetData";
+import extractQuarterlyTopTwentyDepositorsData, {
+  extractQuarterlyTopTwentyDepositorsMetadata,
+} from "./extractQuarterlyTopTwentyDepositorsData";
+import extractQuarterlyMaturityOfAssetsLiabilitiesData, {
+  extractQuarterlyMaturityOfAssetsLiabilitiesMetadata,
+} from "./extractQuarterlyMaturityOfAssetsLiabilitiesData";
+import extractQuarterlyMemorandumAndContingentAccountsData, {
+  extractQuarterlyMemorandumAndContingentAccountsMetadata,
+} from "./extractQuarterlyMemorandumAndContingentAccountsData";
+
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
@@ -130,11 +145,17 @@ const REPORT_TYPES = {
   NPL_SECTOR_BRANCH: "credit-quarterly_npl-sector-branch",
   COLLATERALIZED_PROPERTY_ACQUIRED_LAST18:
     "credit-quarterly_collateralized-property-acquired-last18",
-    LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region',
-    LOAN_SECTOR_REGION_QUARTERLY: 'credit-quarterly_sector-region',
-    TOP20_BORROWERS: 'credit-quarterly_top20-borrowers',
-    TOP20_NPLS: 'credit-quarterly_top20-npls',
-    BUILDING_CONSTRUCTION: 'credit-quarterly_building-construction',
+  LOAN_RANGE_REGION_QUARTERLY: "credit-quarterly_range-region",
+  LOAN_SECTOR_REGION_QUARTERLY: "credit-quarterly_sector-region",
+  TOP20_BORROWERS: "credit-quarterly_top20-borrowers",
+  TOP20_NPLS: "credit-quarterly_top20-npls",
+  BUILDING_CONSTRUCTION: "credit-quarterly_building-construction",
+  QUARTERLY_BALANCE_SHEET: "finance-quarterly_balance-sheet",
+  QUARTERLY_TOP_TWENTY_DEPOSITORS: "finance-quarterly_top-twenty-depositors",
+  QUARTERLY_MATURITY_OF_ASSETS_LIABILITIES:
+    "finance-quarterly_maturity-assets-liabilities",
+  QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS:
+    "finance-quarterly_memorandum-contingent-accounts",
 };
 
 // const excelDateToISO = (serial) => {
@@ -152,7 +173,11 @@ export const excelDateToISO = (value) => {
   const str = String(value).trim();
 
   // Already full ISO datetime → return as is
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(str)) {
+  if (
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(
+      str,
+    )
+  ) {
     return str;
   }
 
@@ -192,10 +217,17 @@ export const parseExcelReport = (file, reportTypeIn) => {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array", cellText: true, cellNF: true });
+        const workbook = XLSX.read(data, {
+          type: "array",
+          cellText: true,
+          cellNF: true,
+        });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw:false});
+
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
+          header: 1,
+          raw: false,
+        });
 
         // ===== DEBUG LOGGING =====
         // Shows exactly what SheetJS read from the file, row by row and
@@ -210,7 +242,10 @@ export const parseExcelReport = (file, reportTypeIn) => {
           console.log(`  row[${idx}] (Excel row ${idx + 1}):`, row);
         });
         console.log("Total rows in sheet:", jsonData.length);
-        console.log("Cell A1 (used for report-type detection):", jsonData[0] && jsonData[0][0]);
+        console.log(
+          "Cell A1 (used for report-type detection):",
+          jsonData[0] && jsonData[0][0],
+        );
 
         const reportType = detectReportType(jsonData);
         console.log("Detected report type (from A1):", reportType);
@@ -218,7 +253,7 @@ export const parseExcelReport = (file, reportTypeIn) => {
         if (reportTypeIn !== reportType) {
           console.error(
             `Mismatch: dropdown expects "${reportTypeIn}" but A1 was detected as "${reportType}". ` +
-            `Check detectReportType() in excelParser.js against the actual A1 value logged above.`
+              `Check detectReportType() in excelParser.js against the actual A1 value logged above.`,
           );
           throw new Error("Unsupported report type");
         }
@@ -438,58 +473,89 @@ export const parseExcelReport = (file, reportTypeIn) => {
         } else if (
           reportType === REPORT_TYPES.COLLATERALIZED_PROPERTY_ACQUIRED_LAST18
         ) {
-          const result =extractCollateralizedPropertyAcquiredLast18Data(jsonData);
+          const result =
+            extractCollateralizedPropertyAcquiredLast18Data(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata =
             extractCollateralizedPropertyAcquiredLast18Metadata(jsonData);
-        } 
-         else if (
-          reportType === REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY
-        ) {
-          const result =extractLoanRangeRegionQuarterlyData(jsonData);
+        } else if (reportType === REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY) {
+          const result = extractLoanRangeRegionQuarterlyData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
-          metadata =
-            extractLoanRangeRegionQuarterlyMetadata(jsonData);
-        }
-        else if (reportType === REPORT_TYPES.LOAN_SECTOR_REGION_QUARTERLY) {
+          metadata = extractLoanRangeRegionQuarterlyMetadata(jsonData);
+        } else if (reportType === REPORT_TYPES.LOAN_SECTOR_REGION_QUARTERLY) {
           const result = extractLoanSectorRegionQuarterlyData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractLoanSectorRegionQuarterlyMetadata(jsonData);
-        }
-        else if (reportType === REPORT_TYPES.TOP20_BORROWERS) {
+        } else if (reportType === REPORT_TYPES.TOP20_BORROWERS) {
           const result = extractTop20BorrowersData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractTop20BorrowersMetadata(jsonData);
-        }
-        else if (reportType === REPORT_TYPES.TOP20_NPLS) {
+        } else if (reportType === REPORT_TYPES.TOP20_NPLS) {
           const result = extractTop20NplsData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractTop20NplsMetadata(jsonData);
-        }
-        else if (reportType === REPORT_TYPES.BUILDING_CONSTRUCTION) {
+        } else if (reportType === REPORT_TYPES.BUILDING_CONSTRUCTION) {
           const result = extractBuildingConstructionLoansData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractBuildingConstructionMetadata(jsonData);
-        }
-        else {
+        } else if (reportType === REPORT_TYPES.QUARTERLY_BALANCE_SHEET) {
+          const result = extractQuarterlyBalanceSheetData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyBalanceSheetMetadata(jsonData);
+        } else if (
+          reportType ===
+          REPORT_TYPES.QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS
+        ) {
+          const result =
+            extractQuarterlyMemorandumAndContingentAccountsData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata =
+            extractQuarterlyMemorandumAndContingentAccountsMetadata(jsonData);
+        } else if (
+          reportType === REPORT_TYPES.QUARTERLY_MATURITY_OF_ASSETS_LIABILITIES
+        ) {
+          const result =
+            extractQuarterlyMaturityOfAssetsLiabilitiesData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata =
+            extractQuarterlyMaturityOfAssetsLiabilitiesMetadata(jsonData);
+        } else if (
+          reportType === REPORT_TYPES.QUARTERLY_TOP_TWENTY_DEPOSITORS
+        ) {
+          const result = extractQuarterlyTopTwentyDepositorsData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyTopTwentyDepositorsMetadata(jsonData);
+        } else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
 
@@ -498,7 +564,10 @@ export const parseExcelReport = (file, reportTypeIn) => {
 
         console.log("Extracted metadata:", metadata);
         console.log("Extracted columns:", columns);
-        console.log("Extracted hierarchicalData (first 5 nodes):", hierarchicalData.slice(0, 5));
+        console.log(
+          "Extracted hierarchicalData (first 5 nodes):",
+          hierarchicalData.slice(0, 5),
+        );
         console.log("noandtitles:", noandtitles);
         console.log("=========================================");
 
@@ -541,6 +610,7 @@ const detectReportType = (data) => {
 
   // Check first row for ReturnKey
   const firstRow = data[0];
+
   if (firstRow && firstRow.length > 0) {
     const firstCell = String(firstRow[0] || "").trim();
 
@@ -703,9 +773,7 @@ const detectReportType = (data) => {
     ) {
       return REPORT_TYPES.COLLATERALIZED_PROPERTY_ACQUIRED_LAST18;
     }
-    if (
-      (firstCell && firstCell.includes("LOAN_RAN&REG_RA002"))
-    ) {
+    if (firstCell && firstCell.includes("LOAN_RAN&REG_RA002")) {
       return REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY;
     }
     if (
@@ -731,6 +799,21 @@ const detectReportType = (data) => {
       (firstCell.includes("BUIL_CONSTXW002") || firstCell.includes("XW002"))
     ) {
       return REPORT_TYPES.BUILDING_CONSTRUCTION;
+    }
+    if (firstCell && firstCell.includes("MEM&CONT_MM001")) {
+      return REPORT_TYPES.QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS;
+    }
+    if (
+      (firstCell && firstCell.includes("BAL_SHEET_BS001")) ||
+      firstCell.includes("BS001")
+    ) {
+      return REPORT_TYPES.QUARTERLY_BALANCE_SHEET;
+    }
+    if (firstCell && firstCell.includes("NBE_MAT_ANL_MA001")) {
+      return REPORT_TYPES.QUARTERLY_MATURITY_OF_ASSETS_LIABILITIES;
+    }
+    if (firstCell && firstCell.includes("NBE_20_DEP_MR001")) {
+      return REPORT_TYPES.QUARTERLY_TOP_TWENTY_DEPOSITORS;
     }
   }
 
