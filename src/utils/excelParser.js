@@ -84,33 +84,20 @@ import extractNplSectorBranchData, {
 import extractCollateralizedPropertyAcquiredLast18Data, {
   extractCollateralizedPropertyAcquiredLast18Metadata,
 } from "./extractCollateralizedPropertyAcquiredLast18Data";
-import extractLoanRangeRegionQuarterlyData, {
-  extractLoanRangeRegionQuarterlyMetadata,
-} from "./extractLoanRangeRegionQuarterlyData";
-import extractLoanSectorRegionQuarterlyData, {
-  extractLoanSectorRegionQuarterlyMetadata,
-} from "./extractLoanSectorRegionQuarterlyData";
+import extractLoanRangeRegionQuarterlyData, { extractLoanRangeRegionQuarterlyMetadata } from "./extractLoanRangeRegionQuarterlyData";
+import extractQTopTwentyNplData, {
+  extractQTopTwentyNplMetadata,
+} from "./extractQTopTwentyNplData";
+
+import extractExpenseBreakdownData,{extractExpenseBreakdownMetadata} from "./extractExpenseBreakdownData";
+import extractIncomeAccountBreakdownData,{extractIncomeAccountBreakdownMetadata} from "./extractIncomeAccountBreakdownData";
+import extractCapitalAdequacyOffBalanceSheetData,{extractCapitalAdequacyOffBalanceSheetMetadata} from "./extractCapitalAdequacyOffBalanceSheetData";
 import extractTop20BorrowersData, {
   extractTop20BorrowersMetadata,
 } from "./extractTop20BorrowersData";
-import extractTop20NplsData, {
-  extractTop20NplsMetadata,
-} from "./extractTop20NplsData";
 import extractBuildingConstructionLoansData, {
   extractBuildingConstructionMetadata,
 } from "./extractBuildingConstructionLoansData";
-import extractQuarterlyBalanceSheetData, {
-  extractQuarterlyBalanceSheetMetadata,
-} from "./extractQuarterlyBalanceSheetData";
-import extractQuarterlyTopTwentyDepositorsData, {
-  extractQuarterlyTopTwentyDepositorsMetadata,
-} from "./extractQuarterlyTopTwentyDepositorsData";
-import extractQuarterlyMaturityOfAssetsLiabilitiesData, {
-  extractQuarterlyMaturityOfAssetsLiabilitiesMetadata,
-} from "./extractQuarterlyMaturityOfAssetsLiabilitiesData";
-import extractQuarterlyMemorandumAndContingentAccountsData, {
-  extractQuarterlyMemorandumAndContingentAccountsMetadata,
-} from "./extractQuarterlyMemorandumAndContingentAccountsData";
 
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
@@ -145,17 +132,13 @@ const REPORT_TYPES = {
   NPL_SECTOR_BRANCH: "credit-quarterly_npl-sector-branch",
   COLLATERALIZED_PROPERTY_ACQUIRED_LAST18:
     "credit-quarterly_collateralized-property-acquired-last18",
-  LOAN_RANGE_REGION_QUARTERLY: "credit-quarterly_range-region",
-  LOAN_SECTOR_REGION_QUARTERLY: "credit-quarterly_sector-region",
-  TOP20_BORROWERS: "credit-quarterly_top20-borrowers",
-  TOP20_NPLS: "credit-quarterly_top20-npls",
-  BUILDING_CONSTRUCTION: "credit-quarterly_building-construction",
-  QUARTERLY_BALANCE_SHEET: "finance-quarterly_balance-sheet",
-  QUARTERLY_TOP_TWENTY_DEPOSITORS: "finance-quarterly_top-twenty-depositors",
-  QUARTERLY_MATURITY_OF_ASSETS_LIABILITIES:
-    "finance-quarterly_maturity-assets-liabilities",
-  QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS:
-    "finance-quarterly_memorandum-contingent-accounts",
+  LOAN_RANGE_REGION_QUARTERLY: 'credit-quarterly_range-region',
+  Q_TOP_TWENTY_NPL: "credit-quarterly_loan-nonperforming-top20",
+    EXPENSE_BREAKDOWN_QUARTERLY:'finance-quarterly_expense-breakdown',
+    INCOME_ACCOUNT_BREAKDOWN:'finance-quarterly_income-account-breakdown',
+    CAPITAL_ADEQUACY_OFFBALANCESHEET:'finance-quarterly_capital-adequacy-off',
+    TOP20_BORROWERS: 'credit-quarterly_top20-borrowers',
+    BUILDING_CONSTRUCTION: 'credit-quarterly_building-construction',
 };
 
 // const excelDateToISO = (serial) => {
@@ -473,89 +456,80 @@ export const parseExcelReport = (file, reportTypeIn) => {
         } else if (
           reportType === REPORT_TYPES.COLLATERALIZED_PROPERTY_ACQUIRED_LAST18
         ) {
-          const result =
-            extractCollateralizedPropertyAcquiredLast18Data(jsonData);
+          const result = extractCollateralizedPropertyAcquiredLast18Data(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata =
             extractCollateralizedPropertyAcquiredLast18Metadata(jsonData);
-        } else if (reportType === REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY) {
+        }
+        else if (
+          reportType === REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY
+        ) {
           const result = extractLoanRangeRegionQuarterlyData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
-          metadata = extractLoanRangeRegionQuarterlyMetadata(jsonData);
-        } else if (reportType === REPORT_TYPES.LOAN_SECTOR_REGION_QUARTERLY) {
-          const result = extractLoanSectorRegionQuarterlyData(jsonData);
+          metadata =
+            extractLoanRangeRegionQuarterlyMetadata(jsonData);
+        } else if (
+          reportType === REPORT_TYPES.Q_TOP_TWENTY_NPL
+        ) {
+          const result = extractQTopTwentyNplData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
-          metadata = extractLoanSectorRegionQuarterlyMetadata(jsonData);
-        } else if (reportType === REPORT_TYPES.TOP20_BORROWERS) {
+          metadata = extractQTopTwentyNplMetadata(jsonData);}
+         else if (
+          reportType === REPORT_TYPES.EXPENSE_BREAKDOWN_QUARTERLY
+        ) {
+          const result =extractExpenseBreakdownData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractExpenseBreakdownMetadata(jsonData);
+        }
+         else if (
+          reportType === REPORT_TYPES.INCOME_ACCOUNT_BREAKDOWN
+        ) {
+          const result =extractIncomeAccountBreakdownData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractIncomeAccountBreakdownMetadata(jsonData);
+        }
+         else if (
+          reportType === REPORT_TYPES.CAPITAL_ADEQUACY_OFFBALANCESHEET
+        ) {
+          const result =extractCapitalAdequacyOffBalanceSheetData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractCapitalAdequacyOffBalanceSheetMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.TOP20_BORROWERS) {
           const result = extractTop20BorrowersData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractTop20BorrowersMetadata(jsonData);
-        } else if (reportType === REPORT_TYPES.TOP20_NPLS) {
-          const result = extractTop20NplsData(jsonData);
-          hierarchicalData = result.hierarchicalData;
-          columns = result.columns;
-          additionalColumns = result.additionalColumns;
-          noandtitles = result.noandtitles;
-          metadata = extractTop20NplsMetadata(jsonData);
-        } else if (reportType === REPORT_TYPES.BUILDING_CONSTRUCTION) {
+        }
+        else if (reportType === REPORT_TYPES.BUILDING_CONSTRUCTION) {
           const result = extractBuildingConstructionLoansData(jsonData);
           hierarchicalData = result.hierarchicalData;
           columns = result.columns;
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractBuildingConstructionMetadata(jsonData);
-        } else if (reportType === REPORT_TYPES.QUARTERLY_BALANCE_SHEET) {
-          const result = extractQuarterlyBalanceSheetData(jsonData);
-          hierarchicalData = result.hierarchicalData;
-          columns = result.columns;
-          additionalColumns = result.additionalColumns;
-          noandtitles = result.noandtitles;
-          metadata = extractQuarterlyBalanceSheetMetadata(jsonData);
-        } else if (
-          reportType ===
-          REPORT_TYPES.QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS
-        ) {
-          const result =
-            extractQuarterlyMemorandumAndContingentAccountsData(jsonData);
-          hierarchicalData = result.hierarchicalData;
-          columns = result.columns;
-          additionalColumns = result.additionalColumns;
-          noandtitles = result.noandtitles;
-          metadata =
-            extractQuarterlyMemorandumAndContingentAccountsMetadata(jsonData);
-        } else if (
-          reportType === REPORT_TYPES.QUARTERLY_MATURITY_OF_ASSETS_LIABILITIES
-        ) {
-          const result =
-            extractQuarterlyMaturityOfAssetsLiabilitiesData(jsonData);
-          hierarchicalData = result.hierarchicalData;
-          columns = result.columns;
-          additionalColumns = result.additionalColumns;
-          noandtitles = result.noandtitles;
-          metadata =
-            extractQuarterlyMaturityOfAssetsLiabilitiesMetadata(jsonData);
-        } else if (
-          reportType === REPORT_TYPES.QUARTERLY_TOP_TWENTY_DEPOSITORS
-        ) {
-          const result = extractQuarterlyTopTwentyDepositorsData(jsonData);
-          hierarchicalData = result.hierarchicalData;
-          columns = result.columns;
-          additionalColumns = result.additionalColumns;
-          noandtitles = result.noandtitles;
-          metadata = extractQuarterlyTopTwentyDepositorsMetadata(jsonData);
-        } else {
+        }
+        else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
 
@@ -773,14 +747,31 @@ const detectReportType = (data) => {
     ) {
       return REPORT_TYPES.COLLATERALIZED_PROPERTY_ACQUIRED_LAST18;
     }
-    if (firstCell && firstCell.includes("LOAN_RAN&REG_RA002")) {
+    if (
+      (firstCell && firstCell.includes("LOAN_RAN&REG_RA002"))
+    ) {
       return REPORT_TYPES.LOAN_RANGE_REGION_QUARTERLY;
     }
     if (
-      firstCell &&
-      (firstCell.includes("LOAN_SEC&REG_SE002") || firstCell.includes("SE002"))
+      (firstCell && firstCell.includes("TOP_TWENTY_NPL")) ||
+      firstCell.includes("TN001")
     ) {
-      return REPORT_TYPES.LOAN_SECTOR_REGION_QUARTERLY;
+      return REPORT_TYPES.Q_TOP_TWENTY_NPL;
+    }
+    if (
+      (firstCell && firstCell.includes("BRE_EXPE_BE001"))
+    ) {
+      return REPORT_TYPES.EXPENSE_BREAKDOWN_QUARTERLY;
+    }
+    if (
+      (firstCell && firstCell.includes("BRE_INCO_BA001"))
+    ) {
+      return REPORT_TYPES.INCOME_ACCOUNT_BREAKDOWN;
+    }
+    if (
+      (firstCell && firstCell.includes("CAP_ADQ_OFB_QO001"))
+    ) {
+      return REPORT_TYPES.CAPITAL_ADEQUACY_OFFBALANCESHEET;
     }
     if (
       firstCell &&
@@ -790,30 +781,9 @@ const detectReportType = (data) => {
     }
     if (
       firstCell &&
-      (firstCell.includes("TOP_20_NPLs_TN001") || firstCell.includes("TN001"))
-    ) {
-      return REPORT_TYPES.TOP20_NPLS;
-    }
-    if (
-      firstCell &&
       (firstCell.includes("BUIL_CONSTXW002") || firstCell.includes("XW002"))
     ) {
       return REPORT_TYPES.BUILDING_CONSTRUCTION;
-    }
-    if (firstCell && firstCell.includes("MEM&CONT_MM001")) {
-      return REPORT_TYPES.QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS;
-    }
-    if (
-      (firstCell && firstCell.includes("BAL_SHEET_BS001")) ||
-      firstCell.includes("BS001")
-    ) {
-      return REPORT_TYPES.QUARTERLY_BALANCE_SHEET;
-    }
-    if (firstCell && firstCell.includes("NBE_MAT_ANL_MA001")) {
-      return REPORT_TYPES.QUARTERLY_MATURITY_OF_ASSETS_LIABILITIES;
-    }
-    if (firstCell && firstCell.includes("NBE_20_DEP_MR001")) {
-      return REPORT_TYPES.QUARTERLY_TOP_TWENTY_DEPOSITORS;
     }
   }
 

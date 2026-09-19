@@ -79,15 +79,23 @@ const DEPARTMENT_DATA = [
             name: "Report on Deposits by Range and Region",
           },
         ],
-      },{
+      },
+        {
         id: "quarterly",
         name: "Quarterly",
         reportTypes: [
-          { id: "finance-quarterly_balance-sheet", name: "Quarterly Balance Sheet" },
-          { id: "finance-quarterly_top-twenty-depositors", name: "Quarterly Top Twenty Depositors" },
-          { id: "finance-quarterly_maturity-assets-liabilities", name: "Quarterly Maturity of Assets & Liabilities" },
-          { id: "finance-quarterly_memorandum-contingent-accounts", name: "Quarterly Memorandum and Contingent Accounts" },
-
+          {
+            id: "finance-quarterly_expense-breakdown",
+            name: "BREAKDOWN OF EXPENSES",
+          },
+          {
+            id: "finance-quarterly_income-account-breakdown",
+            name: " Breakdown of Income Accounts",
+          },
+          {
+            id: "finance-quarterly_capital-adequacy-off",
+            name: " CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
+          },
         ],
       },
     ],
@@ -173,16 +181,12 @@ const DEPARTMENT_DATA = [
             name: "Quarterly Conventional Loans by Range and Region",
           },
           {
-            id: "credit-quarterly_sector-region",
-            name: "Quarterly Conventional Loans by Sector and Region",
+            id: "credit-quarterly_loan-nonperforming-top20",
+            name: "Quarterly Top Twenty (20) NPLs Report",
           },
-          {
+            {
             id: "credit-quarterly_top20-borrowers",
             name: "Quarterly Top Twenty (20) Borrowers Report",
-          },
-          {
-            id: "credit-quarterly_top20-npls",
-            name: "Quarterly Top Twenty (20) NPLs Report",
           },
           {
             id: "credit-quarterly_building-construction",
