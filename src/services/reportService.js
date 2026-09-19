@@ -124,6 +124,15 @@ export const DEPARTMENT_DATA = [
 
     ]
   },
+   {
+    id: 'share',
+    name: 'Share',
+    reportTypes: [
+      { id: 'share-quarterly_top-twenty-shareholders', name: 'Top Twenty (20) Shareholding Structure Report' },
+      { id: 'share-quarterly_two-percent-shareholdings', name: 'Two Percent (2%) and above Shareholdings of the Banks Total Share Capital Report' },
+
+    ]
+  },
 ];
 
 export const getDepartmentById = (deptId) => {

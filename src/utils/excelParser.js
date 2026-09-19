@@ -98,6 +98,12 @@ import extractTop20BorrowersData, {
 import extractBuildingConstructionLoansData, {
   extractBuildingConstructionMetadata,
 } from "./extractBuildingConstructionLoansData";
+import extractQuarterlyTopTwentyShareholdersData, {
+  extractQuarterlyTopTwentyShareholdersMetadata,
+} from "./extractQuarterlyTopTwentyShareholdersData";
+import extractQuarterlyTwoPercentShareholdersData, {
+  extractQuarterlyTwoPercentShareholdersMetadata,
+} from "./extractQuarterlyTwoPercentShareholdersData";
 
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
@@ -139,6 +145,8 @@ const REPORT_TYPES = {
     CAPITAL_ADEQUACY_OFFBALANCESHEET:'finance-quarterly_capital-adequacy-off',
     TOP20_BORROWERS: 'credit-quarterly_top20-borrowers',
     BUILDING_CONSTRUCTION: 'credit-quarterly_building-construction',
+    QUARTERLY_TOP20_SHAREHOLDERS: 'share-quarterly_top-twenty-shareholders',
+    QUARTERLY_TWO_PERCENT_SHAREHOLDERS: 'share-quarterly_two-percent-shareholdings',
 };
 
 // const excelDateToISO = (serial) => {
@@ -528,6 +536,21 @@ export const parseExcelReport = (file, reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractBuildingConstructionMetadata(jsonData);
+        }        else if (reportType === REPORT_TYPES.QUARTERLY_TOP20_SHAREHOLDERS) {
+          const result = extractQuarterlyTopTwentyShareholdersData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyTopTwentyShareholdersMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_TWO_PERCENT_SHAREHOLDERS) {
+          const result = extractQuarterlyTwoPercentShareholdersData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyTwoPercentShareholdersMetadata(jsonData);
         }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
@@ -784,6 +807,18 @@ const detectReportType = (data) => {
       (firstCell.includes("BUIL_CONSTXW002") || firstCell.includes("XW002"))
     ) {
       return REPORT_TYPES.BUILDING_CONSTRUCTION;
+    }
+        if (
+      firstCell &&
+      (firstCell.includes("TWE_SHA_STR_TH001") || firstCell.includes("TH001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_TOP20_SHAREHOLDERS;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("SHR_GTR_2_TS001") || firstCell.includes("TS001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_TWO_PERCENT_SHAREHOLDERS;
     }
   }
 

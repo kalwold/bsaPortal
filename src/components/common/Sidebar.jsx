@@ -12,6 +12,7 @@ import {
   FiBarChart2,
   FiLogOut,
   FiTrendingUp,
+  FiShare,
 } from "react-icons/fi";
 
 // Hardcoded department and report types data
@@ -236,6 +237,27 @@ const DEPARTMENT_DATA = [
           {
             id: "ifb-monthly_profit-loss",
             name: "Interest Free Banking Service Profit and loss statement",
+          },
+        ],
+      },
+    ],
+  },
+{
+    id: "share",
+    name: "Share",
+    icon: FiShare,
+    periods: [
+      {
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          {
+            id: "share-quarterly_top-twenty-shareholders",
+            name: "Top Twenty (20) Shareholding Structure Report",
+          },
+          {
+            id: "share-quarterly_two-percent-shareholdings",
+            name: "Two Percent (2%) and above Shareholdings of the Banks Total Share Capital Report",
           },
         ],
       },
