@@ -182,7 +182,8 @@ const extractQTopTwentyNplData = (data) => {
   };
 
   const toNumber = (val) => {
-    const n = parseFloat(val);
+     const cleaned = String(val).replace(/,/g, "").trim();
+    const n = parseFloat(cleaned);
     return !isNaN(n) ? n.toFixed(2) : '0';
   };
 

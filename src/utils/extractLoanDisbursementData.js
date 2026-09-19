@@ -219,15 +219,6 @@ if (i>40) continue;
     // Check if this is a total row
     const isTotalRow = description === 'Total' || 
                        description.includes('Total') ;
-                      //  description === 'Lending to Government' ||
-                      //  description === 'Direct Advance' ||
-                      //  description === 'Government Bonds' ||
-                      //  description === 'Special Bank' ||
-                      //  description === 'Treasury bills' ||
-                      //  description === 'Loans & Advances in legal' ||
-                      //  description === 'Interbank lending' ||
-                      //  description === 'others';
-
     // Check if this is a parent section (like 4 International Trade)
     const isParent = code && code.includes('.') && !code.match(/\.\d+$/);
 
@@ -236,7 +227,10 @@ if (i>40) continue;
     for (const col of columns) {
       let value = '0';
       if (col.index < row.length) {
-        const rawValue = parseFloat(row[col.index]);
+        const raw = row[col.index];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawValue = parseFloat(cleaned);
+        
         if (!isNaN(rawValue) && rawValue !== 0) {
           value = rawValue.toFixed(2);
         } else {

@@ -247,7 +247,7 @@ const extractLoanClassificationData = (data) => {
     // Helper function to get value from row
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-        const val = parseFloat(row[index]);
+        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
         if (!isNaN(val) && val !== 0) {
           return val.toFixed(2);
         }

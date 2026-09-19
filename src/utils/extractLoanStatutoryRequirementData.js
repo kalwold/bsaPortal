@@ -218,13 +218,7 @@ if (cell === 'Day_1') {
     // Skip if code is a formula or reference
     if (code && code.startsWith('=')) continue;
 
-    // Check if this is a section header (like "Reserve Base (1.1+1.2+1.3)")
-    // const isSectionHeader = description.includes('Net Average Reserve Base (Previous Calendar Month)') || 
-    //                        description.includes('Deductions Items') ||
-    //                        description.includes('Net Reserve Base') ||
-    //                        description.includes('Deposit Balance with NBE') ||
-    //                        description.includes('Excess/Deficiency') ||
-    //                        description.includes('Reserve Ratio');
+    
 const isSectionHeader =  code && !code.includes('.')
     // Check if this is a total row (like for Reserve Ratio)
     const isTotalRow = description.includes('Reserve Ratio');
@@ -238,7 +232,10 @@ const isSectionHeader =  code && !code.includes('.')
     for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
-          const rawValue = parseFloat(row[colIndex]);
+          const raw = row[colIndex];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawValue = parseFloat(cleaned);
+          //const rawValue = parseFloat(row[colIndex]);
           if (!isNaN(rawValue) && rawValue !== 0) {
             values[dayColumns[j]] = rawValue.toFixed(2);
           } else {
@@ -254,7 +251,10 @@ const isSectionHeader =  code && !code.includes('.')
         for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
-          const rawValue = parseFloat(row[colIndex]);
+         // const rawValue = parseFloat(row[colIndex]);
+          const raw = row[colIndex];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawValue = parseFloat(cleaned);
           if (!isNaN(rawValue) && rawValue !== 0) {
             values[dayColumns[j]] = (rawValue).toFixed(2) ;
           } else {

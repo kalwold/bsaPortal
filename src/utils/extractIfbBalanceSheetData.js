@@ -190,7 +190,9 @@ const valueColumnIndex = 2;
     // Extract value
     let value = null;
     if (valueColumnIndex < row.length) {
-      const rawValue = parseFloat(row[valueColumnIndex]);
+      const raw = row[valueColumnIndex];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawValue = parseFloat(cleaned);
       if (!isNaN(rawValue) && rawValue !== 0) {
         value = rawValue;
       }

@@ -238,7 +238,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       // Get Amount
       let amountValue = '0';
       if (amountIndex < row.length) {
-        const val = parseFloat(row[amountIndex]);
+        const val = parseFloat(String(row[amountIndex] ?? "").replace(/[,%\s]/g, ""));
         if (!isNaN(val) && val !== 0) {
           amountValue = val.toFixed(2);
         }
@@ -248,7 +248,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
      // Get # of Depositors
       let depositorsValue = '0';
       if (depositorsIndex < row.length) {
-        const val = parseFloat(row[depositorsIndex]);
+        const val = parseFloat(String(row[depositorsIndex] ?? "").replace(/[,%\s]/g, ""));
         if (!isNaN(val) && val !== 0) {
           depositorsValue = val.toFixed(0);
         }
@@ -257,7 +257,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
        // Get # of Accounts
       let accountsValue = '0';
       if (accountIndex < row.length) {
-        const val = parseFloat(row[accountIndex]);
+        const val = parseFloat(String(row[accountIndex] ?? "").replace(/[,%\s]/g, ""));
         if (!isNaN(val) && val !== 0) {
           accountsValue = val.toFixed(0);
         }

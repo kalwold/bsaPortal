@@ -206,7 +206,9 @@ const extractNplProvisionsData = (data) => {
     // Extract the value
     let value = '0';
     if (valueColumnIndex < row.length) {
-      const rawValue = parseFloat(row[valueColumnIndex]);
+      const raw = row[valueColumnIndex];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawValue = parseFloat(cleaned);
       if (!isNaN(rawValue) && rawValue !== 0) {
         value = rawValue.toFixed(2);
       } else {

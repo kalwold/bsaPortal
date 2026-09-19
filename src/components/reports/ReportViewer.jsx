@@ -13,7 +13,14 @@ const ReportViewer = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [comment, setComment] = useState('');
-
+  
+  const columns = report.columns || [];
+    const reportData = report.data || [];
+  const metadata = report.metadata || {};
+  const additionalColumns= report.additionalColumns || [];
+  const noandtitles = report.noandtitles || [];
+  console.log("metadata reporttype",metadata.reportType)
+ const showSNo = !(metadata.reportType ==='finance-monthly_key-balance-sheet')
   // Try to get report from location state (passed from navigation)
   const locationReport = location.state?.report;
 
@@ -116,11 +123,6 @@ const ReportViewer = () => {
     );
   }
 
-  const columns = report.columns || [];
-    const reportData = report.data || [];
-  const metadata = report.metadata || {};
-  const additionalColumns= report.additionalColumns || [];
-  const noandtitles = report.noandtitles || [];
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -254,7 +256,7 @@ const ReportViewer = () => {
                   </button> */}
                 </div>
               </div>
-  <ReportDataTable data={reportData} columns={columns} showSNo={metadata.reportType ==='finance-monthly_key-balance-sheet'?false: true} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
+  <ReportDataTable data={reportData} columns={columns} showSNo={showSNo} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
 
             </div>
           )}

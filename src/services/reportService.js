@@ -6,7 +6,12 @@ export const DEPARTMENT_DATA = [
   {
     id: "ibd",
     name: "IBD",
-    reportTypes: [{ id: "ibd-daily_single-currency", name: "Daily Foreign Currency Exposure" }],
+    reportTypes: [
+      {
+        id: "ibd-daily_single-currency",
+        name: "Daily Foreign Currency Exposure",
+      },
+    ],
   },
   {
     id: "finance",
@@ -24,15 +29,15 @@ export const DEPARTMENT_DATA = [
       { id: 'finance-monthly_deposit-sector-region', name: 'Report on Deposits by Sector and Region' },
       { id: 'finance-monthly_deposit-range-region', name: 'Report on Deposits by Range and Region' },
          {
-            id: "finance-quarterly_breakdown-expenses",
+            id: "finance-quarterly_expense-breakdown",
             name: "BREAKDOWN OF EXPENSES",
           },
            {
-            id: "finance-quarterly_breakdown-income-account",
+            id: "finance-quarterly_income-account-breakdown",
             name: " Breakdown of Income Accounts",
           },
           {
-            id: "finance-quarterly_off-balancesheet",
+            id: "finance-quarterly_capital-adequacy-off",
             name: "CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
           },
           {
@@ -61,23 +66,30 @@ export const DEPARTMENT_DATA = [
       },{
         id: "finance-quarterly_maturity-assets-liabilities",
         name: "Quarterly Maturity of Assets & Liabilities",
-      },{
+      },
+      {
         id: "finance-quarterly_memorandum",
         name: "Quarterly Memorandum and Contingent Accounts",
       },
-          
+      {
+        id: "finance-quarterly_transaction-statement",
+        name: "Quarterly Transaction Statement with Financial Institutions",
+      },
     ],
   },
   {
     id: "credit",
     name: "Credit",
     reportTypes: [
-      { id: "credit-monthly_loan-related", name: "Loans to Related Parties Report" },
+      { id: "credit-monthy_loan-related", name: "Loans to Related Parties Report" },
       {
         id: "credit-monthly_loan-breakdown",
         name: "Breakdown of Loans and Advances",
       },
-      { id: "credit-monthly_loan-portfolio", name: " Loan and Advances Portfolio Report" },
+      {
+        id: "credit-monthly_loan-portfolio",
+        name: " Loan and Advances Portfolio Report",
+      },
       {
         id: "credit-monthly_loan-nonperforming",
         name: "Non-Performing Loans and Advances & Provisions",
@@ -95,11 +107,17 @@ export const DEPARTMENT_DATA = [
         id: "credit-monthly_large-borrowers",
         name: "List of Borrowers that Exceed Ten Percent of the Banks Capital",
       },
-      { id: 'credit-monthly_loan-range-region', name: 'Loans by Range and Region' },
-      { id: 'credit-monthly_loan-sector-region', name: 'Loans by Sector and Region' },
+      {
+        id: "credit-monthly_loan-range-region",
+        name: "Loans by Range and Region",
+      },
+      {
+        id: "credit-monthly_loan-sector-region",
+        name: "Loans by Sector and Region",
+      },
       {
         id: "credit-quarterly_loan-collateralized-properties",
-        name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months"
+        name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months",
       },
       {
         id: "credit-quarterly_loan-classification",
@@ -122,33 +140,92 @@ export const DEPARTMENT_DATA = [
         id: "credit-quarterly_loan-nonperforming-top20",
         name: "Quarterly Top Twenty (20) NPLs Report",
       },
-           {
-            id: "credit-quarterly_top20-borrowers",
-            name: "Quarterly Top Twenty (20) Borrowers Report",
-          },
-          {
-            id: "credit-quarterly_building-construction",
-            name: "Loans to Building and Construction",
-          },
-          
+      {
+        id: "credit-quarterly_top20-borrowers",
+        name: "Quarterly Top Twenty (20) Borrowers Report",
+      },
+      {
+        id: "credit-quarterly_building-construction",
+        name: "Loans to Building and Construction",
+      },
+      {
+        id: "credit-quarterly_aggregate-restructured-loans",
+        name: "Aggregate of All Restructured Loans And Advances ",
+      },
+      {
+        id: "credit-quarterly_digital-lending",
+        name: "Quarterly Digital Lending Report ",
+      },
+      {
+        id: "credit-quarterly_recategorized-loans",
+        name: "Loans And Advances Re-Categorized  from Non-Accrual To Accrual Status That Are Equal To Or Above Five Percent (5%) of The Bank's Total Capital",
+      },
+      {
+        id: "credit-quarterly_off-balance-provisioning",
+        name: "Provisioning For Off-Balance Sheet Exposure"},
     ],
   },
   {
-    id: 'ifb',
-    name: 'IFB',
+    id: "ifb",
+    name: "IFB",
     reportTypes: [
-      { id: 'ifb-monthly_deposit-range-region', name: 'Report on IFB Deposits by Range and Region' },
-      { id: 'ifb-monthly_deposit-sector-region', name: 'Report on IFB Deposits by Sector and Region' },
-      { id: 'ifb-monthly_balance-sheet', name: 'Interest Free Banking Service Balance sheet' },
-      { id: 'ifb-monthly_profit-loss', name: 'Interest Free Banking Service Profit and loss statement' },
-      { id: 'ifb-monthly_loan-range-region', name: 'IFB Loans by Range and Region' },
-      { id: 'ifb-monthly_loan-sector-region', name: 'IFB Loans by Sector and Region' },
+      {
+        id: "ifb-monthly_deposit-range-region",
+        name: "Report on IFB Deposits by Range and Region",
+      },
+      {
+        id: "ifb-monthly_deposit-sector-region",
+        name: "Report on IFB Deposits by Sector and Region",
+      },
+      {
+        id: "ifb-monthly_balance-sheet",
+        name: "Interest Free Banking Service Balance sheet",
+      },
+      {
+        id: "ifb-monthly_profit-loss",
+        name: "Interest Free Banking Service Profit and loss statement",
+      },
+      {
+        id: "ifb-monthly_loan-range-region",
+        name: "IFB Loans by Range and Region",
+      },
+      {
+        id: "ifb-monthly_loan-sector-region",
+        name: "IFB Loans by Sector and Region",
+      },
       { id: 'ifb-quarterly_loan-range-region', name: 'Quarterly Interest Free Loans by Range and Region	' },
       { id: 'ifb-quarterly_loan-sector-region', name: 'Quarterly Interest Free Loans by Sector and Region' },
-     { id: 'ifb-quarterly_deposit-range-region', name: 'Quarterly Interest Free Deposits by Range and Region	' },
-      { id: 'ifb-quarterly_deposit-sector-region', name: 'Quarterly Interest Free Deposits by Sector and Region' },
-
-    ]
+     { id: 'ifb-quarterly_deposit-range', name: 'Quarterly Interest Free Deposits by Range and Region	' },
+      { id: 'ifb-quarterly_deposit-sector', name: 'Quarterly Interest Free Deposits by Sector and Region' },
+    ],
+  },
+  {
+    id: "share",
+    name: "Share",
+    reportTypes: [
+      {
+        id: "share-quarterly_top-twenty-shareholders",
+        name: "Top Twenty (20) Shareholding Structure Report",
+      },
+      {
+        id: "share-quarterly_two-percent-shareholdings",
+        name: "Two Percent (2%) and above Shareholdings of the Banks Total Share Capital Report",
+      },
+    ],
+  },
+  {
+    id: "digital-banking",
+    name: "Digital Banking",
+reportTypes: [
+      {
+        id: "digital-banking-quarterly_atm-or-pos",
+        name: "BSD Quarterly ATM and POS",
+      },
+      {
+        id: "digital-banking-quarterly_mobile-transactions",
+        name: "Quarterly Mobile Transactions Report",
+      },
+    ],
   },
 ];
 

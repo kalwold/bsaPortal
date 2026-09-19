@@ -17,6 +17,14 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState([]);
 
+  const columns = parsedData?.columns || [];
+  const reportData = parsedData?.data || [];
+  const metadata = parsedData?.metadata || {};
+  const additionalColumns =parsedData?.additionalColumns || [];
+  const noandtitles=parsedData?.noandtitles|| [];
+  console.log("metadata reporttype",metadata.reportType)
+ const showSNo = !(metadata.reportType ==='finance-monthly_key-balance-sheet')
+
   //console.log('ReportUpload props:', { departmentId, reportType });
 
   useEffect(() => {
@@ -134,12 +142,6 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
       toast.error('Please upload an Excel file (.xlsx or .xls)');
     }
   };
-
-  const columns = parsedData?.columns || [];
-  const reportData = parsedData?.data || [];
-  const metadata = parsedData?.metadata || {};
-  const additionalColumns =parsedData?.additionalColumns || [];
-  const noandtitles=parsedData?.noandtitles|| [];
 
 //console.log('columns', columns, "additionalColumns ", additionalColumns, "noandtitles", noandtitles)
 
@@ -293,7 +295,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
               </span>
             </div>
             <div className="max-h-96 overflow-y-auto border rounded-lg">
-              <ReportDataTable data={reportData} columns={columns} showSNo={metadata.reportType ==='finance-monthly_key-balance-sheet'?false: true} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
+              <ReportDataTable data={reportData} columns={columns} showSNo={showSNo} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
             </div>
             <p className="text-xs text-gray-400 mt-2">
               ✓ File validated successfully. Click Submit to upload.

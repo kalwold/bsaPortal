@@ -12,6 +12,8 @@ import {
   FiBarChart2,
   FiLogOut,
   FiTrendingUp,
+  FiShare,
+  FiSmartphone,
 } from "react-icons/fi";
 
 // Hardcoded department and report types data
@@ -124,6 +126,10 @@ const DEPARTMENT_DATA = [
         id: "finance-quarterly_memorandum",
         name: "Quarterly Memorandum and Contingent Accounts",
       },
+        {
+        id: "finance-quarterly_transaction-statement",
+        name: "Quarterly Transaction Statement with Financial Institutions",
+      },
         ],
       },
     ],
@@ -222,6 +228,21 @@ const DEPARTMENT_DATA = [
             id: "credit-quarterly_building-construction",
             name: "Loans to Building and Construction",
           },
+           {
+        id: "credit-quarterly_aggregate-restructured-loans",
+        name: "Aggregate of All Restructured Loans And Advances ",
+      },
+       {
+        id: "credit-quarterly_digital-lending",
+        name: "Quarterly Digital Lending Report ",
+      },
+      {
+        id: "credit-quarterly_recategorized-loans",
+        name: "Loans And Advances Re-Categorized  from Non-Accrual To Accrual Status That Are Equal To Or Above Five Percent (5%) of The Bank's Total Capital",
+      },
+       {
+        id: "credit-quarterly_off-balance-provisioning",
+        name: "Provisioning For Off-Balance Sheet Exposure"},
         ],
       },
     ],
@@ -267,10 +288,52 @@ const DEPARTMENT_DATA = [
             id: "ifb-monthly_profit-loss",
             name: "Interest Free Banking Service Profit and loss statement",
           },
-    { id: 'ifb-quarterly_loan-range-region', name: 'Quarterly Interest Free Loans by Range and Region	' },
-      { id: 'ifb-quarterly_loan-sector-region', name: 'Quarterly Interest Free Loans by Sector and Region' },
-       { id: 'ifb-quarterly_deposit-range-region', name: 'Quarterly Interest Free Deposits by Range and Region	' },
-      { id: 'ifb-quarterly_deposit-sector-region', name: 'Quarterly Interest Free Deposits by Sector and Region' },
+    { id: 'ifb-quarterly_loan-range', name: 'Quarterly Interest Free Loans by Range and Region	' },
+      { id: 'ifb-quarterly_loan-sector', name: 'Quarterly Interest Free Loans by Sector and Region' },
+       { id: 'ifb-quarterly_deposit-range', name: 'Quarterly Interest Free Deposits by Range and Region	' },
+      { id: 'ifb-quarterly_deposit-sector', name: 'Quarterly Interest Free Deposits by Sector and Region' },
+        ],
+      },
+    ],
+  },
+{
+    id: "share",
+    name: "Share",
+    icon: FiShare,
+    periods: [
+      {
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          {
+            id: "share-quarterly_top-twenty-shareholders",
+            name: "Top Twenty (20) Shareholding Structure Report",
+          },
+          {
+            id: "share-quarterly_two-percent-shareholdings",
+            name: "Two Percent (2%) and above Shareholdings of the Banks Total Share Capital Report",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "digital-banking",
+    name: "Digital Banking",
+    icon: FiSmartphone,
+    periods: [
+      {
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          {
+            id: "digital-banking-quarterly_atm-or-pos",
+            name: "BSD Quarterly ATM and POS",
+          },
+          {
+            id: "digital-banking-quarterly_mobile-transactions",
+            name: "Quarterly Mobile Transactions Report",
+          },
         ],
       },
     ],

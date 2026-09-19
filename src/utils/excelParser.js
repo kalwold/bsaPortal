@@ -129,6 +129,23 @@ import extractQuarterlyMemorandumAndContingentAccountsData, {
 } from "./extractQuarterlyMemorandumAndContingentAccountsData";
 import extractIfbDepositRangeRegionQuarterlyData,{extractIfbDepositRangeRegionQuarterlyMetadata} from "./extractIfbDepositRangeRegionQuarterlyData";
 import extractIfbDepositSectorRegionQuarterlyData,{extractIfbDepositSectorQuarterlyMetadata} from "./extractIfbDepositSectorRegionQuarterlyData";
+import extractQuarterlyTopTwentyShareholdersData, {
+  extractQuarterlyTopTwentyShareholdersMetadata,
+} from "./extractQuarterlyTopTwentyShareholdersData";
+import extractQuarterlyTwoPercentShareholdersData, {
+  extractQuarterlyTwoPercentShareholdersMetadata,
+} from "./extractQuarterlyTwoPercentShareholdersData";
+import extractQuarterlyMobileTransactionsData, {
+  extractQuarterlyMobileTransactionsMetadata,
+} from "./extractQuarterlyMobileTransactionsData";
+import extractQuarterlyAtmPosData, {
+  extractQuarterlyAtmPosMetadata,
+} from "./extractQuarterlyAtmPosData";
+import extractTransactionStatementData,{extractTransactionStatementMetadata} from "./extractTransactionStatementData";
+import extractRestructuredLoansData,{extractRestructuredLoansMetadata} from "./extractRestructuredLoansData";
+import extractDigitalLendingData, {extractDigitalLendingMetadata} from "./extractDigitalLendingData";
+import extractRecategorizedLoansData, {extractRecategorizedLoansMetadata} from "./extractRecategorizedLoansData";
+import extractOffBalanceProvisioningData ,{extractOffBalanceProvisioningMetadata} from "./extractOffBalanceProvisioningData"
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
@@ -173,14 +190,23 @@ const REPORT_TYPES = {
   FINANCE_PROFIT_LOSS: 'finance-quarterly_profit-loss',
   CAPITAL_ADEQUACY_ONBALANCESHEET: "finance-quarterly_on-balancesheet",
   CAPITAL_ADEQUACY_QUARTERLY: "finance-quarterly_capital-adequacy",
-  IFB_LOAN_RANGE_REGION_QUARTERLY: "ifb-quarterly_loan-range-region",
-  IFB_LOAN_SECTOR_REGION_QUARTERLY: "ifb-quarterly_loan-sector-region",
+  IFB_LOAN_RANGE_REGION_QUARTERLY: "ifb-quarterly_loan-range",
+  IFB_LOAN_SECTOR_REGION_QUARTERLY: "ifb-quarterly_loan-sector",
   QUARTERLY_BALANCE_SHEET: "finance-quarterly_balance-sheet",
   QUARTERLY_TOP_TWENTY_DEPOSITORS: "finance-quarterly_top-twenty-depositors",
   QUARTERLY_MATURITY_OF_ASSETS_LIABILITIES:"finance-quarterly_maturity-assets-liabilities",
   QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS: "finance-quarterly_memorandum",
-   IFB_DEPOSIT_RANGE_REGION_QUARTERLY: "ifb-quarterly_deposit-range-region",
-  IFB_DEPOSIT_SECTOR_REGION_QUARTERLY: "ifb-quarterly_deposit-sector-region",
+   IFB_DEPOSIT_RANGE_REGION_QUARTERLY: "ifb-quarterly_deposit-range",
+  IFB_DEPOSIT_SECTOR_REGION_QUARTERLY: "ifb-quarterly_deposit-sector",
+  QUARTERLY_TOP20_SHAREHOLDERS: 'share-quarterly_top-twenty-shareholders',
+    QUARTERLY_TWO_PERCENT_SHAREHOLDERS: 'share-quarterly_two-percent-shareholdings',
+    QUARTERLY_MOBILE_TRANSACTIONS: 'digital-banking-quarterly_mobile-transactions',
+    QUARTERLY_ATM_POS: 'digital-banking-quarterly_atm-or-pos',
+    QUARTERLY_TRANSACTION_STATEMENT: 'finance-quarterly_transaction-statement',
+    QUARTERLY_RESTRUCTURED_LOANS: 'credit-quarterly_aggregate-restructured-loans',
+    QUARTERLY_DIGITAL_LENDING: 'credit-quarterly_digital-lending',
+    QUARTERLY_RECATEGORIZED_LOANS: 'credit-quarterly_recategorized-loans',
+    QUARTERLY_OFF_BALANCE_PROVISIONING: 'credit-quarterly_off-balance-provisioning'
 };
 
 // export const excelDateToISO = (value) => {
@@ -256,9 +282,13 @@ export const parseExcelReport = (file, reportTypeIn) => {
         console.log("Raw Excel Data:", jsonData);
 
         const reportType = detectReportType(jsonData);
-        //console.log("Detected Report Type:", reportType , "SS", reportTypeIn);
+        console.log("Detected report type (from A1):", reportType);
 
         if (reportTypeIn !== reportType) {
+          console.error(
+            `Mismatch: dropdown expects "${reportTypeIn}" but A1 was detected as "${reportType}". ` +
+              `Check detectReportType() in excelParser.js against the actual A1 value logged above.`,
+          );
           throw new Error("Unsupported report type");
         }
 
@@ -657,12 +687,92 @@ export const parseExcelReport = (file, reportTypeIn) => {
           noandtitles = result.noandtitles;
           metadata = extractIfbDepositSectorQuarterlyMetadata(jsonData);
         } 
+        else if (reportType === REPORT_TYPES.QUARTERLY_TOP20_SHAREHOLDERS) {
+          const result = extractQuarterlyTopTwentyShareholdersData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyTopTwentyShareholdersMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_TWO_PERCENT_SHAREHOLDERS) {
+          const result = extractQuarterlyTwoPercentShareholdersData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyTwoPercentShareholdersMetadata(jsonData);
+        }        else if (reportType === REPORT_TYPES.QUARTERLY_MOBILE_TRANSACTIONS) {
+          const result = extractQuarterlyMobileTransactionsData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyMobileTransactionsMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_ATM_POS) {
+          const result = extractQuarterlyAtmPosData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyAtmPosMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_TRANSACTION_STATEMENT) {
+          const result = extractTransactionStatementData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractTransactionStatementMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_RESTRUCTURED_LOANS) {
+          const result = extractRestructuredLoansData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractRestructuredLoansMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_DIGITAL_LENDING) {
+          const result = extractDigitalLendingData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractDigitalLendingMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_RECATEGORIZED_LOANS) {
+          const result = extractRecategorizedLoansData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractRecategorizedLoansMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_OFF_BALANCE_PROVISIONING) {
+          const result = extractOffBalanceProvisioningData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractOffBalanceProvisioningMetadata(jsonData);
+        }
          else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
 
         // const hierarchicalData = extractHierarchicalData(jsonData);
         // //console.log('Hierarchical Data:', JSON.stringify(hierarchicalData, null, 2));
+
+        console.log("Extracted metadata:", metadata);
+        console.log("Extracted columns:", columns);
+        console.log(
+          "Extracted hierarchicalData (first 5 nodes):",
+          hierarchicalData.slice(0, 5),
+        );
+        console.log("noandtitles:", noandtitles);
+        console.log("=========================================");
 
         const flatData = flattenData(hierarchicalData);
 
@@ -703,6 +813,7 @@ const detectReportType = (data) => {
 
   // Check first row for ReturnKey
   const firstRow = data[0];
+
   if (firstRow && firstRow.length > 0) {
     const firstCell = String(firstRow[0] || "").trim();
 
@@ -958,6 +1069,45 @@ const detectReportType = (data) => {
     }
     if (firstCell && firstCell.includes("INT_FRE_SECRI003")) {
       return REPORT_TYPES.IFB_DEPOSIT_SECTOR_REGION_QUARTERLY;
+    }
+       if (
+      firstCell &&
+      (firstCell.includes("TWE_SHA_STR_TH001") || firstCell.includes("TH001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_TOP20_SHAREHOLDERS;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("SHR_GTR_2_TS001") || firstCell.includes("TS001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_TWO_PERCENT_SHAREHOLDERS;
+    }
+        if (
+      firstCell &&
+      (firstCell.includes("MOB_TRA_QM001") || firstCell.includes("QM001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_MOBILE_TRANSACTIONS;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("QUA_ATM_POS_QP001") || firstCell.includes("QP001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_ATM_POS;
+    }
+       if (firstCell && (firstCell.includes('TRAN_STAT') || firstCell.includes('QQ001'))) {
+      return REPORT_TYPES.QUARTERLY_TRANSACTION_STATEMENT;
+    }
+      if (firstCell && (firstCell.includes('ARLAL001'))) {
+      return REPORT_TYPES.QUARTERLY_RESTRUCTURED_LOANS;
+    }
+      if (firstCell && (firstCell.includes('DigitalLendingDL001'))) {
+      return REPORT_TYPES.QUARTERLY_DIGITAL_LENDING;
+    }
+    if (firstCell && (firstCell.includes('NACNN001') || firstCell.includes('NACNN'))) {
+      return REPORT_TYPES.QUARTERLY_RECATEGORIZED_LOANS;
+    }
+        if (firstCell && (firstCell.includes('POBEPE001') || firstCell.includes('POBEPE'))) {
+      return REPORT_TYPES.QUARTERLY_OFF_BALANCE_PROVISIONING;
     }
   }
 

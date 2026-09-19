@@ -238,7 +238,10 @@ if (cell === 'Day_1') {
     for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
-          const rawValue = parseFloat(row[colIndex]);
+        //  const rawValue = parseFloat(row[colIndex]);
+          const raw = row[colIndex];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawValue = parseFloat(cleaned);
           if (!isNaN(rawValue) && rawValue !== 0) {
             values[dayColumns[j]] = rawValue.toFixed(2);
           } else {
@@ -253,7 +256,10 @@ if (cell === 'Day_1') {
        for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
-          const rawValue = parseFloat(row[colIndex]);
+        //  const rawValue = parseFloat(row[colIndex]);
+          const raw = row[colIndex];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawValue = parseFloat(cleaned);
           if (!isNaN(rawValue) && rawValue !== 0) {
             values[dayColumns[j]] = (rawValue).toFixed(2) ;
           } else {

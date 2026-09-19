@@ -180,7 +180,9 @@ const extractKeyBalanceSheetData = (data) => {
       // Extract the value
       let value = '0';
       if (valueColumnIndex < row.length) {
-        const rawVal = parseFloat(row[valueColumnIndex]);
+        const raw = row[valueColumnIndex];
+       const cleaned = String(raw).replace(/,/g, "").trim();
+      const rawVal = parseFloat(cleaned);
         if (!isNaN(rawVal) && rawVal !== 0) {
           value = rawVal.toFixed(2);
         }

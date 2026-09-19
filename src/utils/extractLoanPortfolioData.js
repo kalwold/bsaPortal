@@ -299,6 +299,7 @@ const extractLoanPortfolioData = (data) => {
         .trim();
 
       const val = parseFloat(rawValue);
+      
 
       if (!isNaN(val)) {
         disbursementAmount = val.toFixed(2);
