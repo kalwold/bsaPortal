@@ -139,10 +139,10 @@ export const extractQuarterlyTopTwentyShareholdersMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       if (firstCell.includes("TWE_SHA_STR_TH001") || firstCell.includes("TH001")) {
-        metadata.reportType = "finance-quarterly_top20-shareholders";
-        metadata.reportTypeId = "finance-quarterly_top20-shareholders";
-        metadata.departmentId = "finance";
-        metadata.departmentName = "Finance";
+        metadata.reportType = "share-quarterly_top20-shareholders";
+        metadata.reportTypeId = "share-quarterly_top20-shareholders";
+        metadata.departmentId = "share";
+        metadata.departmentName = "Share";
       }
     }
 

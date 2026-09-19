@@ -125,10 +125,10 @@ export const extractQuarterlyMobileTransactionsMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       if (firstCell.includes("MOB_TRA_QM001") || firstCell.includes("QM001")) {
-        metadata.reportType = "finance-quarterly_mobile-transactions";
-        metadata.reportTypeId = "finance-quarterly_mobile-transactions";
-        metadata.departmentId = "finance";
-        metadata.departmentName = "Finance";
+        metadata.reportType = "digital-quarterly_mobile-transaction";
+        metadata.reportTypeId = "digital-quarterly_mobile-transaction";
+        metadata.departmentId = "digital-banking";
+        metadata.departmentName = "Digital Banking";
       }
     }
 
