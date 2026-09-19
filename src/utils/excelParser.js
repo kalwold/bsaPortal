@@ -146,6 +146,7 @@ import extractRestructuredLoansData,{extractRestructuredLoansMetadata} from "./e
 import extractDigitalLendingData, {extractDigitalLendingMetadata} from "./extractDigitalLendingData";
 import extractRecategorizedLoansData, {extractRecategorizedLoansMetadata} from "./extractRecategorizedLoansData";
 import extractOffBalanceProvisioningData ,{extractOffBalanceProvisioningMetadata} from "./extractOffBalanceProvisioningData"
+import extractRestructuredAbove5PctData,{extractRestructuredAbove5PctMetadata} from "./extractRestructuredAbove5PctData";
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
@@ -198,15 +199,16 @@ const REPORT_TYPES = {
   QUARTERLY_MEMORANDUM_AND_CONTINGENT_ACCOUNTS: "finance-quarterly_memorandum",
    IFB_DEPOSIT_RANGE_REGION_QUARTERLY: "ifb-quarterly_deposit-range",
   IFB_DEPOSIT_SECTOR_REGION_QUARTERLY: "ifb-quarterly_deposit-sector",
-  QUARTERLY_TOP20_SHAREHOLDERS: 'share-quarterly_top-twenty-shareholders',
+  QUARTERLY_TOP20_SHAREHOLDERS: 'share-quarterly_top20-shareholders',
     QUARTERLY_TWO_PERCENT_SHAREHOLDERS: 'share-quarterly_two-percent-shareholdings',
-    QUARTERLY_MOBILE_TRANSACTIONS: 'digital-banking-quarterly_mobile-transactions',
-    QUARTERLY_ATM_POS: 'digital-banking-quarterly_atm-or-pos',
+    QUARTERLY_MOBILE_TRANSACTIONS: 'digital-quarterly_mobile-transaction',
+    QUARTERLY_ATM_POS: 'digital-quarterly_atm-pos',
     QUARTERLY_TRANSACTION_STATEMENT: 'finance-quarterly_transaction-statement',
     QUARTERLY_RESTRUCTURED_LOANS: 'credit-quarterly_aggregate-restructured-loans',
     QUARTERLY_DIGITAL_LENDING: 'credit-quarterly_digital-lending',
     QUARTERLY_RECATEGORIZED_LOANS: 'credit-quarterly_recategorized-loans',
-    QUARTERLY_OFF_BALANCE_PROVISIONING: 'credit-quarterly_off-balance-provisioning'
+    QUARTERLY_OFF_BALANCE_PROVISIONING: 'credit-quarterly_off-balance-provisioning',
+    QUARTERLY_RESTRUCTURED_ABOVE_5PCT: 'credit-quarterly_restructured-above-5pct'
 };
 
 // export const excelDateToISO = (value) => {
@@ -758,6 +760,14 @@ export const parseExcelReport = (file, reportTypeIn) => {
           noandtitles = result.noandtitles;
           metadata = extractOffBalanceProvisioningMetadata(jsonData);
         }
+        else if (reportType === REPORT_TYPES.QUARTERLY_RESTRUCTURED_ABOVE_5PCT) {
+          const result = extractRestructuredAbove5PctData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractRestructuredAbove5PctMetadata(jsonData);
+        }
          else {
           throw new Error(`Unsupported report type: ${reportType}`);
         }
@@ -1108,6 +1118,9 @@ const detectReportType = (data) => {
     }
         if (firstCell && (firstCell.includes('POBEPE001') || firstCell.includes('POBEPE'))) {
       return REPORT_TYPES.QUARTERLY_OFF_BALANCE_PROVISIONING;
+    }
+       if (firstCell && (firstCell.includes('RLAFCRC001') || firstCell.includes('RLAFCRC'))) {
+      return REPORT_TYPES.QUARTERLY_RESTRUCTURED_ABOVE_5PCT;
     }
   }
 

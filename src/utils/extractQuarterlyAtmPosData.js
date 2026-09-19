@@ -116,8 +116,8 @@ export const extractQuarterlyAtmPosMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       if (firstCell.includes("QUA_ATM_POS_QP001") || firstCell.includes("QP001")) {
-        metadata.reportType = "digital-banking-quarterly_atm-or-pos";
-        metadata.reportTypeId = "digital-banking-quarterly_atm-or-pos";
+        metadata.reportType = "digital-quarterly_atm-pos";
+        metadata.reportTypeId = "digital-quarterly_atm-pos";
         metadata.departmentId = "digital-banking";
         metadata.departmentName = "Digital Banking";
       }

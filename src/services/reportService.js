@@ -163,6 +163,9 @@ export const DEPARTMENT_DATA = [
       {
         id: "credit-quarterly_off-balance-provisioning",
         name: "Provisioning For Off-Balance Sheet Exposure"},
+      {
+        id: "credit-quarterly_restructured-above-5pct",
+        name: "Restructured Loans And Advances That Are Equal To or Above Five Percent (5%) of Total Capital of The Bank"},
     ],
   },
   {
@@ -204,7 +207,7 @@ export const DEPARTMENT_DATA = [
     name: "Share",
     reportTypes: [
       {
-        id: "share-quarterly_top-twenty-shareholders",
+        id: "share-quarterly_top20-shareholders",
         name: "Top Twenty (20) Shareholding Structure Report",
       },
       {
@@ -218,11 +221,11 @@ export const DEPARTMENT_DATA = [
     name: "Digital Banking",
 reportTypes: [
       {
-        id: "digital-banking-quarterly_atm-or-pos",
+        id: "digital-quarterly_atm-pos",
         name: "BSD Quarterly ATM and POS",
       },
       {
-        id: "digital-banking-quarterly_mobile-transactions",
+        id: "digital-quarterly_mobile-transaction",
         name: "Quarterly Mobile Transactions Report",
       },
     ],
