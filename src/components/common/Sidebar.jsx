@@ -13,6 +13,7 @@ import {
   FiLogOut,
   FiTrendingUp,
   FiShare,
+  FiSmartphone,
 } from "react-icons/fi";
 
 // Hardcoded department and report types data
@@ -258,6 +259,27 @@ const DEPARTMENT_DATA = [
           {
             id: "share-quarterly_two-percent-shareholdings",
             name: "Two Percent (2%) and above Shareholdings of the Banks Total Share Capital Report",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "digital-banking",
+    name: "Digital Banking",
+    icon: FiSmartphone,
+    periods: [
+      {
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          {
+            id: "digital-banking-quarterly_atm-or-pos",
+            name: "BSD Quarterly ATM and POS",
+          },
+          {
+            id: "digital-banking-quarterly_mobile-transactions",
+            name: "Quarterly Mobile Transactions Report",
           },
         ],
       },

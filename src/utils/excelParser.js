@@ -104,6 +104,12 @@ import extractQuarterlyTopTwentyShareholdersData, {
 import extractQuarterlyTwoPercentShareholdersData, {
   extractQuarterlyTwoPercentShareholdersMetadata,
 } from "./extractQuarterlyTwoPercentShareholdersData";
+import extractQuarterlyMobileTransactionsData, {
+  extractQuarterlyMobileTransactionsMetadata,
+} from "./extractQuarterlyMobileTransactionsData";
+import extractQuarterlyAtmPosData, {
+  extractQuarterlyAtmPosMetadata,
+} from "./extractQuarterlyAtmPosData";
 
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
@@ -147,6 +153,8 @@ const REPORT_TYPES = {
     BUILDING_CONSTRUCTION: 'credit-quarterly_building-construction',
     QUARTERLY_TOP20_SHAREHOLDERS: 'share-quarterly_top-twenty-shareholders',
     QUARTERLY_TWO_PERCENT_SHAREHOLDERS: 'share-quarterly_two-percent-shareholdings',
+    QUARTERLY_MOBILE_TRANSACTIONS: 'digital-banking-quarterly_mobile-transactions',
+    QUARTERLY_ATM_POS: 'digital-banking-quarterly_atm-or-pos',
 };
 
 // const excelDateToISO = (serial) => {
@@ -551,6 +559,21 @@ export const parseExcelReport = (file, reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractQuarterlyTwoPercentShareholdersMetadata(jsonData);
+        }        else if (reportType === REPORT_TYPES.QUARTERLY_MOBILE_TRANSACTIONS) {
+          const result = extractQuarterlyMobileTransactionsData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyMobileTransactionsMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_ATM_POS) {
+          const result = extractQuarterlyAtmPosData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractQuarterlyAtmPosMetadata(jsonData);
         }
         else {
           throw new Error(`Unsupported report type: ${reportType}`);
@@ -819,6 +842,18 @@ const detectReportType = (data) => {
       (firstCell.includes("SHR_GTR_2_TS001") || firstCell.includes("TS001"))
     ) {
       return REPORT_TYPES.QUARTERLY_TWO_PERCENT_SHAREHOLDERS;
+    }
+        if (
+      firstCell &&
+      (firstCell.includes("MOB_TRA_QM001") || firstCell.includes("QM001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_MOBILE_TRANSACTIONS;
+    }
+    if (
+      firstCell &&
+      (firstCell.includes("QUA_ATM_POS_QP001") || firstCell.includes("QP001"))
+    ) {
+      return REPORT_TYPES.QUARTERLY_ATM_POS;
     }
   }
 
