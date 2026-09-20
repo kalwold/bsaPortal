@@ -81,7 +81,7 @@ const DEPARTMENT_DATA = [
           },
         ],
       },
-     {
+      {
         id: "quarterly",
         name: "Quarterly",
         reportTypes: [
@@ -89,7 +89,7 @@ const DEPARTMENT_DATA = [
             id: "finance-quarterly_breakdown-expenses",
             name: "BREAKDOWN OF EXPENSES",
           },
-           {
+          {
             id: "finance-quarterly_breakdown-income-account",
             name: "Breakdown of Income Accounts",
           },
@@ -101,7 +101,7 @@ const DEPARTMENT_DATA = [
             id: "finance-quarterly_deposit-range-region",
             name: "Quarterly Report on Deposits by Range and Region",
           },
-              {
+          {
             id: "finance-quarterly_profit_loss",
             name: "PROFIT AND LOSS STATEMENT",
           },
@@ -113,23 +113,23 @@ const DEPARTMENT_DATA = [
             id: "finance-quarterly_capital-adequacy",
             name: "CAPITAL ADEQUACY REPORT (QUARTERLY) - Capital Components",
           },
-             {
-        id: "finance-quarterly_balance-sheet",
-        name: "Quarterly Balance Sheet",
-      },{
-        id: "finance-quarterly_top-twenty-depositors",
-        name: "Quarterly Top Twenty Depositors",
-      },{
-        id: "finance-quarterly_maturity-assets-liabilities",
-        name: "Quarterly Maturity of Assets & Liabilities",
-      },{
-        id: "finance-quarterly_memorandum",
-        name: "Quarterly Memorandum and Contingent Accounts",
-      },
-        {
-        id: "finance-quarterly_transaction-statement",
-        name: "Quarterly Transaction Statement with Financial Institutions",
-      },
+          {
+            id: "finance-quarterly_balance-sheet",
+            name: "Quarterly Balance Sheet",
+          }, {
+            id: "finance-quarterly_top-twenty-depositors",
+            name: "Quarterly Top Twenty Depositors",
+          }, {
+            id: "finance-quarterly_maturity-assets-liabilities",
+            name: "Quarterly Maturity of Assets & Liabilities",
+          }, {
+            id: "finance-quarterly_memorandum",
+            name: "Quarterly Memorandum and Contingent Accounts",
+          },
+          {
+            id: "finance-quarterly_transaction-statement",
+            name: "Quarterly Transaction Statement with Financial Institutions",
+          },
         ],
       },
     ],
@@ -184,7 +184,7 @@ const DEPARTMENT_DATA = [
             id: "credit-monthly_loan-sector-region",
             name: "Loans by Sector and Region",
           },
-          
+
         ],
       },
       {
@@ -215,13 +215,15 @@ const DEPARTMENT_DATA = [
             id: "credit-quarterly_range-region",
             name: "Quarterly Conventional Loans by Range and Region",
           },
-          { id: 'credit-quarterly_loans-sector-region', 
-          name: 'Conventional Loans by Sector and Region' },
           {
-        id: "credit-quarterly_loan-nonperforming-top20",
-        name: "Quarterly Top Twenty (20) NPLs Report",
-      },
-           {
+            id: 'credit-quarterly_loans-sector-region',
+            name: 'Conventional Loans by Sector and Region'
+          },
+          {
+            id: "credit-quarterly_loan-nonperforming-top20",
+            name: "Quarterly Top Twenty (20) NPLs Report",
+          },
+          {
             id: "credit-quarterly_top20-borrowers",
             name: "Quarterly Top Twenty (20) Borrowers Report",
           },
@@ -229,24 +231,26 @@ const DEPARTMENT_DATA = [
             id: "credit-quarterly_building-construction",
             name: "Loans to Building and Construction",
           },
-           {
-        id: "credit-quarterly_aggregate-restructured-loans",
-        name: "Aggregate of All Restructured Loans And Advances ",
-      },
-       {
-        id: "credit-quarterly_digital-lending",
-        name: "Quarterly Digital Lending Report ",
-      },
-      {
-        id: "credit-quarterly_recategorized-loans",
-        name: "Loans And Advances Re-Categorized  from Non-Accrual To Accrual Status That Are Equal To Or Above Five Percent (5%) of The Bank's Total Capital",
-      },
-       {
-        id: "credit-quarterly_off-balance-provisioning",
-        name: "Provisioning For Off-Balance Sheet Exposure"},
-              {
-        id: "credit-quarterly_restructured-above-5pct",
-        name: "Restructured Loans And Advances That Are Equal To or Above Five Percent (5%) of Total Capital of The Bank"},
+          {
+            id: "credit-quarterly_aggregate-restructured-loans",
+            name: "Aggregate of All Restructured Loans And Advances ",
+          },
+          {
+            id: "credit-quarterly_digital-lending",
+            name: "Quarterly Digital Lending Report ",
+          },
+          {
+            id: "credit-quarterly_recategorized-loans",
+            name: "Loans And Advances Re-Categorized  from Non-Accrual To Accrual Status That Are Equal To Or Above Five Percent (5%) of The Bank's Total Capital",
+          },
+          {
+            id: "credit-quarterly_off-balance-provisioning",
+            name: "Provisioning For Off-Balance Sheet Exposure"
+          },
+          {
+            id: "credit-quarterly_restructured-above-5pct",
+            name: "Restructured Loans And Advances That Are Equal To or Above Five Percent (5%) of Total Capital of The Bank"
+          },
         ],
       },
     ],
@@ -292,15 +296,15 @@ const DEPARTMENT_DATA = [
             id: "ifb-monthly_profit-loss",
             name: "Interest Free Banking Service Profit and loss statement",
           },
-    { id: 'ifb-quarterly_loan-range', name: 'Quarterly Interest Free Loans by Range and Region	' },
-      { id: 'ifb-quarterly_loan-sector', name: 'Quarterly Interest Free Loans by Sector and Region' },
-       { id: 'ifb-quarterly_deposit-range', name: 'Quarterly Interest Free Deposits by Range and Region	' },
-      { id: 'ifb-quarterly_deposit-sector', name: 'Quarterly Interest Free Deposits by Sector and Region' },
+          { id: 'ifb-quarterly_loan-range-region', name: 'Quarterly Interest Free Loans by Range and Region	' },
+          { id: 'ifb-quarterly_loan-sector-region', name: 'Quarterly Interest Free Loans by Sector and Region' },
+          { id: 'ifb-quarterly_deposit-range', name: 'Quarterly Interest Free Deposits by Range and Region	' },
+          { id: 'ifb-quarterly_deposit-sector', name: 'Quarterly Interest Free Deposits by Sector and Region' },
         ],
       },
     ],
   },
-{
+  {
     id: "share",
     name: "Share",
     icon: FiShare,
@@ -398,10 +402,9 @@ const Sidebar = () => {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-blue-50 text-[#412985] font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-[#412985]"
+                `flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${isActive
+                  ? "bg-blue-50 text-[#412985] font-medium"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-[#412985]"
                 }`
               }
             >
@@ -431,11 +434,10 @@ const Sidebar = () => {
                 {/* Department */}
                 <button
                   onClick={() => hasPeriods && toggleDepartment(dept.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
-                    !hasPeriods
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${!hasPeriods
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <span className="flex items-center text-gray-700">
                     <Icon className="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" />

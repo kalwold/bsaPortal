@@ -1,3 +1,21 @@
+
+// export const excelDateToISO = (value) => {
+//   if (!value) return "";
+
+//   const str = String(value).trim();
+
+//   // Already ISO format → return as it is
+//   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(str)) {
+//     return str;
+//   }
+
+//   // Excel serial date
+//   const date = new Date(Date.UTC(1899, 11, 30));
+//   date.setUTCDate(date.getUTCDate() + Number(value));
+
+//   return date.toISOString().slice(0, 19);
+// };
+
 export const excelDateToISO = (value) => {
   if (value === null || value === undefined || value === "") {
     return "";
