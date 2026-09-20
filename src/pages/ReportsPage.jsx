@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { reportService, DEPARTMENT_DATA } from '../services/reportService';
+import { reportService} from '../services/reportService';
+import { DEPARTMENT_DATA } from '../utils/departments';
 import ReportList from '../components/reports/ReportList';
 import { FiSearch } from 'react-icons/fi';
 

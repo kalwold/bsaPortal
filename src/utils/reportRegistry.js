@@ -1,4 +1,4 @@
-import { REPORT_TYPES } from "./reportTypes";
+import { REPORT_TYPES } from "./departments";
 
 // Loads every extractor module under departments-data/ (recursive)
 const ctx = require.context("./departments-data", true, /extract.*\.js$/);
@@ -69,7 +69,6 @@ const REPORT_FILES = {
     [REPORT_TYPES.QUARTERLY_RESTRUCTURED_ABOVE_5PCT]: "credit/quarterly/extractRestructuredAbove5PctData",
 };
 
-// default export = data extractor; named export matching /metadata$/i = metadata extractor
 function pairExtractors(type, file) {
     const mod = modules[`./${file}.js`];   // was: `./departments-data/${file}.js`
     if (!mod) throw new Error(`[${type}] no module found for "${file}"`);

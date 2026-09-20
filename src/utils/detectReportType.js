@@ -1,4 +1,4 @@
-import { REPORT_TYPES } from "./reportTypes";
+import { REPORT_TYPES } from "./departments";
 
 export const detectReportType = (data) => {
   if (!data || data.length === 0) return null;
