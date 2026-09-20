@@ -9,7 +9,7 @@ import { shareConfig } from "./departments-data/share/shareConfig";
 
 export const DEPARTMENTS = [ibdConfig, financeConfig, creditConfig, ifbConfig, shareConfig, digitalConfig];
 
-const allReports = DEPARTMENTS.flatMap((d) =>
+export const ALL_REPORTS = DEPARTMENTS.flatMap((d) =>
     d.periods.flatMap((p) => p.reportTypes),
 );
 
@@ -23,7 +23,8 @@ export const DEPARTMENT_DATA = DEPARTMENTS.map((dept) => ({
 // Replaces reportTypes.js: REPORT_TYPES.EXPENSE_BREAKDOWN_QUARTERLY -> "finance-quarterly_breakdown-expenses"
 export const REPORT_TYPES = Object.freeze(
     Object.fromEntries(
-        allReports.filter((r) => r.key).map((r) => [r.key, r.id]),
+        ALL_REPORTS
+            .filter((r) => r.key).map((r) => [r.key, r.id]),
     ),
 );
 
@@ -47,20 +48,21 @@ if (process.env.NODE_ENV === "development") {
     const ids = new Set();
     const keys = new Set();
 
-    allReports.forEach((r) => {
-        if (ids.has(r.id)) {
-            // A repeated id is only OK when it has no key (an intentional menu repeat)
-            if (r.key) console.warn(`[departments] duplicate id "${r.id}"`);
-            return;
-        }
-        ids.add(r.id);
+    ALL_REPORTS
+        .forEach((r) => {
+            if (ids.has(r.id)) {
+                // A repeated id is only OK when it has no key (an intentional menu repeat)
+                if (r.key) console.warn(`[departments] duplicate id "${r.id}"`);
+                return;
+            }
+            ids.add(r.id);
 
-        if (!r.key) {
-            console.warn(`[departments] report "${r.id}" has no key`);
-        } else if (keys.has(r.key)) {
-            console.warn(`[departments] duplicate key "${r.key}"`);
-        } else {
-            keys.add(r.key);
-        }
-    });
+            if (!r.key) {
+                console.warn(`[departments] report "${r.id}" has no key`);
+            } else if (keys.has(r.key)) {
+                console.warn(`[departments] duplicate key "${r.key}"`);
+            } else {
+                keys.add(r.key);
+            }
+        });
 }

@@ -6,7 +6,7 @@ export const ibdConfig = {
             id: "daily",
             name: "Daily",
             reportTypes: [
-                { key: "DAILY_FOREX", id: "ibd-daily_single-currency", name: "Daily Foreign Currency Exposure" },
+                { key: "DAILY_FOREX", id: "ibd-daily_single-currency", name: "Daily Foreign Currency Exposure", detect: ["SINGLE CURRENCY"] },
             ],
         },
     ],

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -15,7 +15,12 @@ import {
   FiShare,
   FiSmartphone,
 } from "react-icons/fi";
-import {DEPARTMENTS} from "../../utils/departments";
+import { DEPARTMENTS } from "../../utils/departments";
+
+const MIN_WIDTH = 200;
+const MAX_WIDTH = 480;
+const DEFAULT_WIDTH = 256; // same as the old w-64
+const STORAGE_KEY = "sidebar-width";
 
 // Hardcoded department and report types data
 const DEPARTMENT_ICONS = {
@@ -36,6 +41,46 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [expandedDepartments, setExpandedDepartments] = useState({});
   const [expandedPeriods, setExpandedPeriods] = useState({});
+  const sidebarRef = useRef(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [width, setWidth] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem(STORAGE_KEY));
+      return saved >= MIN_WIDTH && saved <= MAX_WIDTH ? saved : DEFAULT_WIDTH;
+    } catch {
+      return DEFAULT_WIDTH;
+    }
+  });
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const onMove = (e) => {
+      const left = sidebarRef.current.getBoundingClientRect().left;
+      setWidth(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, e.clientX - left)));
+    };
+    const onUp = () => setIsResizing(false);
+
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    return () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizing]);
+
+  // Persist once the drag ends
+  useEffect(() => {
+    if (isResizing) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, String(width));
+    } catch { }
+  }, [width, isResizing]);
 
   const toggleDepartment = (deptId) => {
     setExpandedDepartments((prev) => ({
@@ -69,8 +114,11 @@ const Sidebar = () => {
     { to: "/reports", icon: FiFileText, label: "All Reports" },
   ];
 
+
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden">
+    <div ref={sidebarRef}
+      style={{ width }}
+      className="relative flex-shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h1 className="text-xl font-bold text-[#48198B]">GBB BSA Report</h1>
         <p className="text-xs text-gray-400 mt-0.5">v1.0.0</p>
@@ -117,8 +165,8 @@ const Sidebar = () => {
                 <button
                   onClick={() => hasPeriods && toggleDepartment(dept.id)}
                   className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${!hasPeriods
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-50"
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-50"
                     }`}
                 >
                   <span className="flex items-center text-gray-700">
@@ -218,6 +266,18 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
+
+      <div
+        onPointerDown={(e) => {
+          e.preventDefault();
+          setIsResizing(true);
+        }}
+        onDoubleClick={() => setWidth(DEFAULT_WIDTH)}
+        style={{ touchAction: "none" }}
+        className={`absolute top-0 right-0 h-full w-1.5 cursor-col-resize z-10 transition-colors hover:bg-[#48198B]/30 ${isResizing ? "bg-[#48198B]/40" : ""
+          }`}
+        title="Drag to resize, double-click to reset"
+      />
     </div>
   );
 };
