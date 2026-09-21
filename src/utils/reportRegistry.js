@@ -67,6 +67,10 @@ const REPORT_FILES = {
     [REPORT_TYPES.QUARTERLY_RECATEGORIZED_LOANS]: "credit/quarterly/extractRecategorizedLoansData",
     [REPORT_TYPES.QUARTERLY_OFF_BALANCE_PROVISIONING]: "credit/quarterly/extractOffBalanceProvisioningData",
     [REPORT_TYPES.QUARTERLY_RESTRUCTURED_ABOVE_5PCT]: "credit/quarterly/extractRestructuredAbove5PctData",
+    [REPORT_TYPES.QUARTERLY_AGENT_TRANSACTION]: "unidentified/quarterly/extractAgentTransactions",
+    [REPORT_TYPES.QUARTERLY_LOANS_TO_INSIDERS]: "unidentified/quarterly/extractLoansToInsiders",
+    [REPORT_TYPES.QUARTERLY_BSD_NEW_AGENTS]: "unidentified/quarterly/extractNewAgentsInformation",
+    [REPORT_TYPES.QUARTERLY_RELATED_ORG]: "unidentified/quarterly/extractRelatedOrganizations",
 };
 
 function pairExtractors(type, file) {

@@ -48,5 +48,9 @@
     "autoprefixer": "^10.5.4",
     "postcss": "^8.5.26",
     "tailwindcss": "^3.4.19"
+  },
+  "allowScripts": {
+    "core-js@3.50.0": true,
+    "core-js-pure@3.50.0": true
   }
 }

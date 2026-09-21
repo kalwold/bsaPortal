@@ -6,12 +6,14 @@ import { financeConfig } from "./departments-data/finance/financeConfig";
 import { ibdConfig } from "./departments-data/ibd/ibdConfig";
 import { ifbConfig } from "./departments-data/ifb/ifbConfig";
 import { shareConfig } from "./departments-data/share/shareConfig";
+import { unidentifiedConfig } from "./departments-data/unidentified/unidentifiedConfig";
 
-export const DEPARTMENTS = [ibdConfig, financeConfig, creditConfig, ifbConfig, shareConfig, digitalConfig];
+export const DEPARTMENTS = [ibdConfig, financeConfig, creditConfig, ifbConfig, shareConfig, digitalConfig, unidentifiedConfig];
 
 export const ALL_REPORTS = DEPARTMENTS.flatMap((d) =>
     d.periods.flatMap((p) => p.reportTypes),
 );
+
 
 // Flat shape used by reportService: [{ id, name, reportTypes: [...] }]
 export const DEPARTMENT_DATA = DEPARTMENTS.map((dept) => ({
