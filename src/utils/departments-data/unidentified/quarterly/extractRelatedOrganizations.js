@@ -18,8 +18,8 @@ export const extractRelatedOrganizationsMetadata = (data) =>
   buildMetadata(data, {
     codes: ["REL_ORG_LO001", "LO001"],
     reportTypeId: REPORT_TYPE_ID,
-    departmentId: "share",
-    departmentName: "Share",
+    departmentId: "unidentified",
+    departmentName: "Unidentified",
     header: HEADER,
   });
 
