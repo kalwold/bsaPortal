@@ -72,7 +72,7 @@ const REPORT_FILES = {
     [REPORT_TYPES.QUARTERLY_BSD_NEW_AGENTS]: "unidentified/quarterly/extractNewAgentsInformation",
     [REPORT_TYPES.QUARTERLY_RELATED_ORG]: "unidentified/quarterly/extractRelatedOrganizations",
     [REPORT_TYPES.WEEKLY_FOREIGN_CURRENCY_LIQUIDITY]: "ibd/weekly/extractForeignCurrencyLiquidity",
-
+    [REPORT_TYPES.WEEKLY_FOREIGN_CURRENCY_RESERVE]: "ibd/weekly/extractForeignCurrencyReserve"
 };
 
 function pairExtractors(type, file) {

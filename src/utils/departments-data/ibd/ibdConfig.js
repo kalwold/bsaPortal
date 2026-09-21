@@ -24,6 +24,12 @@ export const ibdConfig = {
           name: "Weekly Foreign Currency Liquidity",
           detect: ["WFWFCL001"],
         },
+        {
+          key: "WEEKLY_FOREIGN_CURRENCY_RESERVE",
+          id: "ibd-weekly_foreign-currency-reserve",
+          name: "Weekly Foreign Currency Reserve",
+          detect: ["CRWFCR001"],
+        },
       ],
     },
   ],

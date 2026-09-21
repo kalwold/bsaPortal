@@ -1,10 +1,14 @@
 import { excelDateToISO } from "../../../utils";
 
-// TODO confirm department / id for the registry
-const REPORT_TYPE_ID = "ibd-weekly_foreign-currency-liquidity";
+/* ------------------------------------------------------------------ *
+ *  Weekly Foreign Currency Reserve  (A1 = "CRWFCR001")
+ * ------------------------------------------------------------------ */
 
-const FIRST_VALUE_COL = 2; // A = No., B = FX, values start at C
-const HEADER_DEPTH = 3; // rows 9-11; row 12 is the formula legend
+// TODO confirm department / id for the registry
+const REPORT_TYPE_ID = "ibd-weekly_foreign-currency-reserve";
+
+const FIRST_VALUE_COL = 2; // A = No., B = Description, values start at C
+const HEADER_DEPTH = 2; // rows 9-10 define the columns
 const ANCHOR_RE = /^(s\.?\s*no\.?|no\.?)$/i;
 
 // 0-based rows of the top block in this template
@@ -36,24 +40,25 @@ const getNum = (row, idx) => {
   return "0";
 };
 
-// Finds the header block: [headerRowIdx, dataTableStart)
+const isNumericSNo = (v) =>
+  v !== undefined && v !== null && String(v).trim() !== "" && !isNaN(parseFloat(v));
+
+// 1.1, 1.2 ... (non-integer) are children of section 1
+const isChildSNo = (v) => isNumericSNo(v) && !Number.isInteger(parseFloat(v));
+
+// Finds the row holding "No." in column A.
 const locateHeader = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    if (ANCHOR_RE.test(String(row[0] ?? "").trim())) {
-      return { headerRowIdx: i, dataTableStart: i + HEADER_DEPTH };
-    }
+    if (ANCHOR_RE.test(String(row[0] ?? "").trim())) return i;
   }
-  return { headerRowIdx: -1, dataTableStart: -1 };
+  return -1;
 };
 
-// Builds [{ key, index, parent, child }] from the multi-row header.
-// The legend cell right under the header ("A", "C=A+B", "F=E-D"...) contributes
-// its column letter (text before "=") as the last part of the key.
-const buildColumns = (data, headerRowIdx, dataTableStart) => {
-  const headerRows = data.slice(headerRowIdx, dataTableStart);
-  const legendRow = data[dataTableStart]; // first row after the header
+// Builds [{ key, index, parent, child }] from the header rows.
+const buildColumns = (data, headerRowIdx) => {
+  const headerRows = data.slice(headerRowIdx, headerRowIdx + HEADER_DEPTH);
   const width = Math.max(0, ...headerRows.map((r) => (r ? r.length : 0)));
   const cols = [];
   const used = new Set();
@@ -74,11 +79,9 @@ const buildColumns = (data, headerRowIdx, dataTableStart) => {
     }
 
     const chain = parts.filter(Boolean).filter((p, i, a) => i === 0 || p !== a[i - 1]);
-    const letter = cleanHeader(getStr(legendRow, c).split("=")[0]);
-    const keyBase = [...chain, letter].filter(Boolean).join("_");
-    let key = keyBase;
+    let key = chain.join("_");
     let n = 2;
-    while (used.has(key)) key = `${keyBase}_${n++}`;
+    while (used.has(key)) key = `${chain.join("_")}_${n++}`;
     used.add(key);
 
     cols.push({
@@ -91,7 +94,7 @@ const buildColumns = (data, headerRowIdx, dataTableStart) => {
   return cols;
 };
 
-export const extractForeignCurrencyLiquidityMetadata = (data) => {
+export const extractForeignCurrencyReserveMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -126,7 +129,7 @@ export const extractForeignCurrencyLiquidityMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      if (firstCell.includes("WFWFCL001") || firstCell.includes("WFCL001")) {
+      if (firstCell.includes("CRWFCR001") || firstCell.includes("WFCR001")) {
         metadata.reportType = REPORT_TYPE_ID;
         metadata.reportTypeId = REPORT_TYPE_ID;
         metadata.departmentId = "ibd";
@@ -161,10 +164,10 @@ export const extractForeignCurrencyLiquidityMetadata = (data) => {
   }
 
   // Identification: which parent header each value column belongs to.
-  const { headerRowIdx, dataTableStart } = locateHeader(data);
+  const headerRowIdx = locateHeader(data);
   metadata.columnGroups = {};
   if (headerRowIdx !== -1) {
-    buildColumns(data, headerRowIdx, dataTableStart).forEach((col) => {
+    buildColumns(data, headerRowIdx).forEach((col) => {
       metadata.columnGroups[col.key] = { parent: col.parent, child: col.child };
     });
   }
@@ -172,44 +175,96 @@ export const extractForeignCurrencyLiquidityMetadata = (data) => {
   return metadata;
 };
 
-const extractForeignCurrencyLiquidityData = (data) => {
-  const { headerRowIdx, dataTableStart } = locateHeader(data);
+const extractForeignCurrencyReserveData = (data) => {
+  const headerRowIdx = locateHeader(data);
 
   if (headerRowIdx === -1) {
     return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
   }
 
   const noandtitles = [getStr(data[headerRowIdx], 0), getStr(data[headerRowIdx], 1)];
-  const cols = buildColumns(data, headerRowIdx, dataTableStart);
+  const cols = buildColumns(data, headerRowIdx);
   const entries = [];
 
-  for (let i = dataTableStart; i < data.length; i++) {
+  let section = null; // { id } of the open section header
+  let childCount = 0;
+
+  // Row after "No." is already data (the section line shares it with the sub-headers)
+  for (let i = headerRowIdx + 1; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const sNo = getStr(row, 0);
+    const sNoRaw = row[0];
+    const numbered = isNumericSNo(sNoRaw);
     const label = getStr(row, 1).replace(/\s+/g, " ");
-    if (!label) continue; // formula legend, blank rows
-
-    const isTotalLabel = !sNo && TOTAL_RE.test(label);
-    const anyValue = cols.some((c) => getStr(row, c.index) !== "");
-    if (!sNo && !isTotalLabel && !anyValue) continue; // footnote ("# includes foreign currency...")
+    if (!label) continue;
 
     const values = {};
     cols.forEach((col) => {
       values[col.key] = getNum(row, col.index);
     });
 
-    entries.push({
-      id: sNo,
-      sNo,
-      label,
-      values,
-      rowNumber: i + 1,
-      level: 1,
-      isTotalRow: isTotalLabel,
-      isSectionHeader: false,
-    });
+    // ---- currency rows: 1.1, 1.2 ... (level 2)
+    if (numbered && isChildSNo(sNoRaw)) {
+      childCount++;
+      const sNo = section ? `${section.id}.${childCount}` : String(sNoRaw).trim();
+      entries.push({
+        id: sNo,
+        sNo,
+        label,
+        values,
+        rowNumber: i + 1,
+        level: 2,
+        parentId: section ? section.id : "",
+        isTotalRow: false,
+        isSectionHeader: false,
+      });
+      continue;
+    }
+
+    // ---- top-level numbered row: section header when 1.x rows follow
+    if (numbered) {
+      const id = String(sNoRaw).trim();
+      const next = data[i + 1];
+      const isSectionHeader = !!next && isChildSNo(next[0]);
+      if (isSectionHeader) {
+        section = { id };
+        childCount = 0;
+        // D:F of this row hold the sub-header text ("5% Reserve" would parse as 5),
+        // so a section header carries no values.
+        cols.forEach((col) => {
+          values[col.key] = "";
+        });
+      }
+      entries.push({
+        id,
+        sNo: id,
+        label,
+        values,
+        rowNumber: i + 1,
+        level: 1,
+        isTotalRow: false,
+        isSectionHeader,
+      });
+      continue;
+    }
+
+    // ---- unnumbered "Total" row (a numbered row whose label contains "total"
+    // is the section line above, so the numbered check has to come first)
+    if (TOTAL_RE.test(label)) {
+      entries.push({
+        id: "",
+        sNo: "",
+        label,
+        values,
+        rowNumber: i + 1,
+        level: 1,
+        isTotalRow: true,
+        isSectionHeader: false,
+      });
+      section = null;
+    }
+    // anything else unnumbered is a note -> skipped
   }
 
   return {
@@ -220,4 +275,4 @@ const extractForeignCurrencyLiquidityData = (data) => {
   };
 };
 
-export default extractForeignCurrencyLiquidityData;
+export default extractForeignCurrencyReserveData;
