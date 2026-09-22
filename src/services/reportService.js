@@ -8,6 +8,16 @@ export const DEPARTMENT_DATA = [
     reportTypes: [{ id: "ibd-daily_single-currency", name: "Daily Foreign Currency Exposure" }],
   },
   {
+  id: "hr",
+  name: "HR",
+  reportTypes: [
+    {
+      id: "hr-quarterly_manpower-structure",
+      name: "BSA Report on Manpower Structure",
+    },
+  ],
+},
+  {
     id: "finance",
     name: "Finance",
     reportTypes: [

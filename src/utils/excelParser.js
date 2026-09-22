@@ -87,7 +87,12 @@ import extractNplSectorBranchData, {
 import extractCollateralizedPropertyAcquiredLast18Data, {
   extractCollateralizedPropertyAcquiredLast18Metadata,
 } from "./extractCollateralizedPropertyAcquiredLast18Data";
-import extractLoanRangeRegionQuarterlyData, {extractLoanRangeRegionQuarterlyMetadata} from "./extractLoanRangeRegionQuarterlyData";
+import extractLoanRangeRegionQuarterlyData, {extractLoanRangeRegionQuarterlyMetadata} 
+from "./extractLoanRangeRegionQuarterlyData";
+import extractManpowerStructureData, {extractManpowerStructureMetadata} 
+from "./extractManpowerStructureData";
+import extractDepositProfitRateData, {extractDepositProfitRateMetadata} 
+from "./extractDepositProfitRateData";
 const REPORT_TYPES = {
   DAILY_FOREX: "ibd-daily_single-currency",
   MONTHLY_BALANCE: "finance-monthly_balance-sheet",
@@ -122,7 +127,9 @@ const REPORT_TYPES = {
   COLLATERALIZED_PROPERTY_ACQUIRED_LAST18:
     "credit-quarterly_collateralized-property-acquired-last18",
   LOAN_RANGE_REGION_QUARTERLY:'credit-quarterly_range-region',
-  CONVENTIONAL_LOAN_SECTOR_REGION:"credit-quarterly_loans-sector-region"
+  CONVENTIONAL_LOAN_SECTOR_REGION:"credit-quarterly_loans-sector-region",
+  BSA_MANPOWER_STRUCTURE:"hr-quarterly_manpower-structure",
+ DEPOSIT_PROFIT_RATE:"ifb-monthly_deposit_profit_rate-interest-free"
 };
 
 // const excelDateToISO = (serial) => {
@@ -281,13 +288,29 @@ export const parseExcelReport = (file, reportTypeIn) => {
           metadata = extractLoanSectorRegionMetadata(jsonData);
         } 
         else if (reportType === REPORT_TYPES.CONVENTIONAL_LOAN_SECTOR_REGION) {
-  const result = extractConventionalLoanSectorRegionData(jsonData);
-  hierarchicalData = result.hierarchicalData;
-  columns = result.columns;
-  additionalColumns = result.additionalColumns;
-  noandtitles = result.noandtitles;
-  metadata = extractConventionalLoanSectorRegionMetadata(jsonData);
-}
+         const result = extractConventionalLoanSectorRegionData(jsonData);
+         hierarchicalData = result.hierarchicalData;
+         columns = result.columns;
+         additionalColumns = result.additionalColumns;
+         noandtitles = result.noandtitles;
+         metadata = extractConventionalLoanSectorRegionMetadata(jsonData);
+         }
+         else if (reportType === REPORT_TYPES.BSA_MANPOWER_STRUCTURE) {
+         const result = extractManpowerStructureData(jsonData);
+         hierarchicalData = result.hierarchicalData;
+         columns = result.columns;
+         additionalColumns = result.additionalColumns;
+         noandtitles = result.noandtitles;
+         metadata = extractManpowerStructureMetadata(jsonData);
+         }
+         else if (reportType === REPORT_TYPES.DEPOSIT_PROFIT_RATE) {
+         const result = extractDepositProfitRateData(jsonData);
+         hierarchicalData = result.hierarchicalData;
+         columns = result.columns;
+         additionalColumns = result.additionalColumns;
+         noandtitles = result.noandtitles;
+         metadata = extractDepositProfitRateMetadata(jsonData);
+         }
         else if (reportType === REPORT_TYPES.STATUTORY_REQ) {
           const result = extractLoanStatutoryRequirementData(jsonData);
           hierarchicalData = result.hierarchicalData;
@@ -538,6 +561,18 @@ const detectReportType = (data) => {
   (firstCell.includes("LOAN_SEC&REG") || firstCell.includes("SE002"))
 ) {
   return REPORT_TYPES.CONVENTIONAL_LOAN_SECTOR_REGION;
+}
+   if (
+  firstCell &&
+  (firstCell.includes("mp_021") || firstCell.includes("mp003"))
+) {
+  return REPORT_TYPES.BSA_MANPOWER_STRUCTURE;
+}
+ if (
+  firstCell &&
+  (firstCell.includes("DP") || firstCell.includes("WADP001"))
+) {
+  return REPORT_TYPES.DEPOSIT_PROFIT_RATE;
 }
     if (firstCell && firstCell.includes("SRRYY001")) {
       return REPORT_TYPES.STATUTORY_REQ;

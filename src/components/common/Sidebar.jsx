@@ -33,6 +33,24 @@ const DEPARTMENT_DATA = [
       },
     ],
   },
+       
+  {
+    id: "hr",
+    name: "HR",
+    icon: FiTrendingUp,
+    periods: [
+      {
+        id: "quarterly",
+        name: "Quarterly",
+        reportTypes: [
+          {
+            id: "hr-quarterly_manpower-structure",
+            name: "hr manpower structure",
+          },
+        ],
+      },
+    ],
+  },
 
   {
     id: "finance",
@@ -195,6 +213,9 @@ const DEPARTMENT_DATA = [
             id: "ifb-monthly_loan-sector-region",
             name: "IFB Loans by Sector and Region",
           },
+          {id: "ifb_monthly_deposit_profit_rate-interest-free",
+            name: "deposit profit rate interest free",
+          }
         ],
       },
       {
