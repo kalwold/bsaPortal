@@ -203,10 +203,10 @@ const extractRecategorizedLoansData = (data) => {
     const counterparty = String(row[COUNTERPARTY_COL] || '').trim();
 
     // Skip if no S.No
-    if (!sNo) continue;
+    //if (!sNo) continue;
 
     // Skip total row
-    if (sNo === 'Total') continue;
+    if (counterparty === '**Total Capital Include: (Paid up + Share Premium +Legal +General reserve) only') continue;
 
     // Skip if no counterparty and it's not a "Nil" entry
     if (!counterparty && sNo !== '1') continue;
@@ -239,15 +239,14 @@ const extractRecategorizedLoansData = (data) => {
     const isNilEntry = counterparty === 'Nil.' || counterparty === 'Nil';
 
     const entry = {
-      id: sNo || `row-${i}`,
+      id: sNo || ``,
       sNo: sNo,
-      label: counterparty || `Row ${sNo}`,
+      label: counterparty || ``,
       values: values,
       rowNumber: i + 1,
       level: 1,
       isTotalRow: false,
       isSectionHeader: false,
-      isNilEntry: isNilEntry,
       children: []
     };
 

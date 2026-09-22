@@ -39,9 +39,9 @@ export const extractRestructuredAbove5PctMetadata=(data)=>{
       //consol.log("Found Return Key:", metadata.ReturnKey);
      
 
-  if (firstCell.includes('NACNN001') || firstCell.includes('NACNN')) {
-        metadata.reportType = 'credit-quarterly_recategorized-loans';
-        metadata.reportTypeId = 'credit-quarterly_recategorized-loans';
+  if (firstCell.includes('RLAFCRC001') || firstCell.includes('RC001')) {
+        metadata.reportType = 'credit-quarterly_restructured-above-5pct';
+        metadata.reportTypeId = 'credit-quarterly_restructured-above-5pct';
         metadata.departmentId = 'credit';
         metadata.departmentName = 'Credit';
       }
@@ -200,13 +200,9 @@ const extractRestructuredAbove5PctData = (data) => {
 
     const sNo = String(row[SNO_COL] || '').trim();
     const counterparty = String(row[COUNTERPARTY_COL] || '').trim();
+ const isTotalRow = (counterparty=== 'Total')
 
-    // Skip if no S.No
-    if (!sNo) continue;
-
-    // Skip total row
-    if (sNo === 'Total') continue;
-
+    
     // Skip if no counterparty
     if (!counterparty) continue;
 
@@ -239,7 +235,7 @@ const extractRestructuredAbove5PctData = (data) => {
       values: values,
       rowNumber: i + 1,
       level: 1,
-      isTotalRow: false,
+      isTotalRow: isTotalRow,
       isSectionHeader: false,
       children: []
     };

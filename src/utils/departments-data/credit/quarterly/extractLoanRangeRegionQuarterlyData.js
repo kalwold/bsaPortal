@@ -32,8 +32,8 @@ export const extractLoanRangeRegionQuarterlyMetadata = (data) =>{
       //console.log("Found Return Key:", metadata.ReturnKey);
 
 if (firstCell.includes('LOAN_RAN&REG_RA002') ) {
-        metadata.reportType = 'credit-quarterly_range-region';
-        metadata.reportTypeId = 'credit-quarterly_range-region';
+        metadata.reportType = 'credit-quarterly_loan_range';
+        metadata.reportTypeId = 'credit-quarterly_loan_range';
         metadata.departmentId = 'credit';
         metadata.departmentName = 'Credit';
       }

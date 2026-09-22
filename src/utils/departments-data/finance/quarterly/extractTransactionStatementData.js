@@ -48,8 +48,8 @@ export const extractTransactionStatementMetadata = (data) => {
       if (firstCell.includes("TRAN_STATQQ001") ) {
         metadata.reportType = "finance-quarterly_transaction-statement";
         metadata.reportTypeId = "finance-quarterly_transaction-statement";
-        metadata.departmentId = "credit";
-        metadata.departmentName = "Credit";
+        metadata.departmentId = "finance";
+        metadata.departmentName = "Finance";
       }
     }
 
@@ -114,16 +114,6 @@ const extractTransactionStatementData = (data) => {
       break;
     }
   }
-  console.log('=== Extracting Transaction Statement Data (QQ001) ===');
-
-  // Log first few rows to understand structure
-  for (let i = 0; i < Math.min(data.length, 20); i++) {
-    const row = data[i];
-    if (row) {
-      console.log(`Row ${i}:`, row.slice(0, 10).map(c => String(c || '').trim()));
-    }
-  }
-
   // Find the data table start - look for "Code" in column A
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
@@ -138,12 +128,10 @@ const extractTransactionStatementData = (data) => {
 
   if (dataTableStart === -1) {
     console.log('Could not find data table');
-    return { hierarchicalData: [], columns: [], additionalColumns: [] };
+    return { hierarchicalData: [], currencies: [], additionalColumns: [] };
   }
 
   // Column indices (0-based)
-  // A(0)=Code Left, B(1)=Description Left, C(2)=O/S Balance Left, D(3)=Maturity Left
-  // E(4)=Code Right, F(5)=Description Right, G(6)=O/S Balance Right, H(7)=Maturity Right, I(8)=NET
   const LEFT_CODE = 0;
   const LEFT_DESC = 1;
   const LEFT_OS = 2;
@@ -154,7 +142,6 @@ const extractTransactionStatementData = (data) => {
   const RIGHT_MATURITY = 7;
   const NET = 8;
 
-  // Column names for the report
   const columns = [
     'O_S_Balance_Made',
     'Maturity_Made',
@@ -165,8 +152,6 @@ const extractTransactionStatementData = (data) => {
 
   const topLevelNodes = [];
   const nodeMap = new Map();
-  let currentLeftParent = null;
-  let currentRightParent = null;
 
   // Parse each row
   for (let i = dataTableStart; i < data.length; i++) {
@@ -181,17 +166,19 @@ const extractTransactionStatementData = (data) => {
     // Skip if both sides are empty
     if (!leftCode && !leftDesc && !rightCode && !rightDesc) continue;
 
-    // Skip note rows
-    if (leftDesc.includes('Note') || rightDesc.includes('Note')) continue;
-
     // Helper functions
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
-        if (!isNaN(val) && val !== 0) {
+        const raw = row[index];
+        // Handle empty/null
+        if (raw === null || raw === undefined || raw === '') return '0';
+        // Handle numeric strings and numbers
+        const val = parseFloat(raw);
+        if (!isNaN(val)) {
           return val.toFixed(2);
         }
-        return '0';
+        // If it's a string (not a number), return it as-is
+        return String(raw).trim();
       }
       return '0';
     };
@@ -203,7 +190,7 @@ const extractTransactionStatementData = (data) => {
       return '';
     };
 
-    // Extract values
+    // Extract values - use getValue for numeric fields and getStringValue for text fields
     const values = {
       'O_S_Balance_Made': getValue(LEFT_OS),
       'Maturity_Made': getStringValue(LEFT_MATURITY),
@@ -228,7 +215,6 @@ const extractTransactionStatementData = (data) => {
                             (level === 1 && rightDesc && rightDesc === rightDesc.toUpperCase());
 
     // Build a combined label
-    // If both sides have descriptions, combine them
     let combinedLabel = '';
     if (leftDesc && rightDesc) {
       combinedLabel = `${leftDesc} | ${rightDesc}`;
@@ -238,7 +224,6 @@ const extractTransactionStatementData = (data) => {
       combinedLabel = rightDesc;
     }
 
-    // Use the primary code (prefer left code, fall back to right)
     const primaryCode = leftCode || rightCode;
 
     const entry = {
@@ -257,7 +242,6 @@ const extractTransactionStatementData = (data) => {
       children: []
     };
 
-    // Use left code as primary for the node map
     if (primaryCode) {
       nodeMap.set(primaryCode, entry);
     }
@@ -268,15 +252,13 @@ const extractTransactionStatementData = (data) => {
     }
   }
 
-  // Build hierarchy for nodes with codes
+  // Build hierarchy
   for (const [code, node] of nodeMap) {
     const codeParts = code.split('.');
     
-    if (codeParts.length === 1) {
-      // Top level - already added, skip
+    if (codeParts.length <= 1) {
       continue;
-    } else if (codeParts.length > 1) {
-      // Child node - find parent
+    } else {
       const parentCode = codeParts.slice(0, -1).join('.');
       const parent = nodeMap.get(parentCode);
       
@@ -286,7 +268,6 @@ const extractTransactionStatementData = (data) => {
           parent.children.push(node);
         }
       } else {
-        // Try base code
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
@@ -301,7 +282,7 @@ const extractTransactionStatementData = (data) => {
     }
   }
 
-  // Remove duplicates from top level (nodes added both at top and as children)
+  // Remove duplicates
   const uniqueTopLevel = [];
   const addedIds = new Set();
   for (const node of topLevelNodes) {
@@ -342,7 +323,7 @@ const extractTransactionStatementData = (data) => {
 
   sortChildren(uniqueTopLevel);
 
-  // Clean up - remove empty children arrays
+  // Clean up
   const cleanData = (nodes) => {
     nodes.forEach(node => {
       if (node.children && node.children.length === 0) {

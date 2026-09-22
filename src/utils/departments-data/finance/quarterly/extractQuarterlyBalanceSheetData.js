@@ -27,10 +27,10 @@ export const extractQuarterlyBalanceSheetMetadata = (data) => {
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("BAL_SHEET_BS001")) {
-        metadata.reportType = "finance-monthly_balance-sheet";
+        metadata.reportType = "finance-quarterly_balance-sheet";
         metadata.departmentName = "Finance";
         metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-monthly_balance-sheet";
+        metadata.reportTypeId = "finance-quarterly_balance-sheet";
       }
     }
 

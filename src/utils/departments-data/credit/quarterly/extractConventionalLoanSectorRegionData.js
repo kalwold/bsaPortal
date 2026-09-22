@@ -38,9 +38,9 @@ export const extractConventionalLoanSectorRegionMetadata = (data) => {
 
   if (firstCell.includes('LOAN_SEC&REG') || firstCell.includes('SE002')) {
     metadata.reportType =
-      'credit-quarterly_loans-sector-region';
+      'credit-quarterly_loan_sector';
     metadata.reportTypeId =
-      'credit-quarterly_loans-sector-region';
+      'credit-quarterly_loan_sector';
     metadata.departmentId = 'credit';
     metadata.departmentName = 'Credit';
   }

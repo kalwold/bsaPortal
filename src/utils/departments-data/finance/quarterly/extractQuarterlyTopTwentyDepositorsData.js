@@ -28,10 +28,10 @@ export const extractQuarterlyTopTwentyDepositorsMetadata = (data) => {
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("NBE_20_DEP_MR001")) {
-        metadata.reportType = "finance-top_twenty_depositors";
+        metadata.reportType = "finance-quarterly_top20-depositors";
         metadata.departmentName = "Finance";
         metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-top_twenty_depositors";
+        metadata.reportTypeId = "finance-quarterly_top20-depositors";
       }
     }
 

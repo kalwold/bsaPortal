@@ -28,10 +28,10 @@ export const extractQuarterlyMaturityOfAssetsLiabilitiesMetadata = (data) => {
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("NBE_MAT_ANL_MA001")) {
-        metadata.reportType = "finance-maturity_analysis";
+        metadata.reportType = "finance-quarterly_maturity-asset-liability";
         metadata.departmentName = "Finance";
         metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-maturity_analysis";
+        metadata.reportTypeId = "finance-quarterly_maturity-asset-liability";
       }
     }
 

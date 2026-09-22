@@ -20,6 +20,7 @@ const ReportDataTable = ({
     }
   }, [data]);
 
+
    
    if (additionalColumns.length===0 && columns.length===0 ){
     additionalColumns =  ['OTHER1', 'OTHER2', 'OTHER3','OVERALL_EXPOSURE'];

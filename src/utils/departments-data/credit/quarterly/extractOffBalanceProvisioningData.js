@@ -40,8 +40,8 @@ export const extractOffBalanceProvisioningMetadata=(data)=>{
      
 
   if (firstCell.includes('POBEPE001') || firstCell.includes('POBEPE')) {
-        metadata.reportType = 'credit-quarterly_off-balance-provisioning';
-        metadata.reportTypeId = 'credit-quarterly_off-balance-provisioning';
+        metadata.reportType = 'credit-quarterly_off-balance-provision';
+        metadata.reportTypeId = 'credit-quarterly_off-balance-provision';
         metadata.departmentId = 'credit';
         metadata.departmentName = 'Credit';
       }

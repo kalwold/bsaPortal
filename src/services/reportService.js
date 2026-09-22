@@ -49,7 +49,7 @@ export const DEPARTMENT_DATA = [
             name: "PROFIT AND LOSS STATEMENT",
           },
           {
-            id: "finance-quarterly_on-balancesheet",
+            id: "finance-quarterly_onbalance-sheet",
             name: " CAPITAL ADEQUACY REPORT - On Balance Sheet",
           },
           
@@ -61,10 +61,10 @@ export const DEPARTMENT_DATA = [
         id: "finance-quarterly_balance-sheet",
         name: "Quarterly Balance Sheet",
       },{
-        id: "finance-quarterly_top-twenty-depositors",
+        id: "finance-quarterly_top20-depositors",
         name: "Quarterly Top Twenty Depositors",
       },{
-        id: "finance-quarterly_maturity-assets-liabilities",
+        id: "finance-quarterly_maturity-asset-liability",
         name: "Quarterly Maturity of Assets & Liabilities",
       },
       {
@@ -74,6 +74,10 @@ export const DEPARTMENT_DATA = [
       {
         id: "finance-quarterly_transaction-statement",
         name: "Quarterly Transaction Statement with Financial Institutions",
+      },
+      {
+        id: "finance-monthly_weighted-avg-deposit-rates",
+        name: "Monthly Weighted Average Deposit Interest Rates (Conventional Banks)",
       },
     ],
   },
@@ -132,10 +136,10 @@ export const DEPARTMENT_DATA = [
         name: "Collateralized Properties Acquired during the last 18 Consecutive Months",
       },
       {
-        id: "credit-quarterly_range-region",
+        id: "credit-quarterly_loan_range",
         name: "Quarterly Conventional Loans by Range and Region",
       },
-      { id: 'credit-quarterly_loans-sector-region', name: 'Conventional Loans by Sector and Region' },
+      { id: 'credit-quarterly_loan_sector', name: 'Conventional Loans by Sector and Region' },
       {
         id: "credit-quarterly_loan-nonperforming-top20",
         name: "Quarterly Top Twenty (20) NPLs Report",
@@ -161,11 +165,20 @@ export const DEPARTMENT_DATA = [
         name: "Loans And Advances Re-Categorized  from Non-Accrual To Accrual Status That Are Equal To Or Above Five Percent (5%) of The Bank's Total Capital",
       },
       {
-        id: "credit-quarterly_off-balance-provisioning",
+        id: "credit-quarterly_off-balance-provision",
         name: "Provisioning For Off-Balance Sheet Exposure"},
       {
         id: "credit-quarterly_restructured-above-5pct",
         name: "Restructured Loans And Advances That Are Equal To or Above Five Percent (5%) of Total Capital of The Bank"},
+              {
+        id: "credit-quarterly_aggregate-recategorized-loans",
+        name: "Aggregate of Loans And Advances  Re-Categorized from Non-Accrual To Accrual Status"
+      },
+         {
+            id: "credit-monthly_weighted-avg-lending-rates",
+            name: "Monthly Weighted Average Lending Interest Rates (Conventional Banks)",
+          },
+          
     ],
   },
   {
@@ -196,6 +209,14 @@ export const DEPARTMENT_DATA = [
         id: "ifb-monthly_loan-sector-region",
         name: "IFB Loans by Sector and Region",
       },
+            {
+        id: "ifb-monthly_weighted-avg-deposit-rates",
+        name: "Monthly Weighted Average Deposit Profit Rates (Interest-Free Banks)",
+      },
+               {
+        id: "ifb-monthly_weighted-avg-lending-rates",
+        name: "Monthly Weighted Average Lending Profit Rates (Interest-Free Banks)",
+      },
       { id: 'ifb-quarterly_loan-range-region', name: 'Quarterly Interest Free Loans by Range and Region	' },
       { id: 'ifb-quarterly_loan-sector-region', name: 'Quarterly Interest Free Loans by Sector and Region' },
      { id: 'ifb-quarterly_deposit-range', name: 'Quarterly Interest Free Deposits by Range and Region	' },
@@ -211,7 +232,7 @@ export const DEPARTMENT_DATA = [
         name: "Top Twenty (20) Shareholding Structure Report",
       },
       {
-        id: "share-quarterly_two-percent-shareholdings",
+        id: "share-quarterly_top-two-shareholders",
         name: "Two Percent (2%) and above Shareholdings of the Banks Total Share Capital Report",
       },
     ],

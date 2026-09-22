@@ -20,8 +20,8 @@ const ReportViewer = () => {
   const additionalColumns= report.additionalColumns || [];
   const noandtitles = report.noandtitles || [];
   console.log("metadata reporttype",metadata.reportType)
- const showSNo = !(metadata.reportType ==='finance-monthly_key-balance-sheet')
-  // Try to get report from location state (passed from navigation)
+ const showSNo = !(metadata.reportType ==='finance-monthly_key-balance-sheet' || metadata.reportType==='finance-monthly_weighted-avg-deposit-rates' || metadata.reportType==='ifb-monthly_weighted-avg-deposit-rates'|| metadata.reportType==='credit-monthly_weighted-avg-lending-rates' || metadata.reportType==='ifb-monthly_weighted-avg-lending-rates')
+ // Try to get report from location state (passed from navigation)
   const locationReport = location.state?.report;
 
   // If report is not in location state, fetch it from API

@@ -327,7 +327,7 @@ const extractLoanRelatedPartiesData = (data) => {
     values['Collateral_Value'] = getValue(colMap.collateralValue);
 
     const entry = {
-      id: sNo || `row-${i}`,
+      id: sNo || ``,
       sNo: sNo || '',
       label: counterpartyName,
       values: values,

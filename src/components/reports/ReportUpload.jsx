@@ -23,7 +23,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
   const additionalColumns =parsedData?.additionalColumns || [];
   const noandtitles=parsedData?.noandtitles|| [];
   console.log("metadata reporttype",metadata.reportType)
- const showSNo = !(metadata.reportType ==='finance-monthly_key-balance-sheet')
+ const showSNo = !(metadata.reportType ==='finance-monthly_key-balance-sheet' || metadata.reportType==='finance-monthly_weighted-avg-deposit-rates' || metadata.reportType==='ifb-monthly_weighted-avg-deposit-rates'|| metadata.reportType==='credit-monthly_weighted-avg-lending-rates' || metadata.reportType==='ifb-monthly_weighted-avg-lending-rates')
 
   //console.log('ReportUpload props:', { departmentId, reportType });
 

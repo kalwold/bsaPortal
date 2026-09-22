@@ -149,23 +149,11 @@ import extractOffBalanceProvisioningData ,{extractOffBalanceProvisioningMetadata
 import extractRestructuredAbove5PctData,{extractRestructuredAbove5PctMetadata} from "./departments-data/credit/quarterly/extractRestructuredAbove5PctData";
 import { detectReportType } from "./detectReportType";
 import { REPORT_TYPES } from "./reportTypes";
-
-// export const excelDateToISO = (value) => {
-//   if (!value) return "";
-
-//   const str = String(value).trim();
-
-//   // Already ISO format → return as it is
-//   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(str)) {
-//     return str;
-//   }
-
-//   // Excel serial date
-//   const date = new Date(Date.UTC(1899, 11, 30));
-//   date.setUTCDate(date.getUTCDate() + Number(value));
-
-//   return date.toISOString().slice(0, 19);
-// };
+import extractAggregateRecategorizedLoansData, {extractAggregateRecategorizedLoansMetadata} from './departments-data/credit/quarterly/extractAggregateRecategorizedLoansData';
+import extractWeightedAvgDepositRatesData , {extractWeightedAvgDepositRatesMetadata} from './departments-data/finance/monthly/extractWeightedAvgDepositRatesData';
+import extractIfbWeightedAvgDepositRatesData , {extractIfbWeightedAvgDepositRatesMetadata} from './departments-data/ifb/monthly/extractIfbWeightedAvgDepositRatesData';
+import extractWeightedAvgLendingRatesData,{extractWeightedAvgLendingRatesMetadata} from "./departments-data/credit/monthly/extractWeightedAvgLendingRatesData";
+import extractIfbWeightedAvgLendingRatesData,{extractIfbWeightedAvgLendingRatesMetadata} from "./departments-data/ifb/monthly/extractIfbWeightedAvgLendingRatesData";
 
 
 export const parseExcelReport = (file, reportTypeIn) => {
@@ -667,6 +655,49 @@ export const parseExcelReport = (file, reportTypeIn) => {
           additionalColumns = result.additionalColumns;
           noandtitles = result.noandtitles;
           metadata = extractRestructuredAbove5PctMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.QUARTERLY_AGGREGATE_RECATEGORIZED_LOANS) {
+          const result = extractAggregateRecategorizedLoansData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractAggregateRecategorizedLoansMetadata(jsonData);
+        }
+        else if (reportType === REPORT_TYPES.MONTHLY_WEIGHTED_AVG_DEPOSIT_RATES) {
+          const result = extractWeightedAvgDepositRatesData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractWeightedAvgDepositRatesMetadata(jsonData);
+          
+        }
+        else if (reportType === REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_DEPOSIT_RATES) {
+          const result = extractIfbWeightedAvgDepositRatesData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractIfbWeightedAvgDepositRatesMetadata(jsonData);
+          
+        }
+        else if (reportType === REPORT_TYPES.MONTHLY_WEIGHTED_AVG_LENDING_RATES) {
+          const result = extractWeightedAvgLendingRatesData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractWeightedAvgLendingRatesMetadata(jsonData);
+          
+        }
+        else if (reportType === REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_LENDING_RATES) {
+          const result = extractIfbWeightedAvgLendingRatesData(jsonData);
+          hierarchicalData = result.hierarchicalData;
+          columns = result.columns;
+          additionalColumns = result.additionalColumns;
+          noandtitles = result.noandtitles;
+          metadata = extractIfbWeightedAvgLendingRatesMetadata(jsonData); 
         }
          else {
           throw new Error(`Unsupported report type: ${reportType}`);

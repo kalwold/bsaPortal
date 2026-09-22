@@ -139,8 +139,8 @@ export const extractQuarterlyTwoPercentShareholdersMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       if (firstCell.includes("SHR_GTR_2_TS001") || firstCell.includes("TS001")) {
-        metadata.reportType = "share-quarterly_shareholders-2percent";
-        metadata.reportTypeId = "share-quarterly_shareholders-2percent";
+        metadata.reportType = "share-quarterly_top-two-shareholders";
+        metadata.reportTypeId = "share-quarterly_top-two-shareholders";
         metadata.departmentId = "share";
         metadata.departmentName = "Share";
       }
