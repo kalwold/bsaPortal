@@ -72,7 +72,12 @@ const REPORT_FILES = {
     [REPORT_TYPES.QUARTERLY_BSD_NEW_AGENTS]: "unidentified/quarterly/extractNewAgentsInformation",
     [REPORT_TYPES.QUARTERLY_RELATED_ORG]: "unidentified/quarterly/extractRelatedOrganizations",
     [REPORT_TYPES.WEEKLY_FOREIGN_CURRENCY_LIQUIDITY]: "ibd/weekly/extractForeignCurrencyLiquidity",
-    [REPORT_TYPES.WEEKLY_FOREIGN_CURRENCY_RESERVE]: "ibd/weekly/extractForeignCurrencyReserve"
+    [REPORT_TYPES.WEEKLY_FOREIGN_CURRENCY_RESERVE]: "ibd/weekly/extractForeignCurrencyReserve",
+    [REPORT_TYPES.QUARTERLY_AGGREGATE_RECATEGORIZED_LOANS]: "credit/quarterly/extractAggregateRecategorizedLoansData",
+    [REPORT_TYPES.MONTHLY_WEIGHTED_AVG_LENDING_RATES]: "credit/monthly/extractWeightedAvgLendingRatesData",
+    [REPORT_TYPES.MONTHLY_WEIGHTED_AVG_DEPOSIT_RATES]: "finance/monthly/extractWeightedAvgDepositRatesData",
+    [REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_LENDING_RATES]: "ifb/monthly/extractIfbWeightedAvgLendingRatesData",
+    [REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_DEPOSIT_RATES]: "ifb/monthly/extractIfbWeightedAvgDepositRatesData",
 };
 
 function pairExtractors(type, file) {

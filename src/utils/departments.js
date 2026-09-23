@@ -7,8 +7,9 @@ import { ibdConfig } from "./departments-data/ibd/ibdConfig";
 import { ifbConfig } from "./departments-data/ifb/ifbConfig";
 import { shareConfig } from "./departments-data/share/shareConfig";
 import { unidentifiedConfig } from "./departments-data/unidentified/unidentifiedConfig";
+import { hrConfig } from "./departments-data/hr/hrConfig";
 
-export const DEPARTMENTS = [ibdConfig, financeConfig, creditConfig, ifbConfig, shareConfig, digitalConfig, unidentifiedConfig];
+export const DEPARTMENTS = [ibdConfig, financeConfig, creditConfig, ifbConfig, shareConfig, digitalConfig, unidentifiedConfig,hrConfig];
 
 export const ALL_REPORTS = DEPARTMENTS.flatMap((d) =>
     d.periods.flatMap((p) => p.reportTypes),

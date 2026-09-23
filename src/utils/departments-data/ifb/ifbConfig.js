@@ -10,6 +10,8 @@ export const ifbConfig = {
                 { key: "IFB_SECTOR_REGION", id: "ifb-monthly_deposit-sector-region", name: "Report on IFB Deposits by Sector and Region", detect: ["DIF", "IF002"] },
                 { key: "IFB_LOAN_RANGE_REGION", id: "ifb-monthly_loan-range-region", name: "IFB Loans by Range and Region", detect: ["IFB_LON_R & R", "WW002"] },
                 { key: "IFB_LOAN_SECTOR_REGION", id: "ifb-monthly_loan-sector-region", name: "IFB Loans by Sector and Region", detect:  ["IFB_LON_S & R", "ZZ002"]},
+                { key: "MONTHLY_IFB_WEIGHTED_AVG_LENDING_RATES", id: "ifb-monthly_weighted-avg-lending-rates", name: "Monthly Weighted Average Lending Profit Rates (Interest-Free Banks)", detect:  ["IFBLCMWAL001"]},
+                { key: "MONTHLY_IFB_WEIGHTED_AVG_DEPOSIT_RATES", id: "ifb-monthly_weighted-avg-deposit-rates", name: "Monthly Weighted Average Deposit Profit Rates (Interest-Free Banks)", detect:  ["DPWADP001"]},
             ],
         },
         {

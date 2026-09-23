@@ -1,46 +1,41 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
-import { reportService } from '../../services/reportService';
-import StatusBadge from '../common/StatusBadge';
-import ReportDataTable from './ReportDataTable';
-import { FiArrowLeft, FiDownload, FiCheck, FiX, FiFileText, FiCalendar, FiHash } from 'react-icons/fi';
-import { BsFillBuildingFill } from 'react-icons/bs';
+import React, { useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { reportService } from "../../services/reportService";
+import StatusBadge from "../common/StatusBadge";
+import ReportDataTable from "./ReportDataTable";
+import {
+  FiArrowLeft,
+  FiDownload,
+  FiCheck,
+  FiX,
+  FiFileText,
+  FiCalendar,
+  FiHash,
+} from "react-icons/fi";
+import { BsFillBuildingFill } from "react-icons/bs";
 
 const ReportViewer = () => {
   const { reportId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [comment, setComment] = useState('');
-  
-  const columns = report.columns || [];
-    const reportData = report.data || [];
-  const metadata = report.metadata || {};
-  const additionalColumns= report.additionalColumns || [];
-  const noandtitles = report.noandtitles || [];
-  console.log("metadata reporttype",metadata.reportType)
- const showSNo = !(metadata.reportType ==='finance-monthly_key-balance-sheet' || metadata.reportType==='finance-monthly_weighted-avg-deposit-rates' || metadata.reportType==='ifb-monthly_weighted-avg-deposit-rates'|| metadata.reportType==='credit-monthly_weighted-avg-lending-rates' || metadata.reportType==='ifb-monthly_weighted-avg-lending-rates')
- // Try to get report from location state (passed from navigation)
+  const [comment, setComment] = useState("");
   const locationReport = location.state?.report;
-
-  // If report is not in location state, fetch it from API
-  // const { data: fetchedReport, refetch, isLoading } = useQuery({
-  //   queryKey: ['report', reportId],
-  //   queryFn: () => reportService.getReport(reportId),
-  //   enabled: !locationReport, // Only fetch if not passed via location
-  // });
-
-  // Use location report if available, otherwise use fetched report
-  // const report = locationReport || fetchedReport;
   const report = locationReport;
   const columns = report.columns || [];
   const reportData = report.data || [];
   const metadata = report.metadata || {};
   const additionalColumns = report.additionalColumns || [];
   const noandtitles = report.noandtitles || [];
-  console.log("metadata reporttype", metadata.reportType)
-  const showSNo = !(metadata.reportType === 'finance-monthly_key-balance-sheet')
+  console.log("metadata reporttype", metadata.reportType);
+  const showSNo = !(
+    metadata.reportType === "finance-monthly_key-balance-sheet" ||
+    metadata.reportType === "finance-monthly_weighted-avg-deposit-rates" ||
+    metadata.reportType === "ifb-monthly_weighted-avg-deposit-rates" ||
+    metadata.reportType === "credit-monthly_weighted-avg-lending-rates" ||
+    metadata.reportType === "ifb-monthly_weighted-avg-lending-rates"
+  );
   // Try to get report from location state (passed from navigation)
 
   const approveMutation = useMutation({
@@ -51,12 +46,12 @@ const ReportViewer = () => {
       return reportService.approveReport(reportType, data);
     },
     onSuccess: () => {
-      toast.success('Report approved successfully!');
-      navigate(-1)
+      toast.success("Report approved successfully!");
+      navigate(-1);
       // refetch();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to approve report');
+      toast.error(error.response?.data?.message || "Failed to approve report");
     },
   });
 
@@ -67,12 +62,12 @@ const ReportViewer = () => {
       return reportService.rejectReport(reportType, data);
     },
     onSuccess: () => {
-      toast.success('Report rejected');
-      navigate(-1)
+      toast.success("Report rejected");
+      navigate(-1);
       // refetch();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to reject report');
+      toast.error(error.response?.data?.message || "Failed to reject report");
     },
   });
 
@@ -80,27 +75,27 @@ const ReportViewer = () => {
     const approver = "system";
     const approvalData = {
       id: report.id || reportId,
-      approver: approver
+      approver: approver,
     };
 
     //console.log('Approval Data:', approvalData);
     //console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
     approveMutation.mutate({
       id: report.id || reportId,
-      approver: approver
+      approver: approver,
     });
   };
 
   const handleReject = () => {
     const approver = "system";
     if (!comment.trim()) {
-      toast.error('Please provide reason for rejection');
+      toast.error("Please provide reason for rejection");
       return;
     }
     const rejectionData = {
       id: report.id || reportId,
       approver: approver,
-      rejectReason: comment.trim()
+      rejectReason: comment.trim(),
     };
 
     //console.log('Rejection Data:', rejectionData);
@@ -131,7 +126,6 @@ const ReportViewer = () => {
     );
   }
 
-
   return (
     <div className="max-w-7xl mx-auto">
       <button
@@ -153,10 +147,13 @@ const ReportViewer = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
-                    {metadata.reportTitle || report.reportTypeName || 'Daily Foreign Currency Exposure Reports'}
+                    {metadata.reportTitle ||
+                      report.reportTypeName ||
+                      "Daily Foreign Currency Exposure Reports"}
                   </h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    {report.departmentName || 'Treasury Department'} • {report.reportCode || 'OP001'}
+                    {report.departmentName || "Treasury Department"} •{" "}
+                    {report.reportCode || "OP001"}
                   </p>
                 </div>
               </div>
@@ -185,41 +182,57 @@ const ReportViewer = () => {
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-2 mb-1">
                 <BsFillBuildingFill className="w-4 h-4 text-blue-500" />
-                <p className="text-xs text-gray-500 uppercase tracking-wider">Institution Code</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  Institution Code
+                </p>
               </div>
-              <p className="text-lg font-bold text-gray-900">{metadata.institutionCode || 'N/A'}</p>
+              <p className="text-lg font-bold text-gray-900">
+                {metadata.institutionCode || "N/A"}
+              </p>
             </div>
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-2 mb-1">
                 <FiHash className="w-4 h-4 text-green-500" />
-                <p className="text-xs text-gray-500 uppercase tracking-wider">Financial Year</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  Financial Year
+                </p>
               </div>
-              <p className="text-lg font-bold text-gray-900">{metadata.financialYear || 'N/A'}</p>
+              <p className="text-lg font-bold text-gray-900">
+                {metadata.financialYear || "N/A"}
+              </p>
             </div>
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-2 mb-1">
                 <FiCalendar className="w-4 h-4 text-purple-500" />
-                <p className="text-xs text-gray-500 uppercase tracking-wider">Start Date</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  Start Date
+                </p>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {metadata.startDate ? new Date(metadata.startDate).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                }) : 'N/A'}
+                {metadata.startDate
+                  ? new Date(metadata.startDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "N/A"}
               </p>
             </div>
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-2 mb-1">
                 <FiCalendar className="w-4 h-4 text-red-500" />
-                <p className="text-xs text-gray-500 uppercase tracking-wider">End Date</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  End Date
+                </p>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {metadata.endDate ? new Date(metadata.endDate).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                }) : 'N/A'}
+                {metadata.endDate
+                  ? new Date(metadata.endDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -228,20 +241,28 @@ const ReportViewer = () => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 p-4 bg-gray-50 rounded-lg mb-6">
             <div>
               <p className="text-xs text-gray-500">Unit</p>
-              <p className="text-sm font-medium text-gray-700">{metadata.unit || 'In Thousands'}</p>
+              <p className="text-sm font-medium text-gray-700">
+                {metadata.unit || "In Thousands"}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Report Type</p>
-              <p className="text-sm font-medium text-gray-700">{report.reportTypeId || 'ibd-daily_single-currency'}</p>
+              <p className="text-sm font-medium text-gray-700">
+                {report.reportTypeId || "ibd-daily_single-currency"}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Uploaded By</p>
-              <p className="text-sm font-medium text-gray-700">{report.createdBy || 'N/A'}</p>
+              <p className="text-sm font-medium text-gray-700">
+                {report.createdBy || "N/A"}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Uploaded At</p>
               <p className="text-sm font-medium text-gray-700">
-                {report.createdAt ? new Date(report.createdAt).toLocaleString() : 'N/A'}
+                {report.createdAt
+                  ? new Date(report.createdAt).toLocaleString()
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -251,8 +272,13 @@ const ReportViewer = () => {
             <div className="mb-6">
               <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Report Data</h3>
-                  <p className="text-xs text-gray-500">Click on rows with arrow icons to expand/collapse nested data</p>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Report Data
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Click on rows with arrow icons to expand/collapse nested
+                    data
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-gray-400">
@@ -264,13 +290,18 @@ const ReportViewer = () => {
                   </button> */}
                 </div>
               </div>
-              <ReportDataTable data={reportData} columns={columns} showSNo={showSNo} additionalColumns={additionalColumns} noandtitles={noandtitles} />
-
+              <ReportDataTable
+                data={reportData}
+                columns={columns}
+                showSNo={showSNo}
+                additionalColumns={additionalColumns}
+                noandtitles={noandtitles}
+              />
             </div>
           )}
 
           {/* Approval Actions */}
-          {report.status === 'PENDING' && (
+          {report.status === "PENDING" && (
             <div className="border-t pt-6 mt-4">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -295,7 +326,11 @@ const ReportViewer = () => {
                     className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
                   >
                     <FiCheck className="w-4 h-4" />
-                    <span>{approveMutation.isLoading ? 'Approving...' : 'Approve Report'}</span>
+                    <span>
+                      {approveMutation.isLoading
+                        ? "Approving..."
+                        : "Approve Report"}
+                    </span>
                   </button>
                   <button
                     onClick={handleReject}
@@ -303,7 +338,11 @@ const ReportViewer = () => {
                     className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
                   >
                     <FiX className="w-4 h-4" />
-                    <span>{rejectMutation.isLoading ? 'Rejecting...' : 'Reject Report'}</span>
+                    <span>
+                      {rejectMutation.isLoading
+                        ? "Rejecting..."
+                        : "Reject Report"}
+                    </span>
                   </button>
                 </>
                 {/* )} */}
@@ -312,27 +351,31 @@ const ReportViewer = () => {
           )}
 
           {/* Status Messages */}
-          {report.status === 'APPROVED' && (
+          {report.status === "APPROVED" && (
             <div className="border-t pt-6 mt-4">
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <p className="text-green-700 font-medium">
                   ✓ Approved by {report.approvedBy}
                 </p>
                 {report.comment && (
-                  <p className="text-sm text-green-600 mt-1">Comment: {report.comment}</p>
+                  <p className="text-sm text-green-600 mt-1">
+                    Comment: {report.comment}
+                  </p>
                 )}
               </div>
             </div>
           )}
 
-          {report.status === 'REJECTED' && (
+          {report.status === "REJECTED" && (
             <div className="border-t pt-6 mt-4">
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                 <p className="text-red-700 font-medium">
                   ✗ Rejected by {report.rejectedBy}
                 </p>
                 {report.comment && (
-                  <p className="text-sm text-red-600 mt-1">Reason: {report.comment}</p>
+                  <p className="text-sm text-red-600 mt-1">
+                    Reason: {report.comment}
+                  </p>
                 )}
               </div>
             </div>
