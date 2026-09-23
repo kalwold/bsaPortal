@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -15,355 +15,25 @@ import {
   FiShare,
   FiSmartphone,
 } from "react-icons/fi";
+import { DEPARTMENTS } from "../../utils/departments";
+
+const MIN_WIDTH = 200;
+const MAX_WIDTH = 480;
+const DEFAULT_WIDTH = 256; // same as the old w-64
+const STORAGE_KEY = "sidebar-width";
 
 // Hardcoded department and report types data
-const DEPARTMENT_DATA = [
-  {
-    id: "ibd",
-    name: "IBD",
-    icon: FiTrendingUp,
-    periods: [
-      {
-        id: "daily",
-        name: "Daily",
-        reportTypes: [
-          {
-            id: "ibd-daily_single-currency",
-            name: "Daily Foreign Currency Exposure",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "finance",
-    name: "Finance",
-    icon: FiBarChart2,
-    periods: [
-      {
-        id: "weekly",
-        name: "Weekly",
-        reportTypes: [
-          {
-            id: "finance-weekly_liquidity",
-            name: "Liquidity Requirement Report",
-          },
-        ],
-      },
-      {
-        id: "monthly",
-        name: "Monthly",
-        reportTypes: [
-          { id: "finance-monthly_balance-sheet", name: "Balance Sheet" },
-          {
-            id: "finance-monthly_reserve",
-            name: "Monthly Reserve Base Report",
-          },
-          {
-            id: "finance-monthly_statutory",
-            name: "Statutory Reserve Requirement Report",
-          },
-          {
-            id: "finance-monthly_key-balance-sheet",
-            name: "Key Balance Sheet Report",
-          },
-          {
-            id: "finance-monthly_capital-adequacy",
-            name: "CAPITAL ADEQUACY REPORT (Monthly) - Capital Components",
-          },
-          {
-            id: "finance-monthly_deposit-sector-region",
-            name: "Report on Deposits by Sector and Region",
-          },
-          {
-            id: "finance-monthly_deposit-range-region",
-            name: "Report on Deposits by Range and Region",
-          },
-          {
-        id: "finance-monthly_weighted-avg-deposit-rates",
-        name: "Monthly Weighted Average Deposit Interest Rates (Conventional Banks)",
-      },
-      
-        ],
-      },
-     {
-        id: "quarterly",
-        name: "Quarterly",
-        reportTypes: [
-          {
-            id: "finance-quarterly_breakdown-expenses",
-            name: "BREAKDOWN OF EXPENSES",
-          },
-           {
-            id: "finance-quarterly_breakdown-income-account",
-            name: "Breakdown of Income Accounts",
-          },
-          {
-            id: "finance-quarterly_off-balancesheet",
-            name: "CAPITAL ADEQUACY REPORT: Off-Balance Sheet",
-          },
-          {
-            id: "finance-quarterly_deposit-range-region",
-            name: "Quarterly Report on Deposits by Range and Region",
-          },
-              {
-            id: "finance-quarterly_profit_loss",
-            name: "PROFIT AND LOSS STATEMENT",
-          },
-          {
-            id: "finance-quarterly_onbalance-sheet",
-            name: " CAPITAL ADEQUACY REPORT - On Balance Sheet",
-          },
-          {
-            id: "finance-quarterly_capital-adequacy",
-            name: "CAPITAL ADEQUACY REPORT (QUARTERLY) - Capital Components",
-          },
-             {
-        id: "finance-quarterly_balance-sheet",
-        name: "Quarterly Balance Sheet",
-      },{
-        id: "finance-quarterly_top20-depositors",
-        name: "Quarterly Top Twenty Depositors",
-      },{
-        id: "finance-quarterly_maturity-asset-liability",
-        name: "Quarterly Maturity of Assets & Liabilities",
-      },{
-        id: "finance-quarterly_memorandum",
-        name: "Quarterly Memorandum and Contingent Accounts",
-      },
-        {
-        id: "finance-quarterly_transaction-statement",
-        name: "Quarterly Transaction Statement with Financial Institutions",
-      },
-        ],
-      },
-    ],
-  },
-  {
-    id: "credit",
-    name: "Credit",
-    icon: FiBarChart2,
-    periods: [
-      {
-        id: "monthly",
-        name: "Monthly",
+const DEPARTMENT_ICONS = {
+  ibd: FiTrendingUp,
+  finance: FiBarChart2,
+  share: FiShare,
+  "digital-banking": FiSmartphone,
+};
 
-        reportTypes: [
-          {
-            id: "credit-monthly_loan-related",
-            name: "Loans to Related Parties Report",
-          },
-          {
-            id: "credit-monthly_loan-breakdown",
-            name: "Breakdown of Loans and Advances",
-          },
-          {
-            id: "credit-monthly_loan-portfolio",
-            name: " Loan and Advances Portfolio Report",
-          },
-          {
-            id: "credit-monthly_loan-nonperforming",
-            name: "Non-Performing Loans and Advances & Provisions",
-          },
-          {
-            id: "credit-monthly_loan-disbursement",
-            name: "Loan & Advance Disbursement, Collection and Outstanding Report",
-          },
-          {
-            id: "credit-monthly_loan-status",
-            name: "Loan and Advance by Status",
-          },
-          {
-            id: "credit-monthly_loan-classification",
-            name: "Loan Classification and Provisioning",
-          },
-          {
-            id: "credit-monthly_large-borrowers",
-            name: "List of Borrowers that Exceed Ten Percent of the Banks Capital",
-          },
-          {
-            id: "credit-monthly_loan-range-region",
-            name: "Loans by Range and Region",
-          },
-          {
-            id: "credit-monthly_loan-sector-region",
-            name: "Loans by Sector and Region",
-          },
-          {
-            id: "credit-monthly_weighted-avg-lending-rates",
-            name: "Monthly Weighted Average Lending Interest Rates (Conventional Banks)",
-          },
-          
-        ],
-      },
-      {
-        id: "quarterly",
-        name: "Quarterly",
-        reportTypes: [
-          {
-            id: "credit-monthly_loan-nonperforming",
-            name: "Non-Performing Loans and Advances & Provisions",
-          },
-          {
-            id: "credit-quarterly_loan-collateralized-properties",
-            name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months",
-          },
-          {
-            id: "credit-quarterly_loan-classification",
-            name: "Loan Classification and Provisioning",
-          },
-          {
-            id: "credit-quarterly_loan-npl-ecosec-branch",
-            name: "BSD Quarterly NPLs Report by Economic Sector and Branch",
-          },
-          {
-            id: "credit-quarterly_collateralized-property-acquired-last18",
-            name: "Collateralized Properties Acquired during the last 18 Consecutive Months",
-          },
-          {
-            id: "credit-quarterly_loan_range",
-            name: "Quarterly Conventional Loans by Range and Region",
-          },
-          { id: 'credit-quarterly_loan_sector', 
-          name: 'Conventional Loans by Sector and Region' },
-          {
-        id: "credit-quarterly_loan-nonperforming-top20",
-        name: "Quarterly Top Twenty (20) NPLs Report",
-      },
-           {
-            id: "credit-quarterly_top20-borrowers",
-            name: "Quarterly Top Twenty (20) Borrowers Report",
-          },
-          {
-            id: "credit-quarterly_building-construction",
-            name: "Loans to Building and Construction",
-          },
-           {
-        id: "credit-quarterly_aggregate-restructured-loans",
-        name: "Aggregate of All Restructured Loans And Advances ",
-      },
-       {
-        id: "credit-quarterly_digital-lending",
-        name: "Quarterly Digital Lending Report ",
-      },
-      {
-        id: "credit-quarterly_recategorized-loans",
-        name: "Loans And Advances Re-Categorized  from Non-Accrual To Accrual Status That Are Equal To Or Above Five Percent (5%) of The Bank's Total Capital",
-      },
-       {
-        id: "credit-quarterly_off-balance-provision",
-        name: "Provisioning For Off-Balance Sheet Exposure"},
-              {
-        id: "credit-quarterly_restructured-above-5pct",
-        name: "Restructured Loans And Advances That Are Equal To or Above Five Percent (5%) of Total Capital of The Bank"},
-                {
-        id: "credit-quarterly_aggregate-recategorized-loans",
-        name: "Aggregate of Loans And Advances  Re-Categorized from Non-Accrual To Accrual Status"
-      },
-        ],
-      },
-    ],
-  },
-  {
-    id: "ifb",
-    name: "IFB",
-    icon: FiBarChart2,
-    periods: [
-      {
-        id: "monthly",
-        name: "Monthly",
-
-        reportTypes: [
-          {
-            id: "ifb-monthly_deposit-range-region",
-            name: "Report on IFB Deposits by Range and Region",
-          },
-          {
-            id: "ifb-monthly_deposit-sector-region",
-            name: "Report on IFB Deposits by Sector and Region",
-          },
-
-          {
-            id: "ifb-monthly_loan-range-region",
-            name: "IFB Loans by Range and Region",
-          },
-          {
-            id: "ifb-monthly_loan-sector-region",
-            name: "IFB Loans by Sector and Region",
-          },
-               {
-        id: "ifb-monthly_weighted-avg-deposit-rates",
-        name: " Monthly Weighted Average Deposit Profit Rates (Interest-Free Banks)",
-      },
-               {
-        id: "ifb-monthly_weighted-avg-lending-rates",
-        name: "Monthly Weighted Average Lending Profit Rates (Interest-Free Banks)",
-      },
-        ],
-      },
-      {
-        id: "quarterly",
-        name: "Quarterly",
-        reportTypes: [
-          {
-            id: "ifb-monthly_balance-sheet",
-            name: "Interest Free Banking Service Balance sheet",
-          },
-          {
-            id: "ifb-monthly_profit-loss",
-            name: "Interest Free Banking Service Profit and loss statement",
-          },
-    { id: 'ifb-quarterly_loan-range', name: 'Quarterly Interest Free Loans by Range and Region	' },
-      { id: 'ifb-quarterly_loan-sector', name: 'Quarterly Interest Free Loans by Sector and Region' },
-       { id: 'ifb-quarterly_deposit-range', name: 'Quarterly Interest Free Deposits by Range and Region	' },
-      { id: 'ifb-quarterly_deposit-sector', name: 'Quarterly Interest Free Deposits by Sector and Region' },
-        ],
-      },
-    ],
-  },
-{
-    id: "share",
-    name: "Share",
-    icon: FiShare,
-    periods: [
-      {
-        id: "quarterly",
-        name: "Quarterly",
-        reportTypes: [
-          {
-            id: "share-quarterly_top20-shareholders",
-            name: "Top Twenty (20) Shareholding Structure Report",
-          },
-          {
-            id: "share-quarterly_top-two-shareholders",
-            name: "Two Percent (2%) and above Shareholdings of the Banks Total Share Capital Report",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "digital-banking",
-    name: "Digital Banking",
-    icon: FiSmartphone,
-    periods: [
-      {
-        id: "quarterly",
-        name: "Quarterly",
-        reportTypes: [
-          {
-            id: "digital-quarterly_atm-pos",
-            name: "BSD Quarterly ATM and POS",
-          },
-          {
-            id: "digital-quarterly_mobile-transaction",
-            name: "Quarterly Mobile Transactions Report",
-          },
-        ],
-      },
-    ],
-  },
-];
+const DEPARTMENT_DATA = DEPARTMENTS.map((d) => ({
+  ...d,
+  icon: DEPARTMENT_ICONS[d.id] ? DEPARTMENT_ICONS[d.id] : FiBarChart2,
+}));
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -371,6 +41,46 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [expandedDepartments, setExpandedDepartments] = useState({});
   const [expandedPeriods, setExpandedPeriods] = useState({});
+  const sidebarRef = useRef(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [width, setWidth] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem(STORAGE_KEY));
+      return saved >= MIN_WIDTH && saved <= MAX_WIDTH ? saved : DEFAULT_WIDTH;
+    } catch {
+      return DEFAULT_WIDTH;
+    }
+  });
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const onMove = (e) => {
+      const left = sidebarRef.current.getBoundingClientRect().left;
+      setWidth(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, e.clientX - left)));
+    };
+    const onUp = () => setIsResizing(false);
+
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    return () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizing]);
+
+  // Persist once the drag ends
+  useEffect(() => {
+    if (isResizing) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, String(width));
+    } catch { }
+  }, [width, isResizing]);
 
   const toggleDepartment = (deptId) => {
     setExpandedDepartments((prev) => ({
@@ -404,8 +114,11 @@ const Sidebar = () => {
     { to: "/reports", icon: FiFileText, label: "All Reports" },
   ];
 
+
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden">
+    <div ref={sidebarRef}
+      style={{ width }}
+      className="relative flex-shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h1 className="text-xl font-bold text-[#48198B]">GBB BSA Report</h1>
         <p className="text-xs text-gray-400 mt-0.5">v1.0.0</p>
@@ -419,10 +132,9 @@ const Sidebar = () => {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-blue-50 text-[#412985] font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-[#412985]"
+                `flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${isActive
+                  ? "bg-blue-50 text-[#412985] font-medium"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-[#412985]"
                 }`
               }
             >
@@ -452,11 +164,10 @@ const Sidebar = () => {
                 {/* Department */}
                 <button
                   onClick={() => hasPeriods && toggleDepartment(dept.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
-                    !hasPeriods
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-50"
-                  }`}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${!hasPeriods
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-50"
+                    }`}
                 >
                   <span className="flex items-center text-gray-700">
                     <Icon className="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" />
@@ -555,6 +266,18 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
+
+      <div
+        onPointerDown={(e) => {
+          e.preventDefault();
+          setIsResizing(true);
+        }}
+        onDoubleClick={() => setWidth(DEFAULT_WIDTH)}
+        style={{ touchAction: "none" }}
+        className={`absolute top-0 right-0 h-full w-1.5 cursor-col-resize z-10 transition-colors hover:bg-[#48198B]/30 ${isResizing ? "bg-[#48198B]/40" : ""
+          }`}
+        title="Drag to resize, double-click to reset"
+      />
     </div>
   );
 };

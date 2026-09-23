@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { DEPARTMENT_DATA } from '../services/reportService';
+import { DEPARTMENT_DATA } from '../utils/departments';
 import ReportUpload from '../components/reports/ReportUpload';
 
 const UploadPage = () => {

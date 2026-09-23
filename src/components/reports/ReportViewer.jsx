@@ -34,12 +34,20 @@ const ReportViewer = () => {
   // Use location report if available, otherwise use fetched report
   // const report = locationReport || fetchedReport;
   const report = locationReport;
+  const columns = report.columns || [];
+  const reportData = report.data || [];
+  const metadata = report.metadata || {};
+  const additionalColumns = report.additionalColumns || [];
+  const noandtitles = report.noandtitles || [];
+  console.log("metadata reporttype", metadata.reportType)
+  const showSNo = !(metadata.reportType === 'finance-monthly_key-balance-sheet')
+  // Try to get report from location state (passed from navigation)
 
   const approveMutation = useMutation({
-       mutationFn: (data) => {
+    mutationFn: (data) => {
       // Use report type from the report data
       const reportType = report?.reportTypeId || report?.metadata?.reportType;
-      
+
       return reportService.approveReport(reportType, data);
     },
     onSuccess: () => {
@@ -53,9 +61,9 @@ const ReportViewer = () => {
   });
 
   const rejectMutation = useMutation({
-       mutationFn: (data) => {
+    mutationFn: (data) => {
       // Use report type from the report data
-      const reportType = report?.reportTypeId || report?.metadata?.reportType ;
+      const reportType = report?.reportTypeId || report?.metadata?.reportType;
       return reportService.rejectReport(reportType, data);
     },
     onSuccess: () => {
@@ -69,7 +77,7 @@ const ReportViewer = () => {
   });
 
   const handleApprove = () => {
-     const approver = "system";
+    const approver = "system";
     const approvalData = {
       id: report.id || reportId,
       approver: approver
@@ -77,19 +85,19 @@ const ReportViewer = () => {
 
     //console.log('Approval Data:', approvalData);
     //console.log('Report Type:', report?.reportTypeId || report?.metadata?.reportType);
-    approveMutation.mutate({ 
+    approveMutation.mutate({
       id: report.id || reportId,
       approver: approver
-     });
+    });
   };
 
   const handleReject = () => {
-     const approver = "system";
+    const approver = "system";
     if (!comment.trim()) {
       toast.error('Please provide reason for rejection');
       return;
     }
-     const rejectionData = {
+    const rejectionData = {
       id: report.id || reportId,
       approver: approver,
       rejectReason: comment.trim()
@@ -194,10 +202,10 @@ const ReportViewer = () => {
                 <p className="text-xs text-gray-500 uppercase tracking-wider">Start Date</p>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {metadata.startDate ? new Date(metadata.startDate).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric' 
+                {metadata.startDate ? new Date(metadata.startDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
                 }) : 'N/A'}
               </p>
             </div>
@@ -207,10 +215,10 @@ const ReportViewer = () => {
                 <p className="text-xs text-gray-500 uppercase tracking-wider">End Date</p>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {metadata.endDate ? new Date(metadata.endDate).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric' 
+                {metadata.endDate ? new Date(metadata.endDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
                 }) : 'N/A'}
               </p>
             </div>
@@ -256,7 +264,7 @@ const ReportViewer = () => {
                   </button> */}
                 </div>
               </div>
-  <ReportDataTable data={reportData} columns={columns} showSNo={showSNo} additionalColumns={additionalColumns} noandtitles={noandtitles}/>
+              <ReportDataTable data={reportData} columns={columns} showSNo={showSNo} additionalColumns={additionalColumns} noandtitles={noandtitles} />
 
             </div>
           )}
@@ -280,24 +288,24 @@ const ReportViewer = () => {
 
               <div className="flex justify-end space-x-3">
                 {/* {(report.role === 'checker' || report.role === 'approver') && ( */}
-                  <>
-                    <button
-                      onClick={handleApprove}
-                      disabled={approveMutation.isLoading}
-                      className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
-                    >
-                      <FiCheck className="w-4 h-4" />
-                      <span>{approveMutation.isLoading ? 'Approving...' : 'Approve Report'}</span>
-                    </button>
-                    <button
-                      onClick={handleReject}
-                      disabled={rejectMutation.isLoading}
-                      className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
-                    >
-                      <FiX className="w-4 h-4" />
-                      <span>{rejectMutation.isLoading ? 'Rejecting...' : 'Reject Report'}</span>
-                    </button>
-                  </>
+                <>
+                  <button
+                    onClick={handleApprove}
+                    disabled={approveMutation.isLoading}
+                    className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
+                  >
+                    <FiCheck className="w-4 h-4" />
+                    <span>{approveMutation.isLoading ? 'Approving...' : 'Approve Report'}</span>
+                  </button>
+                  <button
+                    onClick={handleReject}
+                    disabled={rejectMutation.isLoading}
+                    className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
+                  >
+                    <FiX className="w-4 h-4" />
+                    <span>{rejectMutation.isLoading ? 'Rejecting...' : 'Reject Report'}</span>
+                  </button>
+                </>
                 {/* )} */}
               </div>
             </div>
@@ -308,7 +316,7 @@ const ReportViewer = () => {
             <div className="border-t pt-6 mt-4">
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <p className="text-green-700 font-medium">
-                  ✓ Approved by {report.approvedBy} 
+                  ✓ Approved by {report.approvedBy}
                 </p>
                 {report.comment && (
                   <p className="text-sm text-green-600 mt-1">Comment: {report.comment}</p>
@@ -321,7 +329,7 @@ const ReportViewer = () => {
             <div className="border-t pt-6 mt-4">
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                 <p className="text-red-700 font-medium">
-                  ✗ Rejected by {report.rejectedBy} 
+                  ✗ Rejected by {report.rejectedBy}
                 </p>
                 {report.comment && (
                   <p className="text-sm text-red-600 mt-1">Reason: {report.comment}</p>

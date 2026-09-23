@@ -1,0 +1,45 @@
+export const creditConfig = {
+    id: "credit",
+    name: "Credit",
+    periods: [
+        {
+            id: "monthly",
+            name: "Monthly",
+            reportTypes: [
+                { key: "LOAN_RELATED_PARTIES", id: "credit-monthly_loan-related", name: "Loans to Related Parties Report", detect:  ["BSD_LOAN_PART13002"]},
+                { key: "LOAN_BREAKDOWN", id: "credit-monthly_loan-breakdown", name: "Breakdown of Loans and Advances", detect:  ["BD_L&A", "BD001"]},
+                { key: "LOAN_PORTFOLIO", id: "credit-monthly_loan-portfolio", name: "Loan and Advances Portfolio Report", detect: ["EP001", "LOA_PORT"]},
+                { key: "NPL_PROVISIONS", id: "credit-monthly_loan-nonperforming", name: "Non-Performing Loans and Advances & Provisions", detect:  ["NPL&PRO", "NL001"]},
+                { key: "LOAN_DISBURSEMENT", id: "credit-monthly_loan-disbursement", name: "Loan & Advance Disbursement, Collection and Outstanding Report", detect:["LOA_ADV_OUT", "LA001"]  },
+                { key: "LOAN_STATUS", id: "credit-monthly_loan-status", name: "Loan and Advance by Status", detect: ["LA_STAT", "LS001"] },
+                { key: "LOAN_CLASSIFICATION", id: "credit-monthly_loan-classification", name: "Loan Classification and Provisioning", detect:  ["M_LCPL", "LC001"]},
+                { key: "LARGE_BORROWERS", id: "credit-monthly_large-borrowers", name: "List of Borrowers that Exceed Ten Percent of the Banks Capital", detect:  ["BOR_TEN_PER", "LB002"]},
+                { key: "LOAN_RANGE_REGION", id: "credit-monthly_loan-range-region", name: "Loans by Range and Region", detect:  ["LOAN_RAN & REG", "RL002"]},
+                { key: "LOAN_SECTOR_REGION", id: "credit-monthly_loan-sector-region", name: "Loans by Sector and Region", detect:  ["LOAN_SEC & REG", "RS002"]},
+            ],
+        },
+        {
+            id: "quarterly",
+            name: "Quarterly",
+            reportTypes: [
+                // Same report as the Monthly entry, listed here too. No key on purpose:
+                // the key already belongs to the Monthly entry. Remove this line if it was a slip.
+                { id: "credit-monthly_loan-nonperforming", name: "Non-Performing Loans and Advances & Provisions", detect:  ["COL_SOL_18M", "LL001"]},
+                { key: "COLLATERALIZED_PROPERTY_SOLD_LAST18", id: "credit-quarterly_loan-collateralized-properties", name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months", detect: ["COL_SOL_18M", "LL001"] },
+                { key: "LOAN_CLASSIFICATION_PROVISIONING", id: "credit-quarterly_loan-classification", name: "Loan Classification and Provisioning", detect:  ["LOAN_CLA&PROV", "LP001"]},
+                { key: "NPL_SECTOR_BRANCH", id: "credit-quarterly_loan-npl-ecosec-branch", name: "BSD Quarterly NPLs Report by Economic Sector and Branch", detect:  ["NPL_ECPOM", "NE001"]},
+                { key: "COLLATERALIZED_PROPERTY_ACQUIRED_LAST18", id: "credit-quarterly_collateralized-property-acquired-last18", name: "Collateralized Properties Acquired during the last 18 Consecutive Months", detect: ["COL_ACQ_18M", "OL001"] },
+                { key: "LOAN_RANGE_REGION_QUARTERLY", id: "credit-quarterly_range-region", name: "Quarterly Conventional Loans by Range and Region", detect:  ["LOAN_RAN&REG_RA002"]},
+                { key: "CONVENTIONAL_LOAN_SECTOR_REGION", id: "credit-quarterly_loans-sector-region", name: "Conventional Loans by Sector and Region", detect: ["LOAN_SEC&REG", "SE002"] },
+                { key: "Q_TOP_TWENTY_NPL", id: "credit-quarterly_loan-nonperforming-top20", name: "Quarterly Top Twenty (20) NPLs Report", detect:  ["TOP_TWENTY_NPL", "TN001"]},
+                { key: "TOP20_BORROWERS", id: "credit-quarterly_top20-borrowers", name: "Quarterly Top Twenty (20) Borrowers Report", detect:  ["TOP_20_BOR_TB001", "TB001"]},
+                { key: "BUILDING_CONSTRUCTION", id: "credit-quarterly_building-construction", name: "Loans to Building and Construction", detect:  ["BUIL_CONSTXW002", "XW002"]},
+                { key: "QUARTERLY_RESTRUCTURED_LOANS", id: "credit-quarterly_aggregate-restructured-loans", name: "Aggregate of All Restructured Loans And Advances", detect: ["ARLAL001"] },
+                { key: "QUARTERLY_DIGITAL_LENDING", id: "credit-quarterly_digital-lending", name: "Quarterly Digital Lending Report", detect:  ["DigitalLendingDL001"]},
+                { key: "QUARTERLY_RECATEGORIZED_LOANS", id: "credit-quarterly_recategorized-loans", name: "Loans And Advances Re-Categorized from Non-Accrual To Accrual Status That Are Equal To Or Above Five Percent (5%) of The Bank's Total Capital", detect: ["NACNN001", "NACNN"] },
+                { key: "QUARTERLY_OFF_BALANCE_PROVISIONING", id: "credit-quarterly_off-balance-provisioning", name: "Provisioning For Off-Balance Sheet Exposure", detect:  ["POBEPE001", "POBEPE"]},
+                { key: "QUARTERLY_RESTRUCTURED_ABOVE_5PCT", id: "credit-quarterly_restructured-above-5pct", name: "Restructured Loans And Advances That Are Equal To or Above Five Percent (5%) of Total Capital of The Bank", detect: ["RLAFCRC001", "RLAFCRC"] },
+            ],
+        },
+    ],
+}
