@@ -18,8 +18,8 @@ export const ifbConfig = {
             id: "quarterly",
             name: "Quarterly",
             reportTypes: [
-                { key: "IFB_BALANCE_SHEET", id: "ifb-monthly_balance-sheet", name: "Interest Free Banking Service Balance sheet", detect:  ["INT_FRE_BS", "FB001"]},
-                { key: "IFB_PROFIT_LOSS", id: "ifb-monthly_profit-loss", name: "Interest Free Banking Service Profit and loss statement", detect: ["INT_FRE_SP", "BP001"] },
+                { key: "IFB_BALANCE_SHEET", id: "ifb-quarterly_balance-sheet", name: "Interest Free Banking Service Balance sheet", detect:  ["INT_FRE_BS", "FB001"]},
+                { key: "IFB_PROFIT_LOSS", id: "ifb-quarterly_profit-loss", name: "Interest Free Banking Service Profit and loss statement", detect: ["INT_FRE_SP", "BP001"] },
                 { key: "IFB_LOAN_RANGE_REGION_QUARTERLY", id: "ifb-quarterly_loan-range-region", name: "Quarterly Interest Free Loans by Range and Region", detect:  ["INT_LON_R&R_EE002"]},
                 { key: "IFB_LOAN_SECTOR_REGION_QUARTERLY", id: "ifb-quarterly_loan-sector-region", name: "Quarterly Interest Free Loans by Sector and Region", detect: ["INT_LON_S&R_SR002"] },
                 { key: "IFB_DEPOSIT_RANGE_REGION_QUARTERLY", id: "ifb-quarterly_deposit-range", name: "Quarterly Interest Free Deposits by Range and Region", detect:  ["INT_FRE_RANID002"]},

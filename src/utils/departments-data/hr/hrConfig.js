@@ -13,4 +13,5 @@ export const hrConfig = {
           detect: ["mp_","021mp003"],
         },
       ],
-    },]}
+    },]
+  }

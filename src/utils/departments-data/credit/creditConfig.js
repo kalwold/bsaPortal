@@ -23,7 +23,7 @@ export const creditConfig = {
             name: "Quarterly",
             reportTypes: [
               
-                { key: "NPL_PROVISIONS", id: "credit-monthly_loan-nonperforming", name: "Non-Performing Loans and Advances & Provisions", detect:  ["NPL&PRO", "NL001"]},
+                { key: "NPL_PROVISIONS", id: "credit-quarterly_loan-nonperforming", name: "Non-Performing Loans and Advances & Provisions", detect:  ["NPL&PRO", "NL001"]},
                 { key: "COLLATERALIZED_PROPERTY_SOLD_LAST18", id: "credit-quarterly_loan-collateralized-properties", name: "Collateralized Properties Foreclosed and Sold during the last 18 Consecutive Months", detect: ["COL_SOL_18M", "LL001"] },
                 { key: "LOAN_CLASSIFICATION_PROVISIONING", id: "credit-quarterly_loan-classification", name: "Loan Classification and Provisioning", detect:  ["LOAN_CLA&PROV", "LP001"]},
                 { key: "NPL_SECTOR_BRANCH", id: "credit-quarterly_loan-npl-ecosec-branch", name: "BSD Quarterly NPLs Report by Economic Sector and Branch", detect:  ["NPL_ECPOM", "NE001"]},
