@@ -211,10 +211,10 @@ const extractOffBalanceProvisioningData = (data) => {
     if (item.includes('Additional 2%') || item.includes('Additional 5%')) continue;
 
     // Skip "Total_Accumulated provision held in the previous period" row
-    if (item.includes('Total_Accumulated provision held')) continue;
+    
 
     // Check if this is a total row
-    const isTotalRow = item.includes('Total Off Balance Sheet Item');
+    const isTotalRow = item.includes('Total Off Balance Sheet Item') || item.includes('Total_Accumulated provision held');
 
     // Check if this is a header/section row
     const isSectionHeader = code === '1' && item === 'Guarantee';
