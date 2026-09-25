@@ -1,6 +1,7 @@
 export const validateReportStructure = (parsedData) => {
   const errors = [];
 
+  console.log("parsed meta data ",parsedData.metadata)
   if (!parsedData.metadata.institutionCode) {
     errors.push("Institution Code is missing");
   }

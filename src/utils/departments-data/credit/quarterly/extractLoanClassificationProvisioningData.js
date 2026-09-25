@@ -16,11 +16,11 @@ export const extractLoanClassificationProvisioningMetadata = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]).trim();
-    const secondCell = String(row[1]).trim();
-    const thirdCell = String(row[2]).trim();
-    const fourthCell = String(row[3]).trim();
-    const nineCell = String(row[9]).trim();
+    const firstCell = String(row[0]?row[0]:'').trim();
+
+    const thirdCell = String(row[2]?row[2]:'').trim();
+
+    const nineCell = String(row[9]?row[9]:'').trim();
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
