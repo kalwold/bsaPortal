@@ -179,7 +179,6 @@ const extractFraudOutstandingData = (data) => {
     );
 
     const values = {
-      Category: isTotalLabel ? "" : categoryCell,
       Type_of_Fraud: isTotalLabel ? "" : typeOfFraudCell,
       Prev_Qtr_Outstanding_Number_A: getNum(row, 3),
       Prev_Qtr_Outstanding_Amount_B: getNum(row, 4),
@@ -224,7 +223,6 @@ const extractFraudOutstandingData = (data) => {
   });
 
   const columnNames = [
-    "Category",
     "Type_of_Fraud",
     "Prev_Qtr_Outstanding_Number_A",
     "Prev_Qtr_Outstanding_Amount_B",
