@@ -218,19 +218,19 @@ const extractQTopTwentyNplData = (data) => {
         row[COL.provisionHeld],
       ].some((v) => v !== undefined && v !== null && String(v).trim() !== '');
  
-      if (!hasName && !hasAnyRawValue) continue;
+      // if (!hasName && !hasAnyRawValue) continue;
     }
 
     const entry = {
       id: sNo || "",
       sNo: sNo || '',
-      label: name,
+      label: name || 'null',
       values: {
         Loans_Approved: toNumber(row[COL.loansApproved]),
         Loans_Outstanding: toNumber(row[COL.loansOutstanding]),
         Collateral_Value: toNumber(row[COL.collateralValue]),
         Provision_Held: toNumber(row[COL.provisionHeld]),
-        Loan_Status: String(row[COL.loanStatus] || '').trim(),
+        Loan_Status: String(row[COL.loanStatus] || 'null').trim(),
       },
       
       rowNumber: i + 1,
