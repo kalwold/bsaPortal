@@ -78,10 +78,11 @@ const REPORT_FILES = {
     [REPORT_TYPES.MONTHLY_WEIGHTED_AVG_DEPOSIT_RATES]: "finance/monthly/extractWeightedAvgDepositRatesData",
     [REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_LENDING_RATES]: "ifb/monthly/extractIfbWeightedAvgLendingRatesData",
     [REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_DEPOSIT_RATES]: "ifb/monthly/extractIfbWeightedAvgDepositRatesData",
+    [REPORT_TYPES.SUMMARY_FRAUD_OUTSTANDING]: "branch-ops/quarterly/extractFraudOutstandingData"
 };
 
 function pairExtractors(type, file) {
-    const mod = modules[`./${file}.js`];   // was: `./departments-data/${file}.js`
+    const mod = modules[`./${file}.js`]; 
     if (!mod) throw new Error(`[${type}] no module found for "${file}"`);
 
     const extractData = mod.default;
