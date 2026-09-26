@@ -223,7 +223,6 @@ const extractFraudOutstandingData = (data) => {
   });
 
   const columnNames = [
-    "Category",
     "Type_of_Fraud",
     "Prev_Qtr_Outstanding_Number_A",
     "Prev_Qtr_Outstanding_Amount_B",
