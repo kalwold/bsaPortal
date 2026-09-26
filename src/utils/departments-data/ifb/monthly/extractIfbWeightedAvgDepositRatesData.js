@@ -17,10 +17,8 @@ export const extractIfbWeightedAvgDepositRatesMetadata=(data)=>{
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]).trim();
-    const secondCell = String(row[1]).trim();
-    const thirdCell = String(row[2]).trim();
-    const fourthCell = String(row[5]).trim();
+    const firstCell = String(row[0]?row[0]:'').trim();
+    const secondCell = String(row[1]?row[1]:'').trim();
 
     if (i === 0 && firstCell) {
    metadata.ReturnKey = firstCell;

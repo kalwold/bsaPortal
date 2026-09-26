@@ -17,10 +17,9 @@ export const extractWeightedAvgDepositRatesMetadata=(data)=>{
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]).trim();
-    const secondCell = String(row[1]).trim();
-    const thirdCell = String(row[2]).trim();
-    const fourthCell = String(row[5]).trim();
+    const firstCell = String(row[0] ? row[0] : '').trim();
+    const secondCell = String(row[1] ? row[1] : '').trim();
+    
 
     if (i === 0 && firstCell) {
    metadata.ReturnKey = firstCell;
@@ -34,7 +33,7 @@ export const extractWeightedAvgDepositRatesMetadata=(data)=>{
     }
 
       if (( i === 3 ) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+      metadata.reportTitle = firstCell;
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
@@ -42,22 +41,22 @@ export const extractWeightedAvgDepositRatesMetadata=(data)=>{
       i === 4 &&
       (firstCell.includes("Institution") || firstCell.includes("Instiution"))
     ) {
-      metadata.institutionCode = secondCell;
+      metadata.institutionCode = secondCell ;
     }
     if (i === 5 && firstCell.includes("Financial Year")) {
-      metadata.financialYear = secondCell;
+      metadata.financialYear = secondCell ;
     }
     if (i === 6 && firstCell.includes("Start Date")) {
-      metadata.startDate = excelDateToISO(secondCell);
+      metadata.startDate = excelDateToISO(secondCell) ;
     }
     if (i === 7 && firstCell.includes("End Date")) {
-      metadata.endDate = excelDateToISO(secondCell);
+      metadata.endDate = excelDateToISO(secondCell) ;
     }
-    if (i === 12 && (secondCell.includes("in") || secondCell.includes("In"))) {
-      metadata.unit = secondCell;
-    }
+   
   }
 
+
+  console.log("returned metadata", metadata)
   return metadata;
 };
 const extractWeightedAvgDepositRatesData = (data) => {

@@ -87,7 +87,7 @@ function pairExtractors(type, file) {
 
     const extractData = mod.default;
     const metaKeys = Object.keys(mod).filter((k) => /metadata$/i.test(k));
-
+    console.log("metaKeys", metaKeys , mod)
     if (typeof extractData !== "function") {
         throw new Error(`[${type}] "${file}" has no default export function`);
     }
@@ -96,6 +96,7 @@ function pairExtractors(type, file) {
             `[${type}] "${file}" must have exactly one *Metadata export, found: ${metaKeys.join(", ") || "none"}`,
         );
     }
+   
     return { extractData, extractMetadata: mod[metaKeys[0]] };
 }
 

@@ -60,7 +60,7 @@ const ReportUpload = ({ departmentId, reportType, onSuccess }) => {
       setValidationErrors([]);
       
       const parsed = await parseExcelReport(file,reportType);
-      //console.log('Parsed report:', parsed);
+      console.log('Parsed report:', parsed);
       
       const validation = validateReportStructure(parsed);
       //console.log('Validation result:', validation);

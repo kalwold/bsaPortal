@@ -36,12 +36,7 @@ export const extractBuildingConstructionMetadata = (data) => {
     // DEBUG: print exactly what's in each metadata-relevant row so you
     // can line it up against what the code below expects (row index,
     // Excel row number, full row contents, and which value it picked).
-    if (i <= 13) {
-      console.log(
-        `[metadata] row[${i}] (Excel row ${i + 1}):`, row,
-        `| firstCell="${firstCell}" | labelValue picked="${labelValue}"`
-      );
-    }
+
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
