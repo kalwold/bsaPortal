@@ -78,6 +78,10 @@ const REPORT_FILES = {
     [REPORT_TYPES.MONTHLY_WEIGHTED_AVG_DEPOSIT_RATES]: "finance/monthly/extractWeightedAvgDepositRatesData",
     [REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_LENDING_RATES]: "ifb/monthly/extractIfbWeightedAvgLendingRatesData",
     [REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_DEPOSIT_RATES]: "ifb/monthly/extractIfbWeightedAvgDepositRatesData",
+    [REPORT_TYPES.SUMMARY_FRAUD_OUTSTANDING]: "branch-ops/quarterly/extractFraudOutstandingData",
+    [REPORT_TYPES.HR_QUARTERLY_MANPOWER]: "hr/quarterly/extractManpowerStructureData",
+    [REPORT_TYPES.ACCESS_POINT_USER]: "branch-ops/quarterly/extractAccessPointUserData",
+    [REPORT_TYPES.DEPOSIT_BENEFICIARIES]: "branch-ops/quarterly/extractDepositBeneficiariesData",
 };
 
 function pairExtractors(type, file) {

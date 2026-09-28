@@ -10,8 +10,9 @@ export const hrConfig = {
           key: "HR_QUARTERLY_MANPOWER",
           id: "hr-quarterly_manpower-structure",
           name: "HR manpower structure",
-          detect: ["mp_","021mp003"],
+          detect: ["mp_ 021mp003"],
         },
       ],
-    },]
+    },
+  ]
   }
