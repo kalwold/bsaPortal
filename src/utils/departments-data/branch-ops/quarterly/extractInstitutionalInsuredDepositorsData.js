@@ -36,7 +36,7 @@ export const extractInstitutionalInsuredDepositorsMetadata = (data) => {
       metadata.ReturnKey = firstCell;
 
       // Adjust the code below to the real report code when you know it
-      if (firstCell.includes("0016IN05001") || firstCell.includes("INSTITUTIONAL")) {
+      if (firstCell.includes("0013IN02001") || firstCell.includes("INSTITUTIONAL")) {
         metadata.reportType = "branchOps-institutional-insured-depositors";
         metadata.reportTypeId = "branchOps institutional insured depositors";
         metadata.departmentId = "branchOps";
@@ -127,9 +127,8 @@ const extractInstitutionalInsuredDepositorsData = (data) => {
   const JOINT_ACCOUNT_COL = 14;
 
   const columns = [
-    "Full_Name",
-    "Account",
-    "Date_of",
+    "Account_Number",
+    "Date_of_Establishment",
     "TIN_Number",
     "Alternative_Account_Number",
     "Name_of_the_Bank",
@@ -165,8 +164,8 @@ const extractInstitutionalInsuredDepositorsData = (data) => {
 
     const values = {
       Full_Name: getStringValue(FULL_NAME_COL, row),
-      Account: getStringValue(ACCOUNT_COL, row),
-      Date_of: getStringValue(DATE_OF_COL, row),
+      Account_Number: getStringValue(ACCOUNT_COL, row),
+      Date_of_Establishment: getStringValue(DATE_OF_COL, row),
       TIN_Number: getStringValue(TIN_COL, row),
       Alternative_Account_Number: getStringValue(ALT_ACCOUNT_COL, row),
       Name_of_the_Bank: getStringValue(BANK_NAME_COL, row),

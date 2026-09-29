@@ -43,7 +43,7 @@ export const extractInsuredDepositorConvantionalMetadata =(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("0014lN03001") ) {
+      if (firstCell.includes("0014IN03001") ) {
         metadata.reportType = "branchOps-quarterly_insured-depositor-conv";
         metadata.reportTypeId = "branchOps-quarterly_insured-depositor-conv";
         metadata.departmentId = "branchOps";
@@ -98,7 +98,7 @@ const extractInsuredDepositorConvantionalData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
-  console.log('=== Extracting Insured Depositor Data (0014lN03001) ===');
+  console.log('=== Extracting Insured Depositor Data (0014IN03001) ===');
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
@@ -146,7 +146,6 @@ const extractInsuredDepositorConvantionalData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'Depositors_Full_Name',
     'National_ID',
     'TIN_Number',
     'Account_Number',

@@ -30,18 +30,18 @@ export const branchOpsConfig = {
           name: "Insured Depositor’s Deposit Balance for Interest-free Depositors",
           detect: ["0015IN04001"],
         },
-                {
-          key: "INSTITUTIONAL_INSURED_DEPOSITORS",
-          id: "branchOps-institutional-insured-depositors",
-          name: "branchOps institutional insured depositors ",
-          detect: ["0013lN02001"],
-        },
-         {
-          key: "INSURED_DEPOSITOR_CON",
-          id: "branchOps-quarterly_insured-depositor-conv",
-          name: "branchOps quarterly insured depositor conv",
-          detect: ["0014lN03001"],
-        },
+          {
+  key: "INSTITUTIONAL_INSURED_DEPOSITORS",
+  id: "branchOps-institutional-insured-depositors",
+  name: "Institutional Insured Depositors Information",
+  detect: ["0013IN02001"],          // ← fixed (I instead of l)
+},
+{
+  key: "INSURED_DEPOSITOR_CON",
+  id: "branchOps-quarterly_insured-depositor-conv",
+  name: "Insured Depositor’s Deposit Balance for Conventional Depositors",
+  detect: ["0014IN03001"],          // ← also fix this one (just in case)
+},   
       ],
     },
   ],
