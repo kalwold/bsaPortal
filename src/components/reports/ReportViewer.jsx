@@ -34,7 +34,8 @@ const ReportViewer = () => {
     metadata.reportType === "finance-monthly_weighted-avg-deposit-rates" ||
     metadata.reportType === "ifb-monthly_weighted-avg-deposit-rates" ||
     metadata.reportType === "credit-monthly_weighted-avg-lending-rates" ||
-    metadata.reportType === "ifb-monthly_weighted-avg-lending-rates"
+    metadata.reportType === "ifb-monthly_weighted-avg-lending-rates" ||
+    metadata.reportType === "branchOps-quarterly_access-point-user" 
   );
   // Try to get report from location state (passed from navigation)
 

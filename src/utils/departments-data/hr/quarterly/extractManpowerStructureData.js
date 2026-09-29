@@ -42,7 +42,7 @@ export const extractManpowerStructureMetadata = (data) => {
 
     // First row - Return Key / Report Type
     if (i === 0 && firstCell) {
-      metadata.ReturnKey = firstCell.replace(/\s+/g, "");
+      metadata.ReturnKey = firstCell;
 
       if (
         firstCell.includes("mp_") ||
