@@ -23,4 +23,5 @@ export const ifbRegistry = {
     "ifb/monthly/extractIfbWeightedAvgDepositRatesData",
   [REPORT_TYPES.IFB_DEPOSIT_SECTOR_REGION_QUARTERLY]:
     "ifb/quarterly/extractIfbDepositSectorRegionQuarterlyData",
+  [REPORT_TYPES.MONTHLY_IFB_DEPOSIT_DATA]: "ifb/monthly/extractIfbDepositData",
 };

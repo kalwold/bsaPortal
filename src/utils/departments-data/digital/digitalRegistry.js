@@ -5,4 +5,6 @@ export const digitalRegistry = {
     "digital/quarterly/extractQuarterlyMobileTransactionsData",
   [REPORT_TYPES.QUARTERLY_ATM_POS]:
     "digital/quarterly/extractQuarterlyAtmPosData",
+  [REPORT_TYPES.QUARTERLY_DFS_ACCOUNTS_SUBSCRIPTIONS]:
+    "digital/quarterly/extractDFSAccountsSubscriptions",
 };
