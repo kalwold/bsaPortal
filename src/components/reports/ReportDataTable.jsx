@@ -71,7 +71,7 @@ const ReportDataTable = ({
         <tr className={`${rowClass} transition-colors`}>
           {(showSNo) && (
             <td className="px-3 py-2 text-sm text-gray-600 text-center font-mono border border-gray-300">
-              {node.id || '-'}
+              {node.sNo || '-'}
             </td>
           )}
           <td className="px-4 py-2 text-sm border border-gray-300">

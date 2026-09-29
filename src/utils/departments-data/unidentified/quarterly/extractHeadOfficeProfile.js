@@ -1,20 +1,18 @@
 import { excelDateToISO } from "../../../utils";
 
+
 const REPORT_TYPE_ID = "unidentified-corporate-profile-head-office-address";
 const DEPARTMENT_ID = "unidentified";
 const DEPARTMENT_NAME = "Unidentified";
 
 // Section 1.2 has no title row: its column names sit on the same row as "1.2",
 // so it gets a fixed title here.
-const SECTION_TITLE_FALLBACK = { 1.2: "Contact Person" };
+const SECTION_TITLE_FALLBACK = { "1.2": "Contact Person" };
 
 const SECTION_NO = /^\d+\.\d+$/; // 1.1, 1.2 ...
 const ITEM_NO = /^\d+\.\d+\.\d+$/; // 1.1.1, 1.2.1 ...
 
-const clean = (v) =>
-  String(v ?? "")
-    .replace(/\s+/g, " ")
-    .trim();
+const clean = (v) => String(v ?? "").replace(/\s+/g, " ").trim();
 
 // First non-empty cell after the label (values sit in B..D)
 const getLabelValue = (row) => {
@@ -76,9 +74,11 @@ export const extractHeadOfficeProfileMetadata = (data) => {
 };
 
 const extractHeadOfficeProfileData = (data) => {
-  const topLevelNodes = [];
-  const columns = []; // nested: [{ key, name, children: [{ key, name, index }] }]
-  let section = null; // { no, title, node, group, cols }
+  const hierarchicalData = [];
+  const allColumns = []; // union of every block's columns, in sheet order
+
+  let section = null; // current block: { title, columns: [{ name, index }] }
+  let sectionNode = null;
 
   // Column names in B.. of a row (merged headers only have the name in the first cell)
   const readColumns = (row) => {
@@ -89,15 +89,10 @@ const extractHeadOfficeProfileData = (data) => {
     }
     return cols;
   };
-
-  // (re)build the sub-columns of the current block from a header row
-  const setSectionColumns = (cols) => {
-    section.cols = cols.map((c) => ({
-      key: `${section.no}_${c.name}`,
-      name: c.name,
-      index: c.index,
-    }));
-    section.group.children = section.cols;
+  const registerColumns = (cols) => {
+    for (const col of cols) {
+      if (!allColumns.includes(col.name)) allColumns.push(col.name);
+    }
   };
 
   for (let i = 0; i < data.length; i++) {
@@ -111,73 +106,69 @@ const extractHeadOfficeProfileData = (data) => {
       const inlineCols = readColumns(row);
       const combined = inlineCols.length > 1; // title row and header row are one
       const title = combined
-        ? (SECTION_TITLE_FALLBACK[aCell] ?? clean(row[1]))
+        ? SECTION_TITLE_FALLBACK[aCell] ?? clean(row[1])
         : clean(row[1]);
-
-      const node = {
-        id: aCell,
+      section = { no: aCell, title, columns: combined ? inlineCols : [] };
+      sectionNode = {
+        id: `row-${i}`,
         sNo: aCell,
         label: title,
         values: {},
         rowNumber: i + 1,
-        level: 1,
+        level: 0,
         isTotalRow: false,
         isSectionHeader: true,
         children: [],
+        columns: section.columns.map((c) => c.name), // filled in at the header row otherwise
       };
-      topLevelNodes.push(node);
-
-      const group = { key: aCell, name: title, children: [] };
-      columns.push(group);
-      section = { no: aCell, title, node, group, cols: [] };
-      if (combined) setSectionColumns(inlineCols);
+      hierarchicalData.push(sectionNode);
+      if (combined) registerColumns(inlineCols);
       continue;
     }
 
     if (!section) continue; // still in the metadata area
 
-    // 2. Header row: A empty, B.. hold the sub-column names
+    // 2. Header row: A empty, B.. hold the column names
     if (!aCell) {
       const cols = readColumns(row);
-      if (cols.length > 0) setSectionColumns(cols);
+      if (cols.length > 0) {
+        section.columns = cols;
+        registerColumns(cols);
+        if (sectionNode) sectionNode.columns = cols.map((c) => c.name);
+      }
       continue;
     }
 
-    // 3. Data row: "1.1.1" -> child of the block, values under its sub-columns
+    // 3. Data row: "1.1.1" | values under the block's header
     if (ITEM_NO.test(aCell)) {
       const values = {};
-      for (const col of section.cols) values[col.key] = clean(row[col.index]);
-
-      section.node.children.push({
-        id: aCell,
+      for (const col of section.columns) {
+        values[col.name] = clean(row[col.index]);
+      }
+      hierarchicalData.push({
+        id: `row-${i}`,
         sNo: aCell,
         label: section.title,
         values,
         rowNumber: i + 1,
-        level: 2,
+        level: 1,
         isTotalRow: false,
         isSectionHeader: false,
-        section: section.title,
         children: [],
       });
     }
   }
 
-  if (topLevelNodes.length === 0) {
-    console.log("extractHeadOfficeProfileData: could not find any section");
-    return {
-      hierarchicalData: [],
-      columns: [],
-      additionalColumns: [],
-      noandtitles: [],
-    };
+  if (hierarchicalData.length === 0) {
+    console.log("Could not find data table");
+    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
   }
 
   return {
-    hierarchicalData: topLevelNodes,
-    columns, // nested group > sub-columns, as in the Excel
+    hierarchicalData,
+    columns: allColumns,
     additionalColumns: [],
-    noandtitles: ["No.", "Description"],
+    noandtitles: ["No", "Particulars"],
   };
 };
 
