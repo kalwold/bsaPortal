@@ -43,7 +43,7 @@ export const extractInsuredDepositorIfbMetadata =(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("0016IN05001") ) {
+      if (firstCell.includes("0015IN04001") ) {
         metadata.reportType = "branchOps-quarterly_insured-depositor-ifb";
         metadata.reportTypeId = "branchOps-quarterly_insured-depositor-ifb";
         metadata.departmentId = "branchOps";
