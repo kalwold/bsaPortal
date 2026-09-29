@@ -25,8 +25,8 @@ export const branchOpsConfig = {
           detect: ["0016IN05001"],
         },
         {
-          key: "INSURED_DEPOSITOR",
-          id: "branchOps-quarterly_insured-depositor",
+          key: "INSURED_DEPOSITOR_IFB",
+          id: "branchOps-quarterly_insured-depositor-ifb",
           name: "Insured Depositor’s Deposit Balance for Interest-free Depositors",
           detect: ["0015IN04001"],
         },

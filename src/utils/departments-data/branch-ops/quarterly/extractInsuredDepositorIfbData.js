@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractInsuredDepositorMetadata =(data)=>{
+export const extractInsuredDepositorIfbMetadata =(data)=>{
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -44,8 +44,8 @@ export const extractInsuredDepositorMetadata =(data)=>{
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("0016IN05001") ) {
-        metadata.reportType = "branchOps-quarterly_deposit-beneficiaries";
-        metadata.reportTypeId = "branchOps-quarterly_deposit-beneficiaries";
+        metadata.reportType = "branchOps-quarterly_insured-depositor-ifb";
+        metadata.reportTypeId = "branchOps-quarterly_insured-depositor-ifb";
         metadata.departmentId = "branchOps";
         metadata.departmentName = "Branch Operation";
       }
@@ -94,7 +94,7 @@ export const extractInsuredDepositorMetadata =(data)=>{
   return metadata;
 };
 
-const extractInsuredDepositorData = (data) => {
+const extractInsuredDepositorIfbData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
@@ -245,4 +245,4 @@ const extractInsuredDepositorData = (data) => {
     noandtitles:['No.', "Depositor's Full Name"]
   };
 };
-export default extractInsuredDepositorData
+export default extractInsuredDepositorIfbData
