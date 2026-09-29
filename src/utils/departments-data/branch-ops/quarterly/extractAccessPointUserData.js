@@ -23,7 +23,7 @@ export const extractAccessPointUserMetadata =(data)=>{
     const sixCell = String(row[5] || "").trim();
 
     const labelValue = (() => {
-      for (let c = 1; c <= 5; c++) {
+      for (let c = 2; c <= 5; c++) {
         const v = row[c];
         if (v !== undefined && v !== null && String(v).trim() !== "") {
           return String(v).trim();
@@ -203,7 +203,7 @@ const extractAccessPointUserData = (data) => {
 
     // Create the entry
     const entry = {
-      id: `row-${i}`,
+      id: ``,
       sNo: '',
       label: label,
       values: values,

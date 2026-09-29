@@ -24,6 +24,12 @@ export const branchOpsConfig = {
           name: "Deposit Account Beneficiaries’ Information for Joint and Trust Account Ownership ",
           detect: ["0016IN05001"],
         },
+        {
+          key: "INSURED_DEPOSITOR",
+          id: "branchOps-quarterly_insured-depositor",
+          name: "Insured Depositor’s Deposit Balance for Interest-free Depositors",
+          detect: ["0015IN04001"],
+        },
       ],
     },
   ],

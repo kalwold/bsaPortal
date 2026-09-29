@@ -82,6 +82,7 @@ const REPORT_FILES = {
     [REPORT_TYPES.HR_QUARTERLY_MANPOWER]: "hr/quarterly/extractManpowerStructureData",
     [REPORT_TYPES.ACCESS_POINT_USER]: "branch-ops/quarterly/extractAccessPointUserData",
     [REPORT_TYPES.DEPOSIT_BENEFICIARIES]: "branch-ops/quarterly/extractDepositBeneficiariesData",
+    [REPORT_TYPES.INSURED_DEPOSITOR]: "branch-ops/quarterly/extractInsuredDepositorData",
 };
 
 function pairExtractors(type, file) {
