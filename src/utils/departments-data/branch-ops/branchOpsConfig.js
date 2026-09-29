@@ -12,12 +12,7 @@ export const branchOpsConfig = {
           name: "Quarterly Summary Report on Fraud Outstanding",
           detect: ["FRA_OUT_FO002"],
         },
-        {
-          key: "ACCESS_POINT_USER",
-          id: "branchOps-quarterly_access-point-user",
-          name: "Access Point",
-          detect: ["POIACC001"],
-        },
+        
         {
           key: "DEPOSIT_BENEFICIARIES",
           id: "branchOps-quarterly_deposit-beneficiaries",

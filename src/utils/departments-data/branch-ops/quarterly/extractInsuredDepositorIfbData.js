@@ -146,7 +146,6 @@ const extractInsuredDepositorIfbData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'Depositors_Full_Name',
     'National_ID',
     'TIN_Number',
     'Account_Number',

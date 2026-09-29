@@ -80,11 +80,17 @@ const REPORT_FILES = {
     [REPORT_TYPES.MONTHLY_IFB_WEIGHTED_AVG_DEPOSIT_RATES]: "ifb/monthly/extractIfbWeightedAvgDepositRatesData",
     [REPORT_TYPES.SUMMARY_FRAUD_OUTSTANDING]: "branch-ops/quarterly/extractFraudOutstandingData",
     [REPORT_TYPES.HR_QUARTERLY_MANPOWER]: "hr/quarterly/extractManpowerStructureData",
-    [REPORT_TYPES.ACCESS_POINT_USER]: "branch-ops/quarterly/extractAccessPointUserData",
+    [REPORT_TYPES.ACCESS_POINT_USER]: "digital/quarterly/extractAccessPointUserData",
     [REPORT_TYPES.DEPOSIT_BENEFICIARIES]: "branch-ops/quarterly/extractDepositBeneficiariesData",
     [REPORT_TYPES.INSURED_DEPOSITOR_IFB]: "branch-ops/quarterly/extractInsuredDepositorIfbData",
-    [INSTITUTIONAL_INSURED_DEPOSITORS]: "branch-ops/quarterly/extractInstitutionalInsuredDepositorsData",
-    [INSURED_DEPOSITOR_CON]: "branch-ops/quarterly/extractInsuredDepositorConvantionalData",
+    [REPORT_TYPES.INSTITUTIONAL_INSURED_DEPOSITORS]: "branch-ops/quarterly/extractInstitutionalInsuredDepositorsData",
+    [REPORT_TYPES.INSURED_DEPOSITOR_CON]: "branch-ops/quarterly/extractInsuredDepositorConvantionalData",
+    [REPORT_TYPES.QUARTERLY_CORPORATE_PROFILE]: "unidentified/quarterly/extractCorporateProfileData",
+    [REPORT_TYPES.QUARTERLY_CORPORATE_PROFILE_OTHER]: "unidentified/quarterly/extractCorporateProfileOtherData",
+    [REPORT_TYPES.QUARTERLY_DFS_ACCOUNTS_SUBSCRIPTIONS]:"digital/quarterly/extractDFSAccountsSubscriptions",
+    [REPORT_TYPES.QUARTERLY_IFB_DEPOSIT_DATA]: "ifb/quarterly/extractIfbDepositData",
+    [REPORT_TYPES.QUARTERLY_CORPORATE_PROFILE_BOARD]: "unidentified/quarterly/extractCorporateProfileBoardData",
+    [REPORT_TYPES.QUARTERLY_LONG_OUTSTANDING_ITEMS]: "unidentified/quarterly/extractLongOutstandingItemsData",
 
 };
 

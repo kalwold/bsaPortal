@@ -44,8 +44,8 @@ export const extractAccessPointUserMetadata =(data)=>{
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("POIACC001") ) {
-        metadata.reportType = "branchOps-quarterly_access-point-user";
-        metadata.reportTypeId = "branchOps-quarterly_access-point-user";
+        metadata.reportType = "digital-quarterly_access-point-user";
+        metadata.reportTypeId = "digital-quarterly_access-point-user";
         metadata.departmentId = "branchOps";
         metadata.departmentName = "Branch Operation";
       }
@@ -167,7 +167,7 @@ const extractAccessPointUserData = (data) => {
     if (index !== undefined && index < row.length) {
       return String(row[index] || '').trim();
     }
-    return '';
+    return ''; 
   };
 
   
