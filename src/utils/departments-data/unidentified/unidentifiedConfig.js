@@ -48,6 +48,12 @@ export const unidentifiedConfig = {
           name: "Quarterly Loans to Insiders Report",
           detect: ["INS_LOAN_QR002"],
         },
+        {
+          key: "QUARTERLY_HIGH_IMPACT_IT_INCIDENT",
+          id: "unidentified-quarterly_high-impact-it-incident",
+          name: "High Impact IT Incident Report",
+          detect: ["ITRHITI001"],
+        },
       ],
     },
   ],

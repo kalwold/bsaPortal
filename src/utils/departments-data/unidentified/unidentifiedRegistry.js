@@ -15,4 +15,6 @@ export const unidentifiedRegistry = {
     "unidentified/quarterly/extractAgentTransactions",
   [REPORT_TYPES.QUARTERLY_LOANS_TO_INSIDERS]:
     "unidentified/quarterly/extractLoansToInsiders",
+  [REPORT_TYPES.QUARTERLY_HIGH_IMPACT_IT_INCIDENT]:
+    "unidentified/quarterly/extractHighImpactITIncident",
 };
