@@ -5,4 +5,6 @@ export const shareRegistry = {
     "share/quarterly/extractQuarterlyTopTwentyShareholdersData",
   [REPORT_TYPES.QUARTERLY_TWO_PERCENT_SHAREHOLDERS]:
     "share/quarterly/extractQuarterlyTwoPercentShareholdersData",
+  [REPORT_TYPES.QUARTERLY_RELATED_ORGANIZATIONS]:
+    "share/quarterly/extractRelatedOrganizationsData",
 };

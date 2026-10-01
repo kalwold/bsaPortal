@@ -4,6 +4,7 @@ import { digitalRegistry } from "./departments-data/digital/digitalRegistry";
 import { financeRegistry } from "./departments-data/finance/financeRegistry";
 import { ifbRegistry } from "./departments-data/ifb/ifbRegistry";
 import { unidentifiedRegistry } from "./departments-data/unidentified/unidentifiedRegistry";
+import { shareRegistry } from "./departments-data/share/shareRegistry";
 
 // Loads every extractor module under departments-data/ (recursive)
 const ctx = require.context("./departments-data", true, /extract.*\.js$/);
@@ -16,6 +17,7 @@ const REPORT_FILES = {
   ...financeRegistry,
   ...creditRegistry,
   ...ifbRegistry,
+  ...shareRegistry,
   ...digitalRegistry,
   ...branchOpsRegistry,
   ...unidentifiedRegistry,
