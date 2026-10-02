@@ -11,4 +11,6 @@ export const branchOpsRegistry = {
     "branch-ops/quarterly/extractInstitutionalInsuredDepositorsData",
   [REPORT_TYPES.INSURED_DEPOSITOR_CON]:
     "branch-ops/quarterly/extractInsuredDepositorConvantionalData",
+  [REPORT_TYPES.QUARTERLY_INSURED_UNINSURED_DEPOSit_SUMMARY]:
+    "branch-ops/quarterly/extractInsuredUninsuredDepositSummary",
 };

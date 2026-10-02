@@ -12,7 +12,7 @@ export const branchOpsConfig = {
           name: "Quarterly Summary Report on Fraud Outstanding",
           detect: ["FRA_OUT_FO002"],
         },
-        
+
         {
           key: "DEPOSIT_BENEFICIARIES",
           id: "branchOps-quarterly_deposit-beneficiaries",
@@ -25,17 +25,23 @@ export const branchOpsConfig = {
           name: "Insured Depositor’s Deposit Balance for Interest-free Depositors",
           detect: ["0015IN04001"],
         },
-                {
+        {
           key: "INSTITUTIONAL_INSURED_DEPOSITORS",
           id: "branchOps-institutional-insured-depositors",
           name: "branchOps institutional insured depositors ",
           detect: ["0013lN02001"],
         },
-         {
+        {
           key: "INSURED_DEPOSITOR_CON",
           id: "branchOps-quarterly_insured-depositor-conv",
           name: "branchOps quarterly insured depositor conv",
           detect: ["0014lN03001"],
+        },
+        {
+          key: "QUARTERLY_INSURED_UNINSURED_DEPOSit_SUMMARY",
+          id: "branchOps-quarterly_insured-uninsured-deposit-summary",
+          name: "Summary of Deposit Information (Insured and Uninsured Deposit) Reporting Format",
+          detect: ["001SD01001"],
         },
       ],
     },
