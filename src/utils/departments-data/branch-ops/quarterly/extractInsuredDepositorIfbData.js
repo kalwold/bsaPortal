@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractDepositBeneficiariesMetadata =(data)=>{
+export const extractInsuredDepositorIfbMetadata =(data)=>{
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -43,9 +43,9 @@ export const extractDepositBeneficiariesMetadata =(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("0016IN05001") ) {
-        metadata.reportType = "branchOps-quarterly_deposit-beneficiaries";
-        metadata.reportTypeId = "branchOps-quarterly_deposit-beneficiaries";
+      if (firstCell.includes("0015IN04001") ) {
+        metadata.reportType = "branchOps-quarterly_insured-depositor-ifb";
+        metadata.reportTypeId = "branchOps-quarterly_insured-depositor-ifb";
         metadata.departmentId = "branchOps";
         metadata.departmentName = "Branch Operation";
       }
@@ -93,11 +93,12 @@ export const extractDepositBeneficiariesMetadata =(data)=>{
   }
   return metadata;
 };
-const extractDepositBeneficiariesData = (data) => {
+
+const extractInsuredDepositorIfbData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
-  console.log('=== Extracting Deposit Account Beneficiaries Data (0016IN05001) ===');
+  console.log('=== Extracting Insured Depositor Data (0015IN04001) ===');
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
@@ -125,40 +126,36 @@ const extractDepositBeneficiariesData = (data) => {
   }
 
   // Column indices (0-based)
-  // A(0)=No., B(1)=Depositor's Full Name, C(2)=Depositor's National ID,
-  // D(3)=Depositor's TIN Number, E(4)=Depositor's Account Number,
-  // F(5)=Full Name of the Beneficiary, G(6)=Beneficiary's National ID,
-  // H(7)=Beneficiary's TIN Number, I(8)=Region, J(9)=Sub-city/Zone,
-  // K(10)=Woreda, L(11)=Cell Phone, M(12)=% Share, N(13)=Amount in Birr
+  // A(0)=No., B(1)=Depositor's Full Name, C(2)=National ID, D(3)=TIN Number,
+  // E(4)=Account Number, F(5)=Deposit Type, G(6)=Insured Deposit balance in Birr,
+  // H(7)=Amounts of deposits (compulsory saving) that services as collateral,
+  // I(8)=Amount of past due loans held by depositor, J(9)=Net of insurable deposits,
+  // K(10)=Compensable deposit amount in Birr, L(11)=Remark
   const NO_COL = 0;
   const DEPOSITOR_NAME_COL = 1;
-  const DEPOSITOR_NATIONAL_ID_COL = 2;
-  const DEPOSITOR_TIN_COL = 3;
-  const DEPOSITOR_ACCOUNT_COL = 4;
-  const BENEFICIARY_NAME_COL = 5;
-  const BENEFICIARY_NATIONAL_ID_COL = 6;
-  const BENEFICIARY_TIN_COL = 7;
-  const REGION_COL = 8;
-  const SUBCITY_COL = 9;
-  const WOREDA_COL = 10;
-  const CELL_PHONE_COL = 11;
-  const PERCENT_SHARE_COL = 12;
-  const AMOUNT_COL = 13;
+  const NATIONAL_ID_COL = 2;
+  const TIN_NUMBER_COL = 3;
+  const ACCOUNT_NUMBER_COL = 4;
+  const DEPOSIT_TYPE_COL = 5;
+  const INSURED_BALANCE_COL = 6;
+  const COLLATERAL_AMOUNT_COL = 7;
+  const PAST_DUE_LOANS_COL = 8;
+  const NET_INSURABLE_COL = 9;
+  const COMPENSABLE_AMOUNT_COL = 10;
+  const REMARK_COL = 11;
 
   // Define the columns for this report
   const columns = [
-    'Depositors_National_ID',
-    'Depositors_TIN_Number',
-    'Depositors_Account_Number',
-    'Full_Name_of_Beneficiary',
-    'Beneficiarys_National_ID',
-    'Beneficiarys_TIN_Number',
-    'Region',
-    'Sub_City_Zone',
-    'Woreda',
-    'Cell_Phone',
-    'Percent_Share',
-    'Amount_in_Birr'
+    'National_ID',
+    'TIN_Number',
+    'Account_Number',
+    'Deposit_Type',
+    'Insured_Deposit_Balance',
+    'Collateral_Compulsory_Saving',
+    'Past_Due_Loans',
+    'Net_Insurable_Deposits',
+    'Compensable_Deposit_Amount',
+    'Remark'
   ];
 
   const topLevelNodes = [];
@@ -195,33 +192,28 @@ const extractDepositBeneficiariesData = (data) => {
     // Skip if no number
     if (!no) continue;
 
-    // Skip if both no and depositorName are empty
-    if (!no && !depositorName) continue;
-
     // Skip footer/note rows
     if (depositorName.includes('Note') || depositorName.includes('Total')) continue;
 
-    // Extract values - all as strings since they are identifiers/text
+    // Extract values
     const values = {
-     
-      'Depositors_National_ID': getStringValue(DEPOSITOR_NATIONAL_ID_COL, row),
-      'Depositors_TIN_Number': getStringValue(DEPOSITOR_TIN_COL, row),
-      'Depositors_Account_Number': getStringValue(DEPOSITOR_ACCOUNT_COL, row),
-      'Full_Name_of_Beneficiary': getStringValue(BENEFICIARY_NAME_COL, row),
-      'Beneficiarys_National_ID': getStringValue(BENEFICIARY_NATIONAL_ID_COL, row),
-      'Beneficiarys_TIN_Number': getStringValue(BENEFICIARY_TIN_COL, row),
-      'Region': getStringValue(REGION_COL, row),
-      'Sub_City_Zone': getStringValue(SUBCITY_COL, row),
-      'Woreda': getStringValue(WOREDA_COL, row),
-      'Cell_Phone': getStringValue(CELL_PHONE_COL, row),
-      'Percent_Share': getNumericValue(PERCENT_SHARE_COL, row),
-      'Amount_in_Birr': getNumericValue(AMOUNT_COL, row)
+      
+      'National_ID': getStringValue(NATIONAL_ID_COL, row),
+      'TIN_Number': getStringValue(TIN_NUMBER_COL, row),
+      'Account_Number': getStringValue(ACCOUNT_NUMBER_COL, row),
+      'Deposit_Type': getStringValue(DEPOSIT_TYPE_COL, row),
+      'Insured_Deposit_Balance': getNumericValue(INSURED_BALANCE_COL, row),
+      'Collateral_Compulsory_Saving': getNumericValue(COLLATERAL_AMOUNT_COL, row),
+      'Past_Due_Loans': getNumericValue(PAST_DUE_LOANS_COL, row),
+      'Net_Insurable_Deposits': getNumericValue(NET_INSURABLE_COL, row),
+      'Compensable_Deposit_Amount': getNumericValue(COMPENSABLE_AMOUNT_COL, row),
+      'Remark': getStringValue(REMARK_COL, row)
     };
 
- 
+    
 
     const entry = {
-      id: no || '',
+      id: no || ``,
       sNo: no,
       label: depositorName || ``,
       values: values,
@@ -250,7 +242,6 @@ const extractDepositBeneficiariesData = (data) => {
     columns: columns,
     additionalColumns: [],
     noandtitles:['No.', "Depositor's Full Name"]
-
   };
 };
-export default extractDepositBeneficiariesData
+export default extractInsuredDepositorIfbData

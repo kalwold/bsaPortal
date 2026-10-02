@@ -1,6 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-
-export const extractQuarterlyMemorandumAndContingentAccountsMetadata = (data) => {
+export const extractCorporateProfileMetadata =(data)=>{
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -16,76 +15,79 @@ export const extractQuarterlyMemorandumAndContingentAccountsMetadata = (data) =>
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
+   
     if (!row || row.length === 0) continue;
 
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
-    const thirdCell = String(row[2] || "").trim();
+ 
 
-    // Row 1: return key / report identifier
+    const labelValue = (() => {
+      for (let c = 1; c <= 5; c++) {
+        const v = row[c];
+        if (v !== undefined && v !== null && String(v).trim() !== "") {
+          return String(v).trim();
+        }
+      }
+      return "";
+    })();
+    
+
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("MEM&CONT_MM001")) {
-        metadata.reportType = "finance-memorandum_contingent";
-        metadata.departmentName = "Finance";
-        metadata.departmentId = "finance";
-        metadata.reportTypeId = "finance-memorandum_contingent";
+      if (firstCell.includes("CP1_CP001") ) {
+        metadata.reportType = "unidentified-quarterly_corporate-profile";
+        metadata.reportTypeId = "unidentified-quarterly_corporate-profile";
+        metadata.departmentId = "unidentified";
+        metadata.departmentName = "Unidentified";
       }
     }
 
-    // Row 4: report title ("Memorandum and Contingent Accounts")
-    if (i === 3 && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || "";
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell.replace(/\s+/g, " ").trim();
     }
 
-    // Row 8: Institution code
     if (
       i === 7 &&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("Instiution")
+      firstCell &&
+      (firstCell.toLowerCase().includes("instiution") ||
+        firstCell.toLowerCase().includes("institution"))
     ) {
-      metadata.institutionCode = thirdCell || "";
+      metadata.institutionCode = labelValue || "";
     }
 
-    // Row 9: Financial Year
     if (
       i === 8 &&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("Financial Year")
+      firstCell &&
+      firstCell.toLowerCase().includes("financial year")
     ) {
-      metadata.financialYear = thirdCell || "";
+      metadata.financialYear = labelValue || "";
     }
 
-    // Row 10: Start Date
     if (
       i === 9 &&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("Start Date")
+      firstCell &&
+      firstCell.toLowerCase().includes("start date")
     ) {
-      metadata.startDate = excelDateToISO(thirdCell) || "";
+      metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    // Row 11: End Date
-    if (
-      i === 10 &&
-      (firstCell || secondCell) &&
-      (firstCell || secondCell).includes("End Date")
-    ) {
-      metadata.endDate = excelDateToISO(thirdCell) || "";
+    if (i === 10 && firstCell && firstCell.toLowerCase().includes("end date")) {
+      metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
-    // Row 13: unit note, e.g. "In Millions of Birr"
-    if (i === 12 && thirdCell && thirdCell.toLowerCase().includes("in")) {
-      metadata.unit = thirdCell;
-    }
+    // if (i === 12) {
+    //   const unitCell = row.find(
+    //     (c) => c && String(c).toLowerCase().includes("million"),
+    //   );
+    //   if (unitCell) metadata.unit = String(unitCell).trim();
+    // }
   }
-
   return metadata;
 };
-
-const extractQuarterlyMemorandumAndContingentAccountsData = (data) => {
-  const columns = ["Amount"];
+const extractCorporateProfileData=(data)=>{
+      const columns = ["Data"];
   let dataTableStart = -1;
 
   // Find the header row: "S.No." | "Description"
@@ -93,30 +95,33 @@ const extractQuarterlyMemorandumAndContingentAccountsData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || "").trim();
-    if (firstCell.toLowerCase().includes("s.no")) {
+    if (firstCell.toLowerCase().includes("cp1. head")) {
       dataTableStart = i + 1;
       break;
     }
   }
-
-  if (dataTableStart === -1) {
+if (dataTableStart === -1) {
     return { hierarchicalData: [], columns, additionalColumns: [] };
   }
 
+    const getStringValue = (index, row) => {
+    if (index !== undefined && index < row.length) {
+      return String(row[index] || '').trim();
+    }
+    return '';
+  };
   const nodeMap = new Map();
   const topLevelNodes = [];
 
-  for (let i = dataTableStart; i < data.length; i++) {
+for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
     const code = String(row[0] || "").trim();
     const description = String(row[1] || "").trim();
     if (!description || !code) continue;
-    if (description.toLowerCase().includes("note:")) continue;
 
-    const rawValue = parseFloat(row[2]);
-    const value = !isNaN(rawValue) ? rawValue.toFixed(2) : "0";
+    const value = getStringValue(2,row)
 
     const codeParts = code.split(".");
     const level = codeParts.length;
@@ -125,7 +130,7 @@ const extractQuarterlyMemorandumAndContingentAccountsData = (data) => {
       id: code,
       sNo: code,
       label: description,
-      values: { Amount: value },
+      values: { 'Data': value },
       rowNumber: i + 1,
       level,
       isTotalRow: false,
@@ -159,7 +164,6 @@ const extractQuarterlyMemorandumAndContingentAccountsData = (data) => {
   };
   cleanData(topLevelNodes);
 
-  return { hierarchicalData: topLevelNodes, columns, additionalColumns: [] };
-};
-
-export default extractQuarterlyMemorandumAndContingentAccountsData;
+  return { hierarchicalData: topLevelNodes, columns, additionalColumns: [], noandtitles:['CP1. Head Office Address','Description']};
+}
+export default extractCorporateProfileData

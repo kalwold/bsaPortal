@@ -7,8 +7,6 @@ export const unidentifiedRegistry = {
     "unidentified/quarterly/extractAvgInterestRateDeposits",
   [REPORT_TYPES.QUARTERLY_AVG_INTEREST_RATE_LOANS]:
     "unidentified/quarterly/extractAvgInterestRateLoans",
-  [REPORT_TYPES.QUARTERLY_FRAUD_OUTSTANDING]:
-    "unidentified/quarterly/extractFraudOutstanding",
   [REPORT_TYPES.QUARTERLY_NEW_AGENTS_INFORMATION]:
     "unidentified/quarterly/extractNewAgentsInformation",
   [REPORT_TYPES.QUARTERLY_NEW_AGENT_TRANSACTION_BY_TYPE_AMOUNT]:
@@ -17,4 +15,12 @@ export const unidentifiedRegistry = {
     "unidentified/quarterly/extractLoansToInsiders",
   [REPORT_TYPES.QUARTERLY_HIGH_IMPACT_IT_INCIDENT]:
     "unidentified/quarterly/extractHighImpactITIncident",
+  [REPORT_TYPES.QUARTERLY_CORPORATE_PROFILE_BOARD]:
+    "unidentified/quarterly/extractCorporateProfileBoardData",
+  [REPORT_TYPES.QUARTERLY_LONG_OUTSTANDING_ITEMS]:
+    "unidentified/quarterly/extractLongOutstandingItemsData",
+  [REPORT_TYPES.QUARTERLY_CORPORATE_PROFILE]:
+    "unidentified/quarterly/extractCorporateProfileData",
+  [REPORT_TYPES.QUARTERLY_CORPORATE_PROFILE_OTHER]:
+    "unidentified/quarterly/extractCorporateProfileOtherData",
 };

@@ -42,12 +42,6 @@ export const ifbConfig = {
           name: "Monthly Weighted Average Deposit Profit Rates (Interest-Free Banks)",
           detect: ["DPWADP001"],
         },
-        {
-          key: "MONTHLY_IFB_DEPOSIT_DATA",
-          id: "ifb-monthly_deposit_data",
-          name: "IFB Deposit Data",
-          detect: ["IFBDPO001"],
-        },
       ],
     },
     {
@@ -89,6 +83,12 @@ export const ifbConfig = {
           id: "ifb-quarterly_deposit-sector",
           name: "Quarterly Interest Free Deposits by Sector and Region",
           detect: ["INT_FRE_SECRI003"],
+        },
+        {
+          key: "QUARTERLY_IFB_DEPOSIT_DATA",
+          id: "ifb-quarterly_deposit-data",
+          name: "IFB Deposit Data",
+          detect: ["IFBDPO001"],
         },
       ],
     },

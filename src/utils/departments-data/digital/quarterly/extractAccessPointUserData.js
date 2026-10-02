@@ -23,7 +23,7 @@ export const extractAccessPointUserMetadata =(data)=>{
     const sixCell = String(row[5] || "").trim();
 
     const labelValue = (() => {
-      for (let c = 1; c <= 5; c++) {
+      for (let c = 2; c <= 5; c++) {
         const v = row[c];
         if (v !== undefined && v !== null && String(v).trim() !== "") {
           return String(v).trim();
@@ -44,8 +44,8 @@ export const extractAccessPointUserMetadata =(data)=>{
       metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("POIACC001") ) {
-        metadata.reportType = "branchOps-quarterly_access-point-user";
-        metadata.reportTypeId = "branchOps-quarterly_access-point-user";
+        metadata.reportType = "digital-quarterly_access-point-user";
+        metadata.reportTypeId = "digital-quarterly_access-point-user";
         metadata.departmentId = "branchOps";
         metadata.departmentName = "Branch Operation";
       }
@@ -167,7 +167,7 @@ const extractAccessPointUserData = (data) => {
     if (index !== undefined && index < row.length) {
       return String(row[index] || '').trim();
     }
-    return '';
+    return ''; 
   };
 
   
@@ -203,7 +203,7 @@ const extractAccessPointUserData = (data) => {
 
     // Create the entry
     const entry = {
-      id: `row-${i}`,
+      id: ``,
       sNo: '',
       label: label,
       values: values,

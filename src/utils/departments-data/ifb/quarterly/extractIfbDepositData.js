@@ -1,11 +1,11 @@
 import { excelDateToISO } from "../../../utils";
 
-const REPORT_TYPE_ID = "digital-quarterly_dfs-accounts-subscriptions";
-const DEPARTMENT_ID = "digital";
-const DEPARTMENT_NAME = "Digital Banking";
-const DEFAULT_TITLE = "DFS Accounts & Subscriptions";
+const REPORT_TYPE_ID = "ifb-quarterly_deposit-data";
+const DEPARTMENT_ID = "ifb";
+const DEPARTMENT_NAME = "IFB";
+const DEFAULT_TITLE = "IFB Deposit Accounts & Depositors";
 
-export const extractDFSAccountsSubscriptionsMetadata = (data) => {
+export const extractDepositBankIFBMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -42,7 +42,7 @@ export const extractDFSAccountsSubscriptionsMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      if (firstCell.includes("FIDDDFS001")) {
+      if (firstCell.includes("IFBDPO001")) {
         metadata.reportType = REPORT_TYPE_ID;
         metadata.reportTypeId = REPORT_TYPE_ID;
         metadata.departmentId = DEPARTMENT_ID;
@@ -65,7 +65,7 @@ export const extractDFSAccountsSubscriptionsMetadata = (data) => {
   return metadata;
 };
 
-const extractDFSAccountsSubscriptionsData = (data) => {
+const extractDepositBankIFBData = (data) => {
   // ---- 1. locate the header row (A/A | Afar | Amhara | ... | Total) ----
   let headerIndex = -1;
   for (let i = 0; i < data.length; i++) {
@@ -78,7 +78,7 @@ const extractDFSAccountsSubscriptionsData = (data) => {
   }
 
   if (headerIndex === -1) {
-    console.log("extractDFSAccountsSubscriptionsData: could not find header row");
+    console.log("extractDepositBankIFBData: could not find header row");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -118,21 +118,15 @@ const extractDFSAccountsSubscriptionsData = (data) => {
   // CHECK_Age=Total, CHECK_Urban+Rural+Not Specified=Total, CHECK_Value_...=Total
   const isCheckRow = (label) => /^check_/i.test(label);
 
-  // Rows that are always data rows (even when only the Total column is filled)
-  const DATA_ROW = /^(active_|inactive_|total|age_|location_|check_|urban|rural|male|female|not specified|business)/i;
-
-  // "Digital savings accounts Accounts", "..._by Age Group", "..._by Location",
-  // "Mobile Money Accounts" (has a 0 in Total but no regional values), etc.
+  // "IFB Savings Accounts", "..._by Age Group", "..._by Location",
+  // the "Outstanding Balance (ETB) total Figure" repeated header row, etc.
   const isSectionHeaderRow = (label, row) => {
     if (String(row[1] ?? "").trim() === "A/A") return true; // repeated header row
     if (/_by\s+(age group|location)\s*$/i.test(label)) return true;
-    // any regional value -> data row
-    for (const region of regions) {
-      if (!isEmpty(row[region.index])) return false;
+    for (let c = 1; c <= lastCol; c++) {
+      if (!isEmpty(row[c])) return false;
     }
-    // no regional values: header unless it looks like a data row
-    if (isEmpty(row[totalColumnIndex])) return true;
-    return !DATA_ROW.test(label);
+    return true; // nothing in any value column
   };
 
   // ---- 3. parse rows into sections > children ----
@@ -197,4 +191,4 @@ const extractDFSAccountsSubscriptionsData = (data) => {
   };
 };
 
-export default extractDFSAccountsSubscriptionsData;
+export default extractDepositBankIFBData;
