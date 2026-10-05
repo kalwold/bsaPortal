@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractAccessPointUserMetadata =(data)=>{
+export const extractAccessPointUserMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -43,7 +43,7 @@ export const extractAccessPointUserMetadata =(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("POIACC001") ) {
+      if (firstCell.includes("POIACC001")) {
         metadata.reportType = "digital-quarterly_access-point-user";
         metadata.reportTypeId = "digital-quarterly_access-point-user";
         metadata.departmentId = "branchOps";
@@ -80,7 +80,11 @@ export const extractAccessPointUserMetadata =(data)=>{
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    if (i === 3 && secondCell && secondCell.toLowerCase().includes("end date")) {
+    if (
+      i === 3 &&
+      secondCell &&
+      secondCell.toLowerCase().includes("end date")
+    ) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
@@ -97,13 +101,14 @@ const extractAccessPointUserData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
- 
-
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -112,17 +117,17 @@ const extractAccessPointUserData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const thirdCell = String(row[2] || '').trim();
-    const secondCell = String(row[1] || '').trim();
-    if (secondCell === 'A/A' || thirdCell === 'Afar') {
+    const thirdCell = String(row[2] || "").trim();
+    const secondCell = String(row[1] || "").trim();
+    if (secondCell === "A/A" || thirdCell === "Afar") {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -132,104 +137,103 @@ const extractAccessPointUserData = (data) => {
   let totalColumnIndex = -1;
 
   for (let i = 1; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || '').trim();
-    if (cell === 'Total') {
+    const cell = String(headerRow[i] || "").trim();
+    if (cell === "Total") {
       totalColumnIndex = i;
     } else if (cell) {
       regions.push({
         name: cell,
-        index: i
+        index: i,
       });
     }
   }
 
-  console.log('Regions:', regions);
-  console.log('Total column index:', totalColumnIndex);
+  console.log("Regions:", regions);
+  console.log("Total column index:", totalColumnIndex);
 
   // Define the columns - regions plus Total
-  const columns = [...regions.map(r => r.name), 'Total'];
+  const columns = [...regions.map((r) => r.name), "Total"];
 
   const topLevelNodes = [];
 
   // Helper functions
   const getValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+      let raw = String(row[index] ?? "").trim();
+      const isNegative = /^\(.*\)$/.test(raw);
+      raw = raw.replace(/[(),%\s]/g, "");
+      let val = parseFloat(raw);
       if (!isNaN(val) && val !== 0) {
+        if (isNegative) {
+          val = -Math.abs(val);
+        }
         return val.toFixed(2);
       }
-      return '0';
+      return "0";
     }
-    return '0';
+    return "0";
   };
 
   const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return ''; 
+    return "";
   };
 
-  
   // Check if a row is a Total row
   const isTotalRow = (label) => {
-    return label.includes('_Total') || label.endsWith('_Total_Consistency');
+    return label.includes("_Total") || label.endsWith("_Total_Consistency");
   };
-
 
   // Parse each row
   for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const label = String(row[0] || '').trim();
+    const label = String(row[0] || "").trim();
 
     // Skip if no label
     if (!label) continue;
 
     // Extract values for each region
     const values = {};
-    
+
     for (const region of regions) {
       values[region.name] = getValue(region.index, row);
     }
 
-       // Total column
+    // Total column
     if (totalColumnIndex !== -1) {
-      values['Total'] = getValue(totalColumnIndex, row);
+      values["Total"] = getValue(totalColumnIndex, row);
     } else {
-      values['Total'] = '0';
+      values["Total"] = "0";
     }
 
     // Create the entry
     const entry = {
       id: ``,
-      sNo: '',
+      sNo: "",
       label: label,
       values: values,
       rowNumber: i + 1,
       level: 1,
       isTotalRow: isTotalRow(label),
       isSectionHeader: false,
-     
-      children: []
+
+      children: [],
     };
 
-
-
-   
     topLevelNodes.push(entry);
   }
 
-
-
-  console.log('Total sections:', topLevelNodes.length);
+  console.log("Total sections:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles:['Description']
+    noandtitles: ["Description"],
   };
 };
-export default extractAccessPointUserData
+export default extractAccessPointUserData;

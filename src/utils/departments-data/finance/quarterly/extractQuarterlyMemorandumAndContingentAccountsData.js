@@ -1,6 +1,8 @@
 import { excelDateToISO } from "../../../utils";
 
-export const extractQuarterlyMemorandumAndContingentAccountsMetadata = (data) => {
+export const extractQuarterlyMemorandumAndContingentAccountsMetadata = (
+  data,
+) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -120,7 +122,7 @@ const extractQuarterlyMemorandumAndContingentAccountsData = (data) => {
 
     const codeParts = code.split(".");
     const level = codeParts.length;
- 
+
     const entry = {
       id: code,
       sNo: code,

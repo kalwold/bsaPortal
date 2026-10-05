@@ -1,6 +1,5 @@
 import { excelDateToISO } from "../../../utils";
 
-
 const REPORT_TYPE_ID = "unidentified-quarterly_avg-interest-rate-loans";
 const DEPARTMENT_ID = "unidentified";
 const DEPARTMENT_NAME = "Unidentified";
@@ -48,7 +47,10 @@ export const extractAvgInterestRateLoansMetadata = (data) => {
         metadata.departmentId = DEPARTMENT_ID;
         metadata.departmentName = DEPARTMENT_NAME;
       }
-    } else if (label.includes("corporate profile") || label.includes("interest rate")) {
+    } else if (
+      label.includes("corporate profile") ||
+      label.includes("interest rate")
+    ) {
       metadata.reportTitle = firstCell.replace(/\s+/g, " ").trim();
     } else if (label.includes("instiution") || label.includes("institution")) {
       metadata.institutionCode = labelValue;
@@ -69,7 +71,11 @@ const extractAvgInterestRateLoansData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    if (String(row[0] ?? "").trim().toLowerCase() === "reference") {
+    if (
+      String(row[0] ?? "")
+        .trim()
+        .toLowerCase() === "reference"
+    ) {
       headerIndex = i;
       break;
     }
@@ -77,7 +83,12 @@ const extractAvgInterestRateLoansData = (data) => {
 
   if (headerIndex === -1) {
     console.log("Could not find data table");
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
   // 2. Value columns: everything after Reference and the product name

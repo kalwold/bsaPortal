@@ -27,8 +27,14 @@ const FIRST_VALUE_COL = 2; // A = Code, B = Indicator, values start at C
 const CODE_RE = /^\d+(\.\d+)*$/;
 const APPEND_PARENT_NAME = true;
 
-const normCode = (v) => String(v ?? "").replace(/[\s\u00a0]+/g, "").trim();
-const normText = (v) => String(v ?? "").replace(/[\s\u00a0]+/g, " ").trim();
+const normCode = (v) =>
+  String(v ?? "")
+    .replace(/[\s\u00a0]+/g, "")
+    .trim();
+const normText = (v) =>
+  String(v ?? "")
+    .replace(/[\s\u00a0]+/g, " ")
+    .trim();
 const isCodeRow = (row) => !!row && CODE_RE.test(normCode(row[0]));
 
 const cleanHeader = (text) => {
@@ -82,7 +88,9 @@ const buildColumns = (data, headerRowIdx, dataTableStart) => {
     else if (lowerHasText) parts[0] = currentParent;
     else continue;
 
-    const chain = parts.filter(Boolean).filter((p, i, a) => i === 0 || p !== a[i - 1]);
+    const chain = parts
+      .filter(Boolean)
+      .filter((p, i, a) => i === 0 || p !== a[i - 1]);
     let key = chain.join("_");
     let n = 2;
     while (used.has(key)) key = `${chain.join("_")}_${n++}`;
@@ -145,11 +153,19 @@ export const extractQuarterlyMobileTransactionsMetadata = (data) => {
       metadata.institutionCode = labelValue || "";
     }
 
-    if (i === 8 && firstCell && firstCell.toLowerCase().includes("financial year")) {
+    if (
+      i === 8 &&
+      firstCell &&
+      firstCell.toLowerCase().includes("financial year")
+    ) {
       metadata.financialYear = labelValue || "";
     }
 
-    if (i === 9 && firstCell && firstCell.toLowerCase().includes("start date")) {
+    if (
+      i === 9 &&
+      firstCell &&
+      firstCell.toLowerCase().includes("start date")
+    ) {
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
@@ -159,9 +175,7 @@ export const extractQuarterlyMobileTransactionsMetadata = (data) => {
 
     // Unit line reads "(Amount in Birr)" in this template
     if (i === 12) {
-      const unitCell = row.find(
-        (c) => c && /million|birr/i.test(String(c)),
-      );
+      const unitCell = row.find((c) => c && /million|birr/i.test(String(c)));
       if (unitCell) metadata.unit = String(unitCell).trim();
     }
   }
@@ -172,7 +186,12 @@ const extractQuarterlyMobileTransactionsData = (data) => {
   const { headerRowIdx, dataTableStart } = locateHeader(data);
 
   if (headerRowIdx === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
   const noandtitles = [
@@ -184,7 +203,9 @@ const extractQuarterlyMobileTransactionsData = (data) => {
 
   const getNum = (row, idx) => {
     if (idx < row.length) {
-      const val = parseFloat(String(row[idx] ?? "").replace(/[,%\s\u00a0]/g, ""));
+      const val = parseFloat(
+        String(row[idx] ?? "").replace(/[,%\s\u00a0]/g, ""),
+      );
       if (!isNaN(val) && val !== 0) return val.toFixed(2);
     }
     return "0";
@@ -236,7 +257,8 @@ const extractQuarterlyMobileTransactionsData = (data) => {
     if (parent) {
       node.parentId = parent.id;
       node.parentLabel = parent.shortLabel;
-      if (APPEND_PARENT_NAME) node.label = `${node.shortLabel} - ${parent.shortLabel}`;
+      if (APPEND_PARENT_NAME)
+        node.label = `${node.shortLabel} - ${parent.shortLabel}`;
       parent.children.push(node);
     } else {
       topLevelNodes.push(node); // no parent found

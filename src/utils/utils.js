@@ -1,4 +1,3 @@
-
 // export const excelDateToISO = (value) => {
 //   if (!value) return "";
 
@@ -57,8 +56,6 @@
 //   return str;
 // };
 
-
-
 export const excelDateToISO = (value) => {
   if (value === null || value === undefined || value === "") {
     return "";
@@ -69,7 +66,7 @@ export const excelDateToISO = (value) => {
   // Already full ISO datetime → return as is
   if (
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(
-      str
+      str,
     )
   ) {
     return str;
@@ -101,18 +98,11 @@ export const excelDateToISO = (value) => {
     }
 
     // Validate date components
-    if (
-      month < 1 ||
-      month > 12 ||
-      day < 1 ||
-      day > 31
-    ) {
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
       return "";
     }
 
-    const date = new Date(
-      Date.UTC(year, month - 1, day, 0, 0, 0, 0)
-    );
+    const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
 
     // Make sure JavaScript didn't normalize an invalid date
     if (
@@ -139,9 +129,7 @@ export const excelDateToISO = (value) => {
     const msPerDay = 24 * 60 * 60 * 1000;
     const excelEpochUTC = Date.UTC(1899, 11, 30);
 
-    const date = new Date(
-      excelEpochUTC + numericValue * msPerDay
-    );
+    const date = new Date(excelEpochUTC + numericValue * msPerDay);
 
     if (isNaN(date.getTime())) {
       return "";

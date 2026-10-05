@@ -9,13 +9,13 @@ export const detectReportType = (data) => {
   let best = null;
   for (const report of RULES) {
     for (const pattern of report.detect) {
-      if (firstCell.includes(pattern) && (!best || pattern.length > best.length)) {
+      if (
+        firstCell.includes(pattern) &&
+        (!best || pattern.length > best.length)
+      ) {
         best = { id: report.id, length: pattern.length };
       }
     }
-     
-
-
   }
   return best ? best.id : null;
 };

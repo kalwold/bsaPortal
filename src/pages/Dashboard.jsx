@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../context/AuthContext';
-import { reportService} from '../services/reportService';
-import { DEPARTMENT_DATA } from '../utils/departments';
+import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../context/AuthContext";
+import { reportService } from "../services/reportService";
+import { DEPARTMENT_DATA } from "../utils/departments";
 
 import {
   BarChart,
@@ -16,14 +16,9 @@ import {
   PieChart,
   Pie,
   Cell,
-} from 'recharts';
+} from "recharts";
 
-import {
-  FiFileText,
-  FiClock,
-  FiCheckCircle,
-  FiXCircle,
-} from 'react-icons/fi';
+import { FiFileText, FiClock, FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -36,7 +31,7 @@ const Dashboard = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['dashboardReports'],
+    queryKey: ["dashboardReports"],
 
     queryFn: async () => {
       // Get every report type from every department
@@ -45,7 +40,7 @@ const Dashboard = () => {
           ...reportType,
           departmentId: department.id,
           departmentName: department.name,
-        }))
+        })),
       );
 
       //console.log('Report Types:', reportTypes);
@@ -54,14 +49,10 @@ const Dashboard = () => {
       const results = await Promise.all(
         reportTypes.map(async (reportType) => {
           try {
-            const response = await reportService.getReports(
-              reportType.id
-            );
+            const response = await reportService.getReports(reportType.id);
 
             // Make sure response is an array
-            const reports = Array.isArray(response)
-              ? response
-              : [];
+            const reports = Array.isArray(response) ? response : [];
 
             return reports.map((report) => ({
               ...report,
@@ -75,16 +66,13 @@ const Dashboard = () => {
               departmentName: reportType.departmentName,
             }));
           } catch (err) {
-            console.error(
-              `Failed to load ${reportType.id}:`,
-              err
-            );
+            console.error(`Failed to load ${reportType.id}:`, err);
 
             // Don't fail the entire dashboard
             // if one report type fails
             return [];
           }
-        })
+        }),
       );
 
       const allReports = results.flat();
@@ -104,23 +92,19 @@ const Dashboard = () => {
     const total = reports.length;
 
     const pending = reports.filter(
-      (report) =>
-        report.status?.toUpperCase() === 'PENDING'
+      (report) => report.status?.toUpperCase() === "PENDING",
     ).length;
 
     const inReview = reports.filter(
-      (report) =>
-        report.status?.toUpperCase() === 'IN_REVIEW'
+      (report) => report.status?.toUpperCase() === "IN_REVIEW",
     ).length;
 
     const approved = reports.filter(
-      (report) =>
-        report.status?.toUpperCase() === 'APPROVED'
+      (report) => report.status?.toUpperCase() === "APPROVED",
     ).length;
 
     const rejected = reports.filter(
-      (report) =>
-        report.status?.toUpperCase() === 'REJECTED'
+      (report) => report.status?.toUpperCase() === "REJECTED",
     ).length;
 
     return {
@@ -145,8 +129,8 @@ const Dashboard = () => {
 
       if (isNaN(date.getTime())) return;
 
-      const month = date.toLocaleString('default', {
-        month: 'short',
+      const month = date.toLocaleString("default", {
+        month: "short",
       });
 
       if (!monthly[month]) {
@@ -159,9 +143,7 @@ const Dashboard = () => {
 
       monthly[month].uploaded += 1;
 
-      if (
-        report.status?.toUpperCase() === 'APPROVED'
-      ) {
+      if (report.status?.toUpperCase() === "APPROVED") {
         monthly[month].approved += 1;
       }
     });
@@ -175,13 +157,9 @@ const Dashboard = () => {
   const recentReports = useMemo(() => {
     return [...reports]
       .sort((a, b) => {
-        const dateA = new Date(
-          a.uploadedAt || a.createdAt || 0
-        );
+        const dateA = new Date(a.uploadedAt || a.createdAt || 0);
 
-        const dateB = new Date(
-          b.uploadedAt || b.createdAt || 0
-        );
+        const dateB = new Date(b.uploadedAt || b.createdAt || 0);
 
         return dateB - dateA;
       })
@@ -191,28 +169,23 @@ const Dashboard = () => {
   // =========================================================
   // PIE CHART
   // =========================================================
-  const COLORS = [
-    '#3b237b',
-    '#F59E0B',
-    '#10B981',
-    '#EF4444',
-  ];
+  const COLORS = ["#3b237b", "#F59E0B", "#10B981", "#EF4444"];
 
   const pieData = [
     {
-      name: 'Pending',
+      name: "Pending",
       value: statistics.pending,
     },
     {
-      name: 'In Review',
+      name: "In Review",
       value: statistics.inReview,
     },
     {
-      name: 'Approved',
+      name: "Approved",
       value: statistics.approved,
     },
     {
-      name: 'Rejected',
+      name: "Rejected",
       value: statistics.rejected,
     },
   ];
@@ -222,28 +195,28 @@ const Dashboard = () => {
   // =========================================================
   const statCards = [
     {
-      label: 'Total Reports',
+      label: "Total Reports",
       value: statistics.total,
       icon: FiFileText,
-      color: 'bg-[#3b237b]',
+      color: "bg-[#3b237b]",
     },
     {
-      label: 'Pending',
+      label: "Pending",
       value: statistics.pending,
       icon: FiClock,
-      color: 'bg-[#E4AA25]',
+      color: "bg-[#E4AA25]",
     },
     {
-      label: 'Approved',
+      label: "Approved",
       value: statistics.approved,
       icon: FiCheckCircle,
-      color: 'bg-[#00a887]',
+      color: "bg-[#00a887]",
     },
     {
-      label: 'Rejected',
+      label: "Rejected",
       value: statistics.rejected,
       icon: FiXCircle,
-      color: 'bg-[#ff4d00]',
+      color: "bg-[#ff4d00]",
     },
   ];
 
@@ -267,7 +240,7 @@ const Dashboard = () => {
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4">
           Failed to load reports.
           <p className="text-sm mt-1">
-            {error?.message || 'Something went wrong.'}
+            {error?.message || "Something went wrong."}
           </p>
         </div>
       </div>
@@ -279,23 +252,17 @@ const Dashboard = () => {
   // =========================================================
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Dashboard
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
 
-        <div className="text-sm text-gray-500">
-          Welcome back, {user?.name}
-        </div>
+        <div className="text-sm text-gray-500">Welcome back, {user?.name}</div>
       </div>
 
       {/* =====================================================
           STAT CARDS
       ===================================================== */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
         {statCards.map((stat) => {
           const Icon = stat.icon;
 
@@ -306,10 +273,7 @@ const Dashboard = () => {
             >
               <div className="p-5">
                 <div className="flex items-center">
-
-                  <div
-                    className={`flex-shrink-0 rounded-md p-3 ${stat.color}`}
-                  >
+                  <div className={`flex-shrink-0 rounded-md p-3 ${stat.color}`}>
                     <Icon className="h-6 w-6 text-white" />
                   </div>
 
@@ -324,35 +288,26 @@ const Dashboard = () => {
                       </dd>
                     </dl>
                   </div>
-
                 </div>
               </div>
             </div>
           );
         })}
-
       </div>
 
       {/* =====================================================
           CHARTS
       ===================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
         {/* Pie Chart */}
         <div className="bg-white p-6 rounded-lg shadow">
-
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Report Status Distribution
           </h3>
 
           <div className="h-64">
-
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-
                 <Pie
                   data={pieData}
                   cx="50%"
@@ -366,39 +321,29 @@ const Dashboard = () => {
                   outerRadius={80}
                   dataKey="value"
                 >
-
                   {pieData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
-
                 </Pie>
 
                 <Tooltip />
-
               </PieChart>
             </ResponsiveContainer>
-
           </div>
         </div>
 
         {/* Monthly Chart */}
         <div className="bg-white p-6 rounded-lg shadow">
-
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Monthly Trend
           </h3>
 
           <div className="h-64">
-
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData}>
-
                 <CartesianGrid strokeDasharray="3 3" />
 
                 <XAxis dataKey="month" />
@@ -409,114 +354,73 @@ const Dashboard = () => {
 
                 <Legend />
 
-                <Bar
-                  dataKey="uploaded"
-                  fill="#3B82F6"
-                  name="Uploaded"
-                />
+                <Bar dataKey="uploaded" fill="#3B82F6" name="Uploaded" />
 
-                <Bar
-                  dataKey="approved"
-                  fill="#10B981"
-                  name="Approved"
-                />
-
+                <Bar dataKey="approved" fill="#10B981" name="Approved" />
               </BarChart>
             </ResponsiveContainer>
-
           </div>
         </div>
-
       </div>
 
       {/* =====================================================
           RECENT REPORTS
       ===================================================== */}
       <div className="bg-white shadow rounded-lg">
-
         <div className="px-6 py-4 border-b border-gray-200">
-
-          <h3 className="text-lg font-medium text-gray-900">
-            Recent Reports
-          </h3>
-
+          <h3 className="text-lg font-medium text-gray-900">Recent Reports</h3>
         </div>
 
         <div className="divide-y divide-gray-200">
-
           {recentReports.length > 0 ? (
-
             recentReports.map((report) => {
-
-              const status =
-                report.status?.toUpperCase();
+              const status = report.status?.toUpperCase();
 
               return (
-                <div
-                  key={report.id}
-                  className="px-6 py-4 hover:bg-gray-50"
-                >
-
+                <div key={report.id} className="px-6 py-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
-
                     <div>
-
                       <p className="text-sm font-medium text-[#48198B]">
-                        {report.title ||
-                          report.reportTypeName ||
-                          'Report'}
+                        {report.title || report.reportTypeName || "Report"}
                       </p>
 
                       <p className="text-sm text-gray-500">
                         {report.reportTypeName}
-                        {' • '}
+                        {" • "}
                         {report.departmentName}
                       </p>
-
                     </div>
 
                     <div className="flex items-center space-x-4">
-
                       <span
                         className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          status === 'APPROVED'
-                            ? 'bg-green-100 text-green-800'
-                            : status === 'PENDING'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : status === 'IN_REVIEW'
-                            ? 'bg-blue-100 text-blue-800'
-                            : status === 'REJECTED'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
+                          status === "APPROVED"
+                            ? "bg-green-100 text-green-800"
+                            : status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : status === "IN_REVIEW"
+                                ? "bg-blue-100 text-blue-800"
+                                : status === "REJECTED"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {report.status || 'UNKNOWN'}
+                        {report.status || "UNKNOWN"}
                       </span>
-
                     </div>
-
                   </div>
-
                 </div>
               );
             })
-
           ) : (
-
             <div className="px-6 py-4 text-center text-gray-500">
               No recent reports
             </div>
-
           )}
-
         </div>
       </div>
-
     </div>
   );
 };
 
 export default Dashboard;
-
-
-

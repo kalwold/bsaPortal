@@ -17,7 +17,9 @@ const DEPARTMENT_NAME = "Branch Operation";
 const cellText = (c) =>
   c instanceof Date
     ? c.toISOString().slice(0, 10)
-    : String(c ?? "").replace(/\s+/g, " ").trim();
+    : String(c ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
 
 const cellsOf = (row) => Array.from(row || [], cellText);
 
@@ -48,7 +50,8 @@ const CODE_HEADER_RE = /^(s\.?\s*no\.?|sr\.?\s*no\.?|no\.?|code)$/i;
 const CODE_RE = /^\d+(\.\d+)*\.?$/;
 const TOTAL_RE = /^(grand\s+|sub[\s-]*)?total\b/i;
 const FOOTER_RE = /^(general\s+information|notes?\b|source\b|\*)/i;
-const COUNT_HEADER_RE = /(number|no\.?\s+of|count|#|depositors|borrowers|accounts)/i;
+const COUNT_HEADER_RE =
+  /(number|no\.?\s+of|count|#|depositors|borrowers|accounts)/i;
 
 const findHeaderRow = (data) => {
   for (let i = 0; i < data.length; i++) {
@@ -109,7 +112,11 @@ export const extractInsuredUninsuredDepositSummaryMetadata = (data) => {
       metadata.startDate = toIsoDate(value);
     } else if (/^end\s*date/i.test(label)) {
       metadata.endDate = toIsoDate(value);
-    } else if (/^\(?\s*(amounts?\s+)?(are\s+)?in\s+(birr|etb|thousands?|millions?|'?000)/i.test(label)) {
+    } else if (
+      /^\(?\s*(amounts?\s+)?(are\s+)?in\s+(birr|etb|thousands?|millions?|'?000)/i.test(
+        label,
+      )
+    ) {
       metadata.unit = label;
     } else if (/^unit/i.test(label)) {
       metadata.unit = value;
@@ -224,7 +231,8 @@ const extractInsuredUninsuredDepositSummaryData = (data) => {
 
     if (hasCode) {
       depth = codeDepth(raw[0], codeText);
-      while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+      while (stack.length && stack[stack.length - 1].depth >= depth)
+        stack.pop();
       parentRec = stack.length ? stack[stack.length - 1] : null;
       // Number by position inside the parent, never from the code text
       const n = parentRec ? ++parentRec.childCount : ++rootCount;

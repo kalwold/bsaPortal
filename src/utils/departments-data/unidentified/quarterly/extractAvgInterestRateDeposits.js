@@ -1,7 +1,8 @@
 import { excelDateToISO } from "../../../utils";
 
 // TODO: set these to the right department / report type for CD001
-const REPORT_TYPE_ID = "unidentified-branchOps-quarterly_avg-interest-rate-deposits";
+const REPORT_TYPE_ID =
+  "unidentified-branchOps-quarterly_avg-interest-rate-deposits";
 const DEPARTMENT_ID = "unidentified";
 const DEPARTMENT_NAME = "Unidentified";
 
@@ -48,7 +49,10 @@ export const extractAvgInterestRateDepositsMetadata = (data) => {
         metadata.departmentId = DEPARTMENT_ID;
         metadata.departmentName = DEPARTMENT_NAME;
       }
-    } else if (label.includes("corporate profile") || label.includes("interest rate")) {
+    } else if (
+      label.includes("corporate profile") ||
+      label.includes("interest rate")
+    ) {
       metadata.reportTitle = firstCell.replace(/\s+/g, " ").trim();
     } else if (label.includes("instiution") || label.includes("institution")) {
       metadata.institutionCode = labelValue;
@@ -69,7 +73,11 @@ const extractAvgInterestRateDepositsData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    if (String(row[1] ?? "").trim().toLowerCase() === "particular") {
+    if (
+      String(row[1] ?? "")
+        .trim()
+        .toLowerCase() === "particular"
+    ) {
       headerIndex = i;
       break;
     }
@@ -77,7 +85,12 @@ const extractAvgInterestRateDepositsData = (data) => {
 
   if (headerIndex === -1) {
     console.log("Could not find data table");
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
   // 2. Value columns: everything after No. and Particular

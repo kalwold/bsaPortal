@@ -7,7 +7,7 @@ import { excelDateToISO } from "../../../utils";
 const sanitizeKey = (text) => {
   return String(text || "")
     .trim()
-    .replace(/\./g, "_")          // dots → underscores first
+    .replace(/\./g, "_") // dots → underscores first
     .replace(/\s+/g, "_")
     .replace(/[^a-zA-Z0-9_]/g, "")
     .replace(/_+/g, "_");
@@ -129,8 +129,12 @@ const extractManpowerStructureData = (data) => {
 
     if (!row || row.length === 0) continue;
 
-    const first = String(row[0] || "").trim().toLowerCase();
-    const second = String(row[1] || "").trim().toLowerCase();
+    const first = String(row[0] || "")
+      .trim()
+      .toLowerCase();
+    const second = String(row[1] || "")
+      .trim()
+      .toLowerCase();
 
     const isNoHeader =
       first === "no" ||
@@ -342,12 +346,7 @@ const extractManpowerStructureData = (data) => {
 
       const raw = row[column.index];
 
-      if (
-        raw !== null &&
-        raw !== undefined &&
-        raw !== "" &&
-        raw !== "-"
-      ) {
+      if (raw !== null && raw !== undefined && raw !== "" && raw !== "-") {
         const cleaned = String(raw).replace(/,/g, "").trim();
 
         const num = parseFloat(cleaned);

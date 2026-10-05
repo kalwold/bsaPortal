@@ -1,12 +1,17 @@
 import { excelDateToISO } from "../../../utils";
 
 // TODO: set these to the right department / report type for NA001
-const REPORT_TYPE_ID = "unidentified-branchOps-quarterly_new-agents-information";
+const REPORT_TYPE_ID =
+  "unidentified-branchOps-quarterly_new-agents-information";
 const DEPARTMENT_ID = "unidentified";
 const DEPARTMENT_NAME = "Unidentified";
 
-const clean = (v) => String(v ?? "").replace(/\s+/g, " ").trim();
-const isFilled = (v) => v !== undefined && v !== null && String(v).trim() !== "";
+const clean = (v) =>
+  String(v ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+const isFilled = (v) =>
+  v !== undefined && v !== null && String(v).trim() !== "";
 
 /* ------------------------------------------------------------------ */
 /* Metadata                                                            */
@@ -128,7 +133,9 @@ const pad = (n) => String(n).padStart(2, "0");
 const toDateValue = (raw) => {
   if (!isFilled(raw)) return "";
   if (raw instanceof Date) {
-    return isNaN(raw) ? "" : `${raw.getFullYear()}-${pad(raw.getMonth() + 1)}-${pad(raw.getDate())}`;
+    return isNaN(raw)
+      ? ""
+      : `${raw.getFullYear()}-${pad(raw.getMonth() + 1)}-${pad(raw.getDate())}`;
   }
   return excelDateToISO(String(raw).trim()) || clean(raw);
 };

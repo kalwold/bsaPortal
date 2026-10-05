@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
- const CURRENCIES = [
+const CURRENCIES = [
   "USD",
   "EUR",
   "CHF",
@@ -18,7 +18,6 @@ import { excelDateToISO } from "../../../utils";
   "NOK",
   "KWD",
 ];
-
 
 export const extractForexMetadata = (data) => {
   const metadata = {
@@ -59,7 +58,6 @@ export const extractForexMetadata = (data) => {
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
 
-     
       if (firstCell.includes("SINGLE CURRENCY")) {
         metadata.reportType = "single-currency-exposure";
         metadata.departmentName = "IBD";
@@ -69,41 +67,42 @@ export const extractForexMetadata = (data) => {
       }
     }
 
-    if (( i === 3) && (secondCell)) {
-       metadata.reportTitle = secondCell || '';
+    if (i === 3 && secondCell) {
+      metadata.reportTitle = secondCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (secondCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      secondCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -113,29 +112,30 @@ export const extractForexMetadata = (data) => {
     }
 
     if (
-      ( i === 12) &&
+      i === 12 &&
       (thirdCell || thirteenCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        thirteenCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+        thirteenCell.toLowerCase().includes("in") ||
+        firstCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = thirteenCell  || '';
+      metadata.unit = thirteenCell || "";
       //console.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractForexData = (data) => {
   const result = [];
   let dataTableStart = -1;
-   let noandtitles = [];
-    for (let i = 0; i < data.length; i++) {
+  let noandtitles = [];
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    
+
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if(i === 13){
-      noandtitles = [firstCell,secondCell]
+    if (i === 13) {
+      noandtitles = [firstCell, secondCell];
       //console.log("Found title:", noandtitles);
     }
   }
@@ -624,8 +624,8 @@ const extractForexData = (data) => {
     hierarchicalData: topLevelNodes,
     columns: CURRENCIES,
     additionalColumns: ["OTHER1", "OTHER2", "OTHER3", "OVERALL_EXPOSURE"],
-    noandtitles:noandtitles
+    noandtitles: noandtitles,
   };
 };
 
-export default extractForexData
+export default extractForexData;

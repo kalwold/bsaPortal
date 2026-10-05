@@ -37,11 +37,13 @@ export const extractBuildingConstructionMetadata = (data) => {
     // can line it up against what the code below expects (row index,
     // Excel row number, full row contents, and which value it picked).
 
-
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("BUIL_CONSTXW002") || firstCell.includes("XW002")) {
+      if (
+        firstCell.includes("BUIL_CONSTXW002") ||
+        firstCell.includes("XW002")
+      ) {
         metadata.reportType = "credit-quarterly_building-construction";
         metadata.reportTypeId = "credit-quarterly_building-construction";
         metadata.departmentId = "credit";
@@ -78,17 +80,13 @@ export const extractBuildingConstructionMetadata = (data) => {
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    if (
-      i === 10 &&
-      firstCell &&
-      firstCell.toLowerCase().includes("end date")
-    ) {
+    if (i === 10 && firstCell && firstCell.toLowerCase().includes("end date")) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
     if (i === 12) {
       const unitCell = row.find(
-        (c) => c && String(c).toLowerCase().includes("million")
+        (c) => c && String(c).toLowerCase().includes("million"),
       );
       if (unitCell) metadata.unit = String(unitCell).trim();
     }
@@ -115,16 +113,30 @@ const extractBuildingConstructionLoansData = (data) => {
     }
   }
 
-  console.log('[XW002] "S.No." header found at row index:', headerRowIdx,
-    headerRowIdx === -1 ? '(NOT FOUND — check that A14 literally reads "S.No.")' : `(Excel row ${headerRowIdx + 1})`);
+  console.log(
+    '[XW002] "S.No." header found at row index:',
+    headerRowIdx,
+    headerRowIdx === -1
+      ? '(NOT FOUND — check that A14 literally reads "S.No.")'
+      : `(Excel row ${headerRowIdx + 1})`,
+  );
 
   if (headerRowIdx === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles,
+    };
   }
 
   // Header spans 2 rows (main header, then Type/Value sub-header for Collateral)
   const dataTableStart = headerRowIdx + 2;
-  console.log('[XW002] data rows expected to start at index:', dataTableStart, `(Excel row ${dataTableStart + 1})`);
+  console.log(
+    "[XW002] data rows expected to start at index:",
+    dataTableStart,
+    `(Excel row ${dataTableStart + 1})`,
+  );
   let loggedRows = 0;
 
   const getNum = (row, idx) => {
@@ -144,7 +156,8 @@ const extractBuildingConstructionLoansData = (data) => {
     }
     return "0";
   };
-  const getStr = (row, idx) => String((idx < row.length && row[idx]) || "").trim();
+  const getStr = (row, idx) =>
+    String((idx < row.length && row[idx]) || "").trim();
 
   const sanitizeCode = (code) => String(code).trim();
 
@@ -165,7 +178,7 @@ const extractBuildingConstructionLoansData = (data) => {
     const isBlankCode =
       codeRaw === undefined || codeRaw === "" || isNaN(parseFloat(codeRaw));
 
-      if (!name && codeRaw.includes('.')) continue
+    if (!name && codeRaw.includes(".")) continue;
     if (isBlankCode) {
       // Blank S.No. but a "Sub Total"/"Total" style label -> attach it as
       // a trailing child of the last top-level group instead of dropping it.
@@ -205,7 +218,10 @@ const extractBuildingConstructionLoansData = (data) => {
           topLevelNodes.push(subtotalEntry);
         }
       } else if (loggedRows < 30) {
-        console.log(`[XW002] row[${i}] (Excel row ${i + 1}) skipped — no numeric S.No.:`, row);
+        console.log(
+          `[XW002] row[${i}] (Excel row ${i + 1}) skipped — no numeric S.No.:`,
+          row,
+        );
         loggedRows++;
       }
       continue;
@@ -216,7 +232,9 @@ const extractBuildingConstructionLoansData = (data) => {
     const label = name;
 
     if (loggedRows < 30) {
-      console.log(`[XW002] row[${i}] (Excel row ${i + 1}) included — code="${code}", name="${name}", loanType="${loanType}"`);
+      console.log(
+        `[XW002] row[${i}] (Excel row ${i + 1}) included — code="${code}", name="${name}", loanType="${loanType}"`,
+      );
       loggedRows++;
     }
 

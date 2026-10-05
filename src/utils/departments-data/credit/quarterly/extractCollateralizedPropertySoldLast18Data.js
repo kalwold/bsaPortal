@@ -16,13 +16,13 @@ export const extractCollateralizedPropertySoldLast18Metadata = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]?row[0]:'').trim();
-    const secondCell = String(row[1]?row[1]:'').trim();
-    const thirdCell = String(row[2]?row[2]:'').trim();
-    const fourthCell = String(row[3]?row[3]:'').trim();
+    const firstCell = String(row[0] ? row[0] : "").trim();
+    const secondCell = String(row[1] ? row[1] : "").trim();
+    const thirdCell = String(row[2] ? row[2] : "").trim();
+    const fourthCell = String(row[3] ? row[3] : "").trim();
 
     if (i === 0 && firstCell) {
-   metadata.ReturnKey = firstCell;
+      metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("COL_SOL_18M") || firstCell.includes("LL001")) {
         metadata.reportType = "credit-quarterly_loan-collateralized-properties";
@@ -33,8 +33,8 @@ export const extractCollateralizedPropertySoldLast18Metadata = (data) => {
       }
     }
 
-      if (( i === 3 ) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
@@ -94,25 +94,24 @@ const extractCollateralizedPropertySoldLast18Data = (data) => {
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-  
+
     const firstCell = String(row[0]).trim();
-     if (firstCell.includes("S.No.")) {
+    if (firstCell.includes("S.No.")) {
       console.log("Found data table header at row", i);
       dataTableStartIndex = i + 2;
       break;
     }
   }
-    if (dataTableStartIndex === -1) {
-      console.log("Could not find data table");
-      return { hierarchicalData: [], columns: [], additionalColumns: [] };
-    }
-  
-    const headerRow = data[dataTableStartIndex - 1];
-    console.log(
-      "Header row:",
-      headerRow.map((c) => String(c || "").trim()),
-    );
-  
+  if (dataTableStartIndex === -1) {
+    console.log("Could not find data table");
+    return { hierarchicalData: [], columns: [], additionalColumns: [] };
+  }
+
+  const headerRow = data[dataTableStartIndex - 1];
+  console.log(
+    "Header row:",
+    headerRow.map((c) => String(c || "").trim()),
+  );
 
   const columnMap = {
     sNo: 0,
@@ -148,17 +147,28 @@ const extractCollateralizedPropertySoldLast18Data = (data) => {
     const borrowerName = String(row[columnMap.borrowerName] || "").trim();
 
     if (!borrowerName) continue;
-  
-  
-    if(sNo.includes("*Including taxes, insurance fees, legal fees and other expenses")) continue;
+
+    if (
+      sNo.includes(
+        "*Including taxes, insurance fees, legal fees and other expenses",
+      )
+    )
+      continue;
     // Skip rows beyond 166 as they are not relevant for the data table
-    if(!borrowerName){
-      continue;}
- 
+    if (!borrowerName) {
+      continue;
+    }
+
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+        let raw = String(row[index] ?? "").trim();
+        const isNegative = /^\(.*\)$/.test(raw);
+        raw = raw.replace(/[(),%\s]/g, "");
+        let val = parseFloat(raw);
         if (!isNaN(val) && val !== 0) {
+          if (isNegative) {
+            val = -Math.abs(val);
+          }
           return val.toFixed(2);
         }
         return "0";
@@ -191,7 +201,7 @@ const extractCollateralizedPropertySoldLast18Data = (data) => {
       columnMap.collateralDisposalExpenses,
     );
     values["Collateral_Net_Value"] = getValue(columnMap.collateralNetValue);
-  const isTotalRow = (borrowerName === "Total");
+    const isTotalRow = borrowerName === "Total";
     const entry = {
       id: sNo,
       sNo: sNo,

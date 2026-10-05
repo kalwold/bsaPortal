@@ -38,7 +38,9 @@ export const extractDFSAccountsSubscriptionsMetadata = (data) => {
     if (!row || row.length === 0) continue;
 
     const firstCell = String(row[0] ?? "").trim();
-    const label = String(row[1] ?? "").trim().toLowerCase();
+    const label = String(row[1] ?? "")
+      .trim()
+      .toLowerCase();
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
@@ -78,7 +80,9 @@ const extractDFSAccountsSubscriptionsData = (data) => {
   }
 
   if (headerIndex === -1) {
-    console.log("extractDFSAccountsSubscriptionsData: could not find header row");
+    console.log(
+      "extractDFSAccountsSubscriptionsData: could not find header row",
+    );
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -96,12 +100,14 @@ const extractDFSAccountsSubscriptionsData = (data) => {
   }
 
   const columns = [...regions.map((r) => r.name), "Total"];
-  const lastCol = totalColumnIndex !== -1
-    ? totalColumnIndex
-    : regions[regions.length - 1].index;
+  const lastCol =
+    totalColumnIndex !== -1
+      ? totalColumnIndex
+      : regions[regions.length - 1].index;
 
   // ---- helpers ----
-  const isEmpty = (v) => v === undefined || v === null || String(v).trim() === "";
+  const isEmpty = (v) =>
+    v === undefined || v === null || String(v).trim() === "";
 
   const getValue = (index, row) => {
     if (index !== undefined && index >= 0 && index < row.length) {
@@ -119,7 +125,8 @@ const extractDFSAccountsSubscriptionsData = (data) => {
   const isCheckRow = (label) => /^check_/i.test(label);
 
   // Rows that are always data rows (even when only the Total column is filled)
-  const DATA_ROW = /^(active_|inactive_|total|age_|location_|check_|urban|rural|male|female|not specified|business)/i;
+  const DATA_ROW =
+    /^(active_|inactive_|total|age_|location_|check_|urban|rural|male|female|not specified|business)/i;
 
   // "Digital savings accounts Accounts", "..._by Age Group", "..._by Location",
   // "Mobile Money Accounts" (has a 0 in Total but no regional values), etc.
@@ -167,7 +174,8 @@ const extractDFSAccountsSubscriptionsData = (data) => {
     }
 
     const values = {};
-    for (const region of regions) values[region.name] = getValue(region.index, row);
+    for (const region of regions)
+      values[region.name] = getValue(region.index, row);
     values["Total"] = getValue(totalColumnIndex, row);
 
     rowNo += 1;

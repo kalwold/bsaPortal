@@ -1,6 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractIfbWeightedAvgDepositRatesMetadata=(data)=>{
-
+export const extractIfbWeightedAvgDepositRatesMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -17,22 +16,22 @@ export const extractIfbWeightedAvgDepositRatesMetadata=(data)=>{
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]?row[0]:'').trim();
-    const secondCell = String(row[1]?row[1]:'').trim();
+    const firstCell = String(row[0] ? row[0] : "").trim();
+    const secondCell = String(row[1] ? row[1] : "").trim();
 
     if (i === 0 && firstCell) {
-   metadata.ReturnKey = firstCell;
+      metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("DPWADP001") ) {
+      if (firstCell.includes("DPWADP001")) {
         metadata.reportType = "ifb-monthly_weighted-avg-deposit-rates";
-        metadata.reportTypeId ="ifb-monthly_weighted-avg-deposit-rates";
+        metadata.reportTypeId = "ifb-monthly_weighted-avg-deposit-rates";
         metadata.departmentName = "IFB";
         metadata.departmentId = "ifb";
       }
     }
 
-      if (( i === 3 ) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
@@ -62,13 +61,18 @@ const extractIfbWeightedAvgDepositRatesData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
-  console.log('=== Extracting Weighted Average Deposit Interest Rates Data (ADIR001) ===');
+  console.log(
+    "=== Extracting Weighted Average Deposit Interest Rates Data (ADIR001) ===",
+  );
 
   // Log all rows to understand structure
   for (let i = 0; i < Math.min(data.length, 30); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -76,19 +80,18 @@ const extractIfbWeightedAvgDepositRatesData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Deposit Type') {
-      dataTableStart = i + 2; 
-      console.log('Found data table at row:', dataTableStart);
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "Deposit Type") {
+      dataTableStart = i + 2;
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
-
 
   const DEPOSIT_TYPE_COL = 0;
   const DEPOSIT_CATEGORY_COL = 1;
@@ -101,14 +104,14 @@ const extractIfbWeightedAvgDepositRatesData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'Deposit_Type',
-    'Deposit_Category',
-    'Total_Deposit_Amount',
-    'No_of_Deposit_Accounts',
-    'Minimum_Rate',
-    'Maximum_Rate',
-    'Weighted_Average_Rate_by_Category',
-    'Weighted_Average_Rate_by_Type'
+    "Deposit_Type",
+    "Deposit_Category",
+    "Total_Deposit_Amount",
+    "No_of_Deposit_Accounts",
+    "Minimum_Rate",
+    "Maximum_Rate",
+    "Weighted_Average_Rate_by_Category",
+    "Weighted_Average_Rate_by_Type",
   ];
 
   const topLevelNodes = [];
@@ -117,20 +120,20 @@ const extractIfbWeightedAvgDepositRatesData = (data) => {
   // Helper functions
   const getValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-   const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+      const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
       if (!isNaN(val) && val !== 0) {
         return val.toFixed(2);
       }
-      return '0';
+      return "0";
     }
-    return '0';
+    return "0";
   };
 
   const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return '';
+    return "";
   };
 
   // Parse each row
@@ -138,51 +141,53 @@ const extractIfbWeightedAvgDepositRatesData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const depositType = String(row[DEPOSIT_TYPE_COL] || '').trim();
-    const depositCategory = String(row[DEPOSIT_CATEGORY_COL] || '').trim();
+    const depositType = String(row[DEPOSIT_TYPE_COL] || "").trim();
+    const depositCategory = String(row[DEPOSIT_CATEGORY_COL] || "").trim();
 
     // Skip if both are empty
     if (!depositType && !depositCategory) continue;
 
     // Skip footer notes
-    if (depositType.includes('Note') || depositCategory.includes('Note')) continue;
+    if (depositType.includes("Note") || depositCategory.includes("Note"))
+      continue;
 
     // Extract values
     const values = {
-
-      'Deposit_Type': getStringValue(DEPOSIT_TYPE_COL, row),
-      'Deposit_Category': getStringValue(DEPOSIT_CATEGORY_COL, row),
-      'Total_Deposit_Amount': getValue(TOTAL_AMOUNT_COL, row),
-      'No_of_Deposit_Accounts': getValue(NUM_ACCOUNTS_COL, row),
-      'Minimum_Rate': getValue(MIN_RATE_COL, row),
-      'Maximum_Rate': getValue(MAX_RATE_COL, row),
-      'Weighted_Average_Rate_by_Category': getValue(WEIGHTED_AVG_CATEGORY_COL, row),
-      'Weighted_Average_Rate_by_Type': getValue(WEIGHTED_AVG_TYPE_COL, row)
+      Deposit_Type: getStringValue(DEPOSIT_TYPE_COL, row),
+      Deposit_Category: getStringValue(DEPOSIT_CATEGORY_COL, row),
+      Total_Deposit_Amount: getValue(TOTAL_AMOUNT_COL, row),
+      No_of_Deposit_Accounts: getValue(NUM_ACCOUNTS_COL, row),
+      Minimum_Rate: getValue(MIN_RATE_COL, row),
+      Maximum_Rate: getValue(MAX_RATE_COL, row),
+      Weighted_Average_Rate_by_Category: getValue(
+        WEIGHTED_AVG_CATEGORY_COL,
+        row,
+      ),
+      Weighted_Average_Rate_by_Type: getValue(WEIGHTED_AVG_TYPE_COL, row),
     };
 
-          const entry = {
-        id: '',
-        sNo: '',
-        label: "",
-        values: values,
-        rowNumber: i + 1,
-        level: 0,
-        isTotalRow: false,
-        isSectionHeader: true,
-        isDepositType: true,
-        children: []
-      };
-      topLevelNodes.push(entry);
-  
+    const entry = {
+      id: "",
+      sNo: "",
+      label: "",
+      values: values,
+      rowNumber: i + 1,
+      level: 0,
+      isTotalRow: false,
+      isSectionHeader: true,
+      isDepositType: true,
+      children: [],
+    };
+    topLevelNodes.push(entry);
   }
 
-  console.log('Total deposit types:', topLevelNodes.length);
+  console.log("Total deposit types:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles:[" "]
+    noandtitles: [" "],
   };
 };
-export default extractIfbWeightedAvgDepositRatesData
+export default extractIfbWeightedAvgDepositRatesData;

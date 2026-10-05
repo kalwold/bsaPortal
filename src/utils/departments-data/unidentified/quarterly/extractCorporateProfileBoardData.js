@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractCorporateProfileBoardMetadata=(data)=>{
+export const extractCorporateProfileBoardMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -15,12 +15,11 @@ export const extractCorporateProfileBoardMetadata=(data)=>{
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-   
+
     if (!row || row.length === 0) continue;
 
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
- 
 
     const labelValue = (() => {
       for (let c = 1; c <= 5; c++) {
@@ -31,14 +30,14 @@ export const extractCorporateProfileBoardMetadata=(data)=>{
       }
       return "";
     })();
-    
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("CP8_CI001") ) {
+      if (firstCell.includes("CP8_CI001")) {
         metadata.reportType = "unidentified-quarterly_corporate-profile-board";
-        metadata.reportTypeId = "unidentified-quarterly_corporate-profile-board";
+        metadata.reportTypeId =
+          "unidentified-quarterly_corporate-profile-board";
         metadata.departmentId = "unidentified";
         metadata.departmentName = "Unidentified";
       }
@@ -86,7 +85,7 @@ export const extractCorporateProfileBoardMetadata=(data)=>{
   }
   return metadata;
 };
-const extractCorporateProfileBoardData=(data)=>{
+const extractCorporateProfileBoardData = (data) => {
   let dataTableStart = -1;
   let noandtitles = [];
 
@@ -101,13 +100,18 @@ const extractCorporateProfileBoardData=(data)=>{
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || "").trim();
     if (firstCell === "Code") {
-      dataTableStart =  i + 1 ;
+      dataTableStart = i + 1;
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
@@ -120,7 +124,12 @@ const extractCorporateProfileBoardData=(data)=>{
   }
 
   if (dataTableStart === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
   // Column indices matching the screenshot
   const NO_COL = 0;
@@ -131,7 +140,6 @@ const extractCorporateProfileBoardData=(data)=>{
   const QUALIFICATION_COL = 5;
   const SERVICE_YEAR_COL = 6;
   const IS_DIRECT_INF_COL = 7;
-
 
   const columns = [
     "Title",
@@ -160,7 +168,6 @@ const extractCorporateProfileBoardData=(data)=>{
 
     // Skip empty / footer rows
     if (!fullName) continue;
-   
 
     const values = {
       Title: getStringValue(TITLE_COL, row),
@@ -200,5 +207,5 @@ const extractCorporateProfileBoardData=(data)=>{
     additionalColumns: [],
     noandtitles,
   };
-}
+};
 export default extractCorporateProfileBoardData;

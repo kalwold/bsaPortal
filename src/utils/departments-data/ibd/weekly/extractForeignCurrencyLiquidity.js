@@ -8,7 +8,14 @@ const HEADER_DEPTH = 3; // rows 9-11; row 12 is the formula legend
 const ANCHOR_RE = /^(s\.?\s*no\.?|no\.?)$/i;
 
 // 0-based rows of the top block in this template
-const ROW = { title: 3, institution: 4, financialYear: 5, startDate: 6, endDate: 7, unit: 7 };
+const ROW = {
+  title: 3,
+  institution: 4,
+  financialYear: 5,
+  startDate: 6,
+  endDate: 7,
+  unit: 7,
+};
 
 const TOTAL_RE = /total/i;
 const UNIT_RE = /million|thousand/i; // "(Amount in Thousands)"
@@ -25,7 +32,8 @@ const cleanHeader = (text) =>
     .replace(/[^A-Za-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 
-const getStr = (row, idx) => (row && idx < row.length ? String(row[idx] ?? "").trim() : "");
+const getStr = (row, idx) =>
+  row && idx < row.length ? String(row[idx] ?? "").trim() : "";
 
 // Numbers may arrive as formatted text ("1,250.50", "12.5%"). Blank / zero -> "0".
 const getNum = (row, idx) => {
@@ -73,7 +81,9 @@ const buildColumns = (data, headerRowIdx, dataTableStart) => {
       continue; // empty column
     }
 
-    const chain = parts.filter(Boolean).filter((p, i, a) => i === 0 || p !== a[i - 1]);
+    const chain = parts
+      .filter(Boolean)
+      .filter((p, i, a) => i === 0 || p !== a[i - 1]);
     const letter = cleanHeader(getStr(legendRow, c).split("=")[0]);
     const keyBase = [...chain, letter].filter(Boolean).join("_");
     let key = keyBase;
@@ -117,7 +127,12 @@ export const extractForeignCurrencyLiquidityMetadata = (data) => {
     const labelValue = (() => {
       for (let c = 1; c <= 5; c++) {
         const v = row[c];
-        if (v !== undefined && v !== null && String(v).trim() !== "" && !UNIT_RE.test(String(v))) {
+        if (
+          v !== undefined &&
+          v !== null &&
+          String(v).trim() !== "" &&
+          !UNIT_RE.test(String(v))
+        ) {
           return String(v).trim();
         }
       }
@@ -138,7 +153,10 @@ export const extractForeignCurrencyLiquidityMetadata = (data) => {
       metadata.reportTitle = firstCell.replace(/\s+/g, " ").trim();
     }
 
-    if (i === ROW.institution && (firstLower.includes("instiution") || firstLower.includes("institution"))) {
+    if (
+      i === ROW.institution &&
+      (firstLower.includes("instiution") || firstLower.includes("institution"))
+    ) {
       metadata.institutionCode = labelValue || "";
     }
 
@@ -176,10 +194,18 @@ const extractForeignCurrencyLiquidityData = (data) => {
   const { headerRowIdx, dataTableStart } = locateHeader(data);
 
   if (headerRowIdx === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
-  const noandtitles = [getStr(data[headerRowIdx], 0), getStr(data[headerRowIdx], 1)];
+  const noandtitles = [
+    getStr(data[headerRowIdx], 0),
+    getStr(data[headerRowIdx], 1),
+  ];
   const cols = buildColumns(data, headerRowIdx, dataTableStart);
   const entries = [];
 

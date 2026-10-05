@@ -36,7 +36,10 @@ const TOTAL_RE = /total/i; // Sub-total, Grand total, Total Subscribed shares...
 const REMAINING_RE = /remaining/i; // "The remaining shares all together"
 
 const isNumericSNo = (v) =>
-  v !== undefined && v !== null && String(v).trim() !== "" && !isNaN(parseFloat(v));
+  v !== undefined &&
+  v !== null &&
+  String(v).trim() !== "" &&
+  !isNaN(parseFloat(v));
 
 const isDataRow = (row) => {
   if (!row || row.length === 0) return false;
@@ -89,7 +92,9 @@ const buildColumns = (data, headerRowIdx, dataTableStart) => {
       continue; // empty column
     }
 
-    const chain = parts.filter(Boolean).filter((p, i, a) => i === 0 || p !== a[i - 1]);
+    const chain = parts
+      .filter(Boolean)
+      .filter((p, i, a) => i === 0 || p !== a[i - 1]);
     let key = chain.join("_");
     let n = 2;
     while (used.has(key)) key = `${chain.join("_")}_${n++}`;
@@ -138,7 +143,10 @@ export const extractQuarterlyTopTwentyShareholdersMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      if (firstCell.includes("TWE_SHA_STR_TH001") || firstCell.includes("TH001")) {
+      if (
+        firstCell.includes("TWE_SHA_STR_TH001") ||
+        firstCell.includes("TH001")
+      ) {
         metadata.reportType = "share-quarterly_top20-shareholders";
         metadata.reportTypeId = "share-quarterly_top20-shareholders";
         metadata.departmentId = "share";
@@ -159,11 +167,19 @@ export const extractQuarterlyTopTwentyShareholdersMetadata = (data) => {
       metadata.institutionCode = labelValue || "";
     }
 
-    if (i === 8 && firstCell && firstCell.toLowerCase().includes("financial year")) {
+    if (
+      i === 8 &&
+      firstCell &&
+      firstCell.toLowerCase().includes("financial year")
+    ) {
       metadata.financialYear = labelValue || "";
     }
 
-    if (i === 9 && firstCell && firstCell.toLowerCase().includes("start date")) {
+    if (
+      i === 9 &&
+      firstCell &&
+      firstCell.toLowerCase().includes("start date")
+    ) {
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
@@ -172,7 +188,9 @@ export const extractQuarterlyTopTwentyShareholdersMetadata = (data) => {
     }
 
     if (i === 12) {
-      const unitCell = row.find((c) => c && String(c).toLowerCase().includes("million"));
+      const unitCell = row.find(
+        (c) => c && String(c).toLowerCase().includes("million"),
+      );
       if (unitCell) metadata.unit = String(unitCell).trim();
     }
   }
@@ -193,7 +211,12 @@ const extractQuarterlyTopTwentyShareholdersData = (data) => {
   const { headerRowIdx, dataTableStart } = locateHeader(data);
 
   if (headerRowIdx === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
   const noandtitles = [
@@ -212,7 +235,8 @@ const extractQuarterlyTopTwentyShareholdersData = (data) => {
     }
     return "0";
   };
-  const getStr = (row, idx) => String((idx < row.length && row[idx]) || "").trim();
+  const getStr = (row, idx) =>
+    String((idx < row.length && row[idx]) || "").trim();
 
   const entries = [];
 
@@ -221,12 +245,11 @@ const extractQuarterlyTopTwentyShareholdersData = (data) => {
     if (!row || row.length === 0) continue;
     if (!isDataRow(row)) continue; // skip notes / blank rows
 
-    
     const sNoRaw = row[0];
     const nameCell = getStr(row, 1).replace(/\s+/g, " ");
     const numbered = isNumericSNo(sNoRaw);
     const isTotalLabel = !numbered && TOTAL_RE.test(nameCell);
-      if(!nameCell) continue
+    if (!nameCell) continue;
     const values = {};
     cols.forEach((col) => {
       values[col.key] = getNum(row, col.index);

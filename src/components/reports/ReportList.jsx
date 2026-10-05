@@ -1,14 +1,14 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import StatusBadge from '../common/StatusBadge';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import StatusBadge from "../common/StatusBadge";
 
 const ReportList = ({ reports, loading }) => {
   const navigate = useNavigate();
 
   const handleReportClick = (report) => {
     // Navigate to report viewer with report data in state
-    navigate(`/report/${report.id}`, { 
-      state: { report: report } 
+    navigate(`/report/${report.id}`, {
+      state: { report: report },
     });
   };
 
@@ -22,9 +22,7 @@ const ReportList = ({ reports, loading }) => {
 
   if (!reports || reports.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        No reports found
-      </div>
+      <div className="text-center py-12 text-gray-500">No reports found</div>
     );
   }
 
@@ -40,23 +38,40 @@ const ReportList = ({ reports, loading }) => {
             <div className="flex-1">
               <div className="flex items-center space-x-3">
                 <p className="text-sm font-medium text-[#48198B]">
-                  {report.metadata?.reportTitle || report.reportTypeName || 'Daily Foreign Currency Exposure Report'}
+                  {report.metadata?.reportTitle ||
+                    report.reportTypeName ||
+                    "Daily Foreign Currency Exposure Report"}
                 </p>
                 <StatusBadge status={report.status} />
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                <span>{report.reportCode || 'OP001'}</span>
+                <span>{report.reportCode || "OP001"}</span>
                 <span>•</span>
-                <span>Institution: {report.metadata?.institutionCode || 'N/A'}</span>
+                <span>
+                  Institution: {report.metadata?.institutionCode || "N/A"}
+                </span>
                 <span>•</span>
-                <span>Year: {report.metadata?.financialYear || 'N/A'}</span>
+                <span>Year: {report.metadata?.financialYear || "N/A"}</span>
                 <span>•</span>
-                <span>Period: {report.metadata?.startDate ? new Date(report.metadata.startDate).toLocaleDateString() : 'N/A'} - {report.metadata?.endDate ? new Date(report.metadata.endDate).toLocaleDateString() : 'N/A'}</span>
+                <span>
+                  Period:{" "}
+                  {report.metadata?.startDate
+                    ? new Date(report.metadata.startDate).toLocaleDateString()
+                    : "N/A"}{" "}
+                  -{" "}
+                  {report.metadata?.endDate
+                    ? new Date(report.metadata.endDate).toLocaleDateString()
+                    : "N/A"}
+                </span>
               </div>
               <div className="mt-1 flex items-center space-x-4 text-xs text-gray-400">
-                <span>Uploaded by: {report.createdBy || 'N/A'}</span>
+                <span>Uploaded by: {report.createdBy || "N/A"}</span>
                 <span>•</span>
-                <span>{report.createdAt ? new Date(report.createdAt).toLocaleString() : 'N/A'}</span>
+                <span>
+                  {report.createdAt
+                    ? new Date(report.createdAt).toLocaleString()
+                    : "N/A"}
+                </span>
               </div>
             </div>
             <div className="ml-4 flex-shrink-0">

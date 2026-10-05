@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractOffBalanceProvisioningMetadata=(data)=>{
+export const extractOffBalanceProvisioningMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -37,52 +37,51 @@ export const extractOffBalanceProvisioningMetadata=(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       //consol.log("Found Return Key:", metadata.ReturnKey);
-     
 
-  if (firstCell.includes('POBEPE001') || firstCell.includes('POBEPE')) {
-        metadata.reportType = 'credit-quarterly_off-balance-provision';
-        metadata.reportTypeId = 'credit-quarterly_off-balance-provision';
-        metadata.departmentId = 'credit';
-        metadata.departmentName = 'Credit';
+      if (firstCell.includes("POBEPE001") || firstCell.includes("POBEPE")) {
+        metadata.reportType = "credit-quarterly_off-balance-provision";
+        metadata.reportTypeId = "credit-quarterly_off-balance-provision";
+        metadata.departmentId = "credit";
+        metadata.departmentName = "Credit";
       }
-
     }
 
-    if (( i === 3) && (firstCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       //consol.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //consol.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //consol.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //consol.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -92,17 +91,18 @@ export const extractOffBalanceProvisioningMetadata=(data)=>{
     }
 
     if (
-      ( i === 12) &&
+      i === 12 &&
       (thirdCell || twelveCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        twelveCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+        twelveCell.toLowerCase().includes("in") ||
+        firstCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = twelveCell  || '';
+      metadata.unit = twelveCell || "";
       //consol.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractOffBalanceProvisioningData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -117,13 +117,16 @@ const extractOffBalanceProvisioningData = (data) => {
       //console.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting Off-Balance Sheet Provisioning Data (PE001) ===');
+  console.log("=== Extracting Off-Balance Sheet Provisioning Data (PE001) ===");
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -131,16 +134,16 @@ const extractOffBalanceProvisioningData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Code') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "Code") {
       dataTableStart = i + 2; // Skip header rows (2 rows of headers)
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -162,15 +165,15 @@ const extractOffBalanceProvisioningData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'Amount',
-    'Provisioning_Rate',
-    'NPL_Amount',
-    'NPL_Provisioning_Rate',
-    'Amount_Under_Litigation',
-    'Litigation_Provisioning_Rate',
-    'Required_Provisions',
-    'Accumulated_Provision_Held',
-    'Excess_Shortfall_In_Provisions'
+    "Amount",
+    "Provisioning_Rate",
+    "NPL_Amount",
+    "NPL_Provisioning_Rate",
+    "Amount_Under_Litigation",
+    "Litigation_Provisioning_Rate",
+    "Required_Provisions",
+    "Accumulated_Provision_Held",
+    "Excess_Shortfall_In_Provisions",
   ];
 
   const topLevelNodes = [];
@@ -179,20 +182,26 @@ const extractOffBalanceProvisioningData = (data) => {
   // Helper functions
   const getValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+      let raw = String(row[index] ?? "").trim();
+      const isNegative = /^\(.*\)$/.test(raw);
+      raw = raw.replace(/[(),%\s]/g, "");
+      let val = parseFloat(raw);
       if (!isNaN(val) && val !== 0) {
+        if (isNegative) {
+          val = -Math.abs(val);
+        }
         return val.toFixed(2);
       }
-      return '0';
+      return "0";
     }
-    return '0';
+    return "0";
   };
 
   const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return '';
+    return "";
   };
 
   // Parse each row
@@ -200,55 +209,65 @@ const extractOffBalanceProvisioningData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const code = String(row[CODE_COL] || '').trim();
-    const item = String(row[ITEM_COL] || '').trim();
+    const code = String(row[CODE_COL] || "").trim();
+    const item = String(row[ITEM_COL] || "").trim();
 
     // Skip if no code and no item
     if (!code && !item) continue;
 
     // Skip note rows
-    if (item.includes('Note:') || item.includes('If counterparty') || item.includes('Collateral does not')) continue;
-    if (item.includes('Additional 2%') || item.includes('Additional 5%')) continue;
+    if (
+      item.includes("Note:") ||
+      item.includes("If counterparty") ||
+      item.includes("Collateral does not")
+    )
+      continue;
+    if (item.includes("Additional 2%") || item.includes("Additional 5%"))
+      continue;
 
     // Skip "Total_Accumulated provision held in the previous period" row
-    
 
     // Check if this is a total row
-    const isTotalRow = item.includes('Total Off Balance Sheet Item') || item.includes('Total_Accumulated provision held');
+    const isTotalRow =
+      item.includes("Total Off Balance Sheet Item") ||
+      item.includes("Total_Accumulated provision held");
 
     // Check if this is a header/section row
-    const isSectionHeader = code === '1' && item === 'Guarantee';
+    const isSectionHeader = code === "1" && item === "Guarantee";
 
     // Extract values
     const values = {
-      'Amount': getValue(AMOUNT_COL, row),
-      'Provisioning_Rate': getValue(PROVISIONING_RATE_COL, row),
-      'NPL_Amount': getValue(NPL_AMOUNT_COL, row),
-      'NPL_Provisioning_Rate': getValue(NPL_PROVISIONING_RATE_COL, row),
-      'Amount_Under_Litigation': getValue(LITIGATION_AMOUNT_COL, row),
-      'Litigation_Provisioning_Rate': getValue(LITIGATION_PROVISIONING_RATE_COL, row),
-      'Required_Provisions': getValue(REQUIRED_PROVISIONS_COL, row),
-      'Accumulated_Provision_Held': getValue(ACCUMULATED_PROVISION_COL, row),
-      'Excess_Shortfall_In_Provisions': getValue(EXCESS_SHORTFALL_COL, row)
+      Amount: getValue(AMOUNT_COL, row),
+      Provisioning_Rate: getValue(PROVISIONING_RATE_COL, row),
+      NPL_Amount: getValue(NPL_AMOUNT_COL, row),
+      NPL_Provisioning_Rate: getValue(NPL_PROVISIONING_RATE_COL, row),
+      Amount_Under_Litigation: getValue(LITIGATION_AMOUNT_COL, row),
+      Litigation_Provisioning_Rate: getValue(
+        LITIGATION_PROVISIONING_RATE_COL,
+        row,
+      ),
+      Required_Provisions: getValue(REQUIRED_PROVISIONS_COL, row),
+      Accumulated_Provision_Held: getValue(ACCUMULATED_PROVISION_COL, row),
+      Excess_Shortfall_In_Provisions: getValue(EXCESS_SHORTFALL_COL, row),
     };
 
     // Determine level based on code depth
     let level = 0;
-    if (code && code !== '') {
-      const codeParts = code.split('.');
+    if (code && code !== "") {
+      const codeParts = code.split(".");
       level = codeParts.length;
     }
 
     const entry = {
       id: code || ``,
-      sNo: code || '',
+      sNo: code || "",
       label: item,
       values: values,
       rowNumber: i + 1,
       level: level,
       isTotalRow: isTotalRow || false,
       isSectionHeader: false,
-      children: []
+      children: [],
     };
 
     if (code) {
@@ -263,16 +282,16 @@ const extractOffBalanceProvisioningData = (data) => {
 
   // Build hierarchy for nodes with codes
   for (const [code, node] of nodeMap) {
-    const codeParts = code.split('.');
-    
+    const codeParts = code.split(".");
+
     if (codeParts.length === 1) {
       continue;
     } else if (codeParts.length > 1) {
-      const parentCode = codeParts.slice(0, -1).join('.');
+      const parentCode = codeParts.slice(0, -1).join(".");
       const parent = nodeMap.get(parentCode);
-      
+
       if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
+        const exists = parent.children.some((child) => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
         }
@@ -280,7 +299,9 @@ const extractOffBalanceProvisioningData = (data) => {
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
+          const exists = baseParent.children.some(
+            (child) => child.id === node.id,
+          );
           if (!exists) {
             baseParent.children.push(node);
           }
@@ -306,10 +327,10 @@ const extractOffBalanceProvisioningData = (data) => {
     nodes.sort((a, b) => {
       if (a.isTotalRow && !b.isTotalRow) return 1;
       if (!a.isTotalRow && b.isTotalRow) return -1;
-      
+
       if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
+        const aParts = a.sNo.split(".").map(Number);
+        const bParts = b.sNo.split(".").map(Number);
         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
@@ -320,7 +341,7 @@ const extractOffBalanceProvisioningData = (data) => {
       return 0;
     });
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length > 0) {
         sortChildren(node.children);
       }
@@ -331,7 +352,7 @@ const extractOffBalanceProvisioningData = (data) => {
 
   // Clean up - remove empty children arrays
   const cleanData = (nodes) => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length === 0) {
         delete node.children;
       } else if (node.children) {
@@ -341,13 +362,13 @@ const extractOffBalanceProvisioningData = (data) => {
   };
   cleanData(uniqueTopLevel);
 
-  console.log('Total entries:', uniqueTopLevel.length);
+  console.log("Total entries:", uniqueTopLevel.length);
 
   return {
     hierarchicalData: uniqueTopLevel,
     columns: columns,
     additionalColumns: [],
-    noandtitles
+    noandtitles,
   };
 };
-export default extractOffBalanceProvisioningData
+export default extractOffBalanceProvisioningData;

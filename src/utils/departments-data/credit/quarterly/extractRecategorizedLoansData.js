@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractRecategorizedLoansMetadata=(data)=>{
+export const extractRecategorizedLoansMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -37,52 +37,51 @@ export const extractRecategorizedLoansMetadata=(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       //consol.log("Found Return Key:", metadata.ReturnKey);
-     
 
-  if (firstCell.includes('NACNN001') || firstCell.includes('NACNN')) {
-        metadata.reportType = 'credit-quarterly_recategorized-loans';
-        metadata.reportTypeId = 'credit-quarterly_recategorized-loans';
-        metadata.departmentId = 'credit';
-        metadata.departmentName = 'Credit';
+      if (firstCell.includes("NACNN001") || firstCell.includes("NACNN")) {
+        metadata.reportType = "credit-quarterly_recategorized-loans";
+        metadata.reportTypeId = "credit-quarterly_recategorized-loans";
+        metadata.departmentId = "credit";
+        metadata.departmentName = "Credit";
       }
-
     }
 
-    if (( i === 3) && (firstCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       //consol.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //consol.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //consol.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //consol.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -92,17 +91,18 @@ export const extractRecategorizedLoansMetadata=(data)=>{
     }
 
     if (
-      ( i === 12) &&
+      i === 12 &&
       (thirdCell || twelveCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        twelveCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+        twelveCell.toLowerCase().includes("in") ||
+        firstCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = twelveCell  || '';
+      metadata.unit = twelveCell || "";
       //consol.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 
 const extractRecategorizedLoansData = (data) => {
   const hierarchicalData = [];
@@ -118,13 +118,16 @@ const extractRecategorizedLoansData = (data) => {
       //console.log("Found title:", noandtitles);
     }
   }
-  console.log('=== Extracting Re-categorized Loans Data (NN001) ===');
+  console.log("=== Extracting Re-categorized Loans Data (NN001) ===");
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -132,21 +135,21 @@ const extractRecategorizedLoansData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'S.No.') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "S.No.") {
       dataTableStart = i + 2; // Skip header rows (2 rows of headers)
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
   // Column indices (0-based)
-  // A(0)=S.No., B(1)=Name of Counterparty/Borrower, C(2)=Type of Loan and Advance, 
+  // A(0)=S.No., B(1)=Name of Counterparty/Borrower, C(2)=Type of Loan and Advance,
   // D(3)=Sector, E(4)=Amount of Loans and Advance, F(5)=Date of Re-categorization,
   // G(6)=Classification/Status, H(7)=Collateral Type, I(8)=Collateral Value,
   // J(9)=Loan and Advance as % of Bank's Total Capital
@@ -163,14 +166,14 @@ const extractRecategorizedLoansData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'Type_of_Loan_and_Advance',
-    'Sector',
-    'Amount_of_Loans_and_Advance',
-    'Date_of_Re_categorization',
-    'Classification_Status',
-    'Collateral_Type',
-    'Collateral_Value',
-    'Percent_of_Bank_Total_Capital'
+    "Type_of_Loan_and_Advance",
+    "Sector",
+    "Amount_of_Loans_and_Advance",
+    "Date_of_Re_categorization",
+    "Classification_Status",
+    "Collateral_Type",
+    "Collateral_Value",
+    "Percent_of_Bank_Total_Capital",
   ];
 
   const topLevelNodes = [];
@@ -178,20 +181,26 @@ const extractRecategorizedLoansData = (data) => {
   // Helper functions
   const getValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+      let raw = String(row[index] ?? "").trim();
+      const isNegative = /^\(.*\)$/.test(raw);
+      raw = raw.replace(/[(),%\s]/g, "");
+      let val = parseFloat(raw);
       if (!isNaN(val) && val !== 0) {
+        if (isNegative) {
+          val = -Math.abs(val);
+        }
         return val.toFixed(2);
       }
-      return '0';
+      return "0";
     }
-    return '0';
+    return "0";
   };
 
   const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return '';
+    return "";
   };
 
   // Parse each row
@@ -199,44 +208,53 @@ const extractRecategorizedLoansData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const sNo = String(row[SNO_COL] || '').trim();
-    const counterparty = String(row[COUNTERPARTY_COL] || '').trim();
+    const sNo = String(row[SNO_COL] || "").trim();
+    const counterparty = String(row[COUNTERPARTY_COL] || "").trim();
 
     // Skip if no S.No
     //if (!sNo) continue;
 
     // Skip total row
-    if (counterparty === '**Total Capital Include: (Paid up + Share Premium +Legal +General reserve) only') continue;
+    if (
+      counterparty ===
+      "**Total Capital Include: (Paid up + Share Premium +Legal +General reserve) only"
+    )
+      continue;
 
     // Skip if no counterparty and it's not a "Nil" entry
-    if (!counterparty && sNo !== '1') continue;
+    if (!counterparty && sNo !== "1") continue;
 
     // Skip if this is a note row
-    if (counterparty.includes('Note:') || counterparty.includes('*If a counterparty')) continue;
+    if (
+      counterparty.includes("Note:") ||
+      counterparty.includes("*If a counterparty")
+    )
+      continue;
 
     // Extract values
     const values = {
-      'Type_of_Loan_and_Advance': getStringValue(LOAN_TYPE_COL, row),
-      'Sector': getStringValue(SECTOR_COL, row),
-      'Amount_of_Loans_and_Advance': getValue(AMOUNT_COL, row),
-      'Date_of_Re_categorization': getStringValue(DATE_COL, row),
-      'Classification_Status': getStringValue(CLASSIFICATION_COL, row),
-      'Collateral_Type': getStringValue(COLLATERAL_TYPE_COL, row),
-      'Collateral_Value': getValue(COLLATERAL_VALUE_COL, row),
-      'Percent_of_Bank_Total_Capital': getValue(PERCENT_CAPITAL_COL, row)
+      Type_of_Loan_and_Advance: getStringValue(LOAN_TYPE_COL, row),
+      Sector: getStringValue(SECTOR_COL, row),
+      Amount_of_Loans_and_Advance: getValue(AMOUNT_COL, row),
+      Date_of_Re_categorization: getStringValue(DATE_COL, row),
+      Classification_Status: getStringValue(CLASSIFICATION_COL, row),
+      Collateral_Type: getStringValue(COLLATERAL_TYPE_COL, row),
+      Collateral_Value: getValue(COLLATERAL_VALUE_COL, row),
+      Percent_of_Bank_Total_Capital: getValue(PERCENT_CAPITAL_COL, row),
     };
 
     // Determine if this is an empty row (no data)
-    const isEmptyRow = !counterparty && 
-                       !values['Type_of_Loan_and_Advance'] &&
-                       !values['Sector'] &&
-                       values['Amount_of_Loans_and_Advance'] === '0';
+    const isEmptyRow =
+      !counterparty &&
+      !values["Type_of_Loan_and_Advance"] &&
+      !values["Sector"] &&
+      values["Amount_of_Loans_and_Advance"] === "0";
 
     // Skip empty rows (just S.No. without data)
-    if (isEmptyRow && counterparty !== 'Nil.') continue;
+    if (isEmptyRow && counterparty !== "Nil.") continue;
 
     // Determine if this is a "Nil" entry
-    const isNilEntry = counterparty === 'Nil.' || counterparty === 'Nil';
+    const isNilEntry = counterparty === "Nil." || counterparty === "Nil";
 
     const entry = {
       id: sNo || ``,
@@ -247,7 +265,7 @@ const extractRecategorizedLoansData = (data) => {
       level: 1,
       isTotalRow: false,
       isSectionHeader: false,
-      children: []
+      children: [],
     };
 
     topLevelNodes.push(entry);
@@ -261,13 +279,13 @@ const extractRecategorizedLoansData = (data) => {
     return 0;
   });
 
-  console.log('Total entries:', topLevelNodes.length);
+  console.log("Total entries:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles
+    noandtitles,
   };
 };
-export default extractRecategorizedLoansData
+export default extractRecategorizedLoansData;

@@ -1,6 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractCapitalAdequacyOffBalanceSheetMetadata =(data)=>{
-
+export const extractCapitalAdequacyOffBalanceSheetMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -17,15 +16,15 @@ export const extractCapitalAdequacyOffBalanceSheetMetadata =(data)=>{
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]?row[0]:'').trim();
-    const secondCell = String(row[1]?row[1]:'').trim();
-    const thirdCell = String(row[2]?row[2]:'').trim();
-    const fourthCell = String(row[5]?row[5]:'').trim();
+    const firstCell = String(row[0] ? row[0] : "").trim();
+    const secondCell = String(row[1] ? row[1] : "").trim();
+    const thirdCell = String(row[2] ? row[2] : "").trim();
+    const fourthCell = String(row[5] ? row[5] : "").trim();
 
     if (i === 0 && firstCell) {
-   metadata.ReturnKey = firstCell;
+      metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("CAP_ADQ_OFB_QO001") ) {
+      if (firstCell.includes("CAP_ADQ_OFB_QO001")) {
         metadata.reportType = "finance-quarterly_off-balancesheet";
         metadata.reportTypeId = "finance-quarterly_off-balancesheet";
         metadata.departmentName = "Finance";
@@ -33,8 +32,8 @@ export const extractCapitalAdequacyOffBalanceSheetMetadata =(data)=>{
       }
     }
 
-      if (( i === 3 ) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
@@ -60,19 +59,19 @@ export const extractCapitalAdequacyOffBalanceSheetMetadata =(data)=>{
 
   return metadata;
 };
-const extractCapitalAdequacyOffBalanceSheetData=(data)=>{
-    const sanitizeKey = (text) => {
-  return text
-    .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-zA-Z0-9_]/g, '')
-    .replace(/_+/g, '_');
-};
+const extractCapitalAdequacyOffBalanceSheetData = (data) => {
+  const sanitizeKey = (text) => {
+    return text
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_]/g, "")
+      .replace(/_+/g, "_");
+  };
   const additionalColumns = [];
   let noandtitles = [];
-  let dataTableStartIndex = -1
+  let dataTableStartIndex = -1;
 
- for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
     const firstCell = String(row[0]).trim();
@@ -87,48 +86,46 @@ const extractCapitalAdequacyOffBalanceSheetData=(data)=>{
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-  
+
     const firstCell = String(row[0]).trim();
-     if (firstCell.includes("Code")) {
+    if (firstCell.includes("Code")) {
       console.log("Found data table header at row", i);
       dataTableStartIndex = i + 2;
       break;
     }
   }
-if (dataTableStartIndex === -1) {
-      console.log("Could not find data table");
-      return { hierarchicalData: [], columns: [], additionalColumns: [] };
-    }
-  
-     const headerRow = data[dataTableStartIndex - 1];
-    console.log(
-      "Header row:",
-      headerRow.map((c) => String(c || "").trim()),
-    );
+  if (dataTableStartIndex === -1) {
+    console.log("Could not find data table");
+    return { hierarchicalData: [], columns: [], additionalColumns: [] };
+  }
 
-    const columnMap = {
+  const headerRow = data[dataTableStartIndex - 1];
+  console.log(
+    "Header row:",
+    headerRow.map((c) => String(c || "").trim()),
+  );
+
+  const columnMap = {
     code: 0,
     obsa: 1,
     faceValue_A: 2,
     creditConversionFactor_B: 3,
     amount_C: 4,
-    weight_D:5,
-    CreditEquivalent_E:6,
+    weight_D: 5,
+    CreditEquivalent_E: 6,
+  };
 
-    };
-
-      const columnNames = [
+  const columnNames = [
     "Face_Value_A",
     "Credit_Conversion_Factor_B",
     "Amount_C",
-   "Weight_D",
-   "Credit_Equivalent_E"
+    "Weight_D",
+    "Credit_Equivalent_E",
   ];
 
   const topLevelNodes = [];
 
-
-    for (let i = dataTableStartIndex; i < data.length; i++) {
+  for (let i = dataTableStartIndex; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
 
@@ -137,10 +134,9 @@ if (dataTableStartIndex === -1) {
 
     if (!obsa) continue;
 
- 
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-       const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
         if (!isNaN(val) && val !== 0) {
           return val.toFixed(2);
         }
@@ -156,7 +152,7 @@ if (dataTableStartIndex === -1) {
       return "";
     };
 
-      const getDateValue = (index) => {
+    const getDateValue = (index) => {
       if (index !== undefined && index < row.length) {
         return excelDateToISO(row[index]);
       }
@@ -165,21 +161,16 @@ if (dataTableStartIndex === -1) {
 
     const values = {};
 
-   
-    values["Face_Value_A"] = getValue(
-      columnMap.faceValue_A,
+    values["Face_Value_A"] = getValue(columnMap.faceValue_A);
+    values["Credit_Conversion_Factor_B"] = getValue(
+      columnMap.creditConversionFactor_B,
     );
-    values["Credit_Conversion_Factor_B"] = getValue(columnMap.creditConversionFactor_B);
     values["Asked_Reserve_Price"] = getValue(columnMap.askedPrice);
-    values["Amount_C"] = getValue(
-      columnMap.amount_C,
-    );
+    values["Amount_C"] = getValue(columnMap.amount_C);
     values["Weight_D"] = getValue(columnMap.weight_D);
-    values["Credit_Equivalent_E"] = getValue(
-      columnMap.CreditEquivalent_E
-    );
+    values["Credit_Equivalent_E"] = getValue(columnMap.CreditEquivalent_E);
 
-    const isTotalRow = (obsa === "Total Risk weighted Off - BSA");
+    const isTotalRow = obsa === "Total Risk weighted Off - BSA";
 
     const entry = {
       id: sNo,
@@ -196,7 +187,7 @@ if (dataTableStartIndex === -1) {
     topLevelNodes.push(entry);
   }
 
-topLevelNodes.sort((a, b) => {
+  topLevelNodes.sort((a, b) => {
     const aSNo = parseInt(a.sNo);
     const bSNo = parseInt(b.sNo);
     if (isNaN(aSNo) && isNaN(bSNo)) return 0;
@@ -211,7 +202,5 @@ topLevelNodes.sort((a, b) => {
     additionalColumns,
     noandtitles,
   };
-
-
-}
-export default extractCapitalAdequacyOffBalanceSheetData
+};
+export default extractCapitalAdequacyOffBalanceSheetData;

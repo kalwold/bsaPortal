@@ -21,7 +21,7 @@ const REPORT_FILES = {
   ...digitalRegistry,
   ...branchOpsRegistry,
   ...unidentifiedRegistry,
-    ...hrRegistry
+  ...hrRegistry,
 };
 
 function pairExtractors(type, file) {

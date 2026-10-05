@@ -69,8 +69,12 @@ const extractAgentInfoRegionData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const first = String(row[0] ?? "").trim().toLowerCase();
-    const second = String(row[1] ?? "").trim().toLowerCase();
+    const first = String(row[0] ?? "")
+      .trim()
+      .toLowerCase();
+    const second = String(row[1] ?? "")
+      .trim()
+      .toLowerCase();
     if (first === "s.no." || second === "name of the region") {
       headerIndex = i;
       break;
@@ -79,7 +83,12 @@ const extractAgentInfoRegionData = (data) => {
 
   if (headerIndex === -1) {
     console.log("Could not find data table");
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
   // 2. Value columns: everything after S.No. and Name of the Region

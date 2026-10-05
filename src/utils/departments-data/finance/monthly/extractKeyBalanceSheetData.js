@@ -27,51 +27,54 @@ export const extractKeyBalanceSheetMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
-  
 
-if (firstCell.includes('Key Balance Sheet') || firstCell.includes('MK001')) {
-        metadata.reportType = 'finance-monthly_key-balance-sheet';
-        metadata.reportTypeId = 'finance-monthly_key-balance-sheet';
-        metadata.departmentId = 'finance';
-        metadata.departmentName = 'Finance';
+      if (
+        firstCell.includes("Key Balance Sheet") ||
+        firstCell.includes("MK001")
+      ) {
+        metadata.reportType = "finance-monthly_key-balance-sheet";
+        metadata.reportTypeId = "finance-monthly_key-balance-sheet";
+        metadata.departmentId = "finance";
+        metadata.departmentName = "Finance";
       }
     }
 
-    if (( i === 3) && (firstCell)) {
-       metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = secondCell || '';
+      metadata.institutionCode = secondCell || "";
       //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = secondCell || '';
+      metadata.financialYear = secondCell || "";
       //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(secondCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(secondCell) || "";
       //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -80,26 +83,23 @@ if (firstCell.includes('Key Balance Sheet') || firstCell.includes('MK001')) {
       //console.log("Found End Date:", metadata.endDate);
     }
 
-    if (
-      ( i === 12) &&
-      (firstCell )
-    ) {
-      metadata.unit = firstCell  || '';
+    if (i === 12 && firstCell) {
+      metadata.unit = firstCell || "";
       //console.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractKeyBalanceSheetData = (data) => {
   const hierarchicalData = [];
 
   const sanitizeKey = (text) => {
-  return text
-    .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-zA-Z0-9_]/g, '')
-    .replace(/_+/g, '_');
-};
+    return text
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_]/g, "")
+      .replace(/_+/g, "_");
+  };
   let dataTableStart = -1;
 
   //console.log('=== Extracting Key Balance Sheet Data ===');
@@ -116,8 +116,8 @@ const extractKeyBalanceSheetData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Particulars') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "Particulars") {
       dataTableStart = i + 1;
       //console.log('Found data table at row:', dataTableStart);
       break;
@@ -129,8 +129,8 @@ const extractKeyBalanceSheetData = (data) => {
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       if (!row || row.length === 0) continue;
-      const firstCell = String(row[0] || '').trim();
-      if (firstCell && firstCell.includes('Total assets')) {
+      const firstCell = String(row[0] || "").trim();
+      if (firstCell && firstCell.includes("Total assets")) {
         dataTableStart = i;
         //console.log('Found data table at row (alt):', dataTableStart);
         break;
@@ -140,7 +140,7 @@ const extractKeyBalanceSheetData = (data) => {
 
   if (dataTableStart === -1) {
     //console.log('Could not find data table');
-    return { hierarchicalData: [], columns: ['Amount'], additionalColumns: [] };
+    return { hierarchicalData: [], columns: ["Amount"], additionalColumns: [] };
   }
 
   // Get the header row
@@ -156,13 +156,13 @@ const extractKeyBalanceSheetData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const label = String(row[0] || '').trim();
-    
+    const label = String(row[0] || "").trim();
+
     // Skip if no label
     if (!label) continue;
-   if(i >22) continue;
+    if (i > 22) continue;
     // Skip note rows
-    if (label.includes('Note:') || label.includes('Note')) continue;
+    if (label.includes("Note:") || label.includes("Note")) continue;
 
     // Check if this is a metric we care about
     // let matchedMetric = null;
@@ -175,46 +175,45 @@ const extractKeyBalanceSheetData = (data) => {
 
     // Also check if it's one of the other metrics (loans, deposits, etc.)
 
-
     if (label) {
       // Extract the value
-      let value = '0';
+      let value = "0";
       if (valueColumnIndex < row.length) {
         const raw = row[valueColumnIndex];
-       const cleaned = String(raw).replace(/,/g, "").trim();
-      const rawVal = parseFloat(cleaned);
+        const cleaned = String(raw).replace(/,/g, "").trim();
+        const rawVal = parseFloat(cleaned);
         if (!isNaN(rawVal) && rawVal !== 0) {
           value = rawVal.toFixed(2);
         }
       }
 
       const values = {
-        'Amount': value
+        Amount: value,
       };
 
       const entry = {
-        id: '',
-        sNo: '',
+        id: "",
+        sNo: "",
         label: label,
         values: values,
         rowNumber: i + 1,
         level: 0,
         isTotalRow: false,
         isSectionHeader: false,
-        children: []
+        children: [],
       };
 
       topLevelNodes.push(entry);
-        }
+    }
   }
 
   //console.log('Total metric entries:', topLevelNodes);
 
   return {
     hierarchicalData: topLevelNodes,
-    columns: ['Amount'],
+    columns: ["Amount"],
     additionalColumns: [],
-    noandtitles:['Particulars']
+    noandtitles: ["Particulars"],
   };
 };
-export default extractKeyBalanceSheetData
+export default extractKeyBalanceSheetData;

@@ -71,7 +71,9 @@ export const extractRelatedOrganizationsMetadata = (data) => {
 
     // Unit is a standalone cell on row 12: "(Amount in Millions of Birr)"
     if (!metadata.unit) {
-      const unitCell = cells.find((c) => /amount\s+in\s+\w+|^\(?\s*in\s+\w+/i.test(c));
+      const unitCell = cells.find((c) =>
+        /amount\s+in\s+\w+|^\(?\s*in\s+\w+/i.test(c),
+      );
       if (unitCell) metadata.unit = unitCell;
     }
   }
@@ -114,7 +116,9 @@ const extractRelatedOrganizationsData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const first = String(row[0] ?? "").trim().toLowerCase();
+    const first = String(row[0] ?? "")
+      .trim()
+      .toLowerCase();
     if (first === "code" && /organi[sz]ation/i.test(String(row[1] ?? ""))) {
       headerRowIdx = i;
       break;
@@ -144,7 +148,9 @@ const extractRelatedOrganizationsData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const sNo = String(row[0] ?? "").trim().replace(/\.0+$/, "");
+    const sNo = String(row[0] ?? "")
+      .trim()
+      .replace(/\.0+$/, "");
     const label = String(row[1] ?? "").trim();
 
     const values = {};
@@ -154,7 +160,9 @@ const extractRelatedOrganizationsData = (data) => {
 
     // Template rows below the header are empty -> skip unfilled ones
     const hasContent =
-      sNo !== "" || label !== "" || Object.values(values).some((v) => v !== null);
+      sNo !== "" ||
+      label !== "" ||
+      Object.values(values).some((v) => v !== null);
     if (!hasContent) continue;
 
     // Ids are React keys / expand state in ReportDataTable -> must be unique

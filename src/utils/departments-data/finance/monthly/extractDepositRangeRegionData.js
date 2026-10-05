@@ -37,50 +37,53 @@ export const extractDepositRangeRegionMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
-    if (firstCell.includes('CDby Range and Reg') || firstCell.includes('CM001')) {
-        metadata.reportType = 'finance-monthly_deposit-range-region';
-        metadata.reportTypeId = 'finance-monthly_deposit-range-region';
-        metadata.departmentId = 'finance';
-        metadata.departmentName = 'Finance';
+      if (
+        firstCell.includes("CDby Range and Reg") ||
+        firstCell.includes("CM001")
+      ) {
+        metadata.reportType = "finance-monthly_deposit-range-region";
+        metadata.reportTypeId = "finance-monthly_deposit-range-region";
+        metadata.departmentId = "finance";
+        metadata.departmentName = "Finance";
       }
-       
     }
 
-    if (( i === 3) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
+      i === 7 &&
       (firstCell || secondCell) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -90,12 +93,13 @@ export const extractDepositRangeRegionMetadata = (data) => {
     }
 
     if (
-      ( i === 12) &&
+      i === 12 &&
       (thirdCell || therteenCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        therteenCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+        therteenCell.toLowerCase().includes("in") ||
+        firstCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit =  therteenCell || '';
+      metadata.unit = therteenCell || "";
       //console.log("Found Unit:", metadata.unit);
     }
   }
@@ -106,13 +110,11 @@ const extractDepositRangeRegionData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
   let noandtitles = [];
-  
+
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     const firstCell = String(row[0] || "").trim();
     let secondCell = String(row[1] || "").trim();
-
-
 
     if (i === 13) {
       noandtitles = [firstCell, secondCell];
@@ -120,13 +122,13 @@ const extractDepositRangeRegionData = (data) => {
     }
   }
   //console.log('=== Extracting Loan Range Region Data ===');
-const sanitizeKey = (text) => {
-  return text
-    .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-zA-Z0-9_]/g, '')
-    .replace(/_+/g, '_');
-};
+  const sanitizeKey = (text) => {
+    return text
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_]/g, "")
+      .replace(/_+/g, "_");
+  };
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 20); i++) {
@@ -140,8 +142,8 @@ const sanitizeKey = (text) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Code') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "Code") {
       dataTableStart = i + 1;
       //console.log('Found data table at row:', dataTableStart);
       break;
@@ -153,10 +155,10 @@ const sanitizeKey = (text) => {
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       if (!row || row.length === 0) continue;
-      const firstCell = String(row[0] || '').trim();
-      if (firstCell === '1') {
-        const secondCell = String(row[1] || '').trim();
-        if (secondCell && secondCell.includes('Addis Ababa')) {
+      const firstCell = String(row[0] || "").trim();
+      if (firstCell === "1") {
+        const secondCell = String(row[1] || "").trim();
+        if (secondCell && secondCell.includes("Addis Ababa")) {
           dataTableStart = i;
           //console.log('Found data table at row (alt):', dataTableStart);
           break;
@@ -178,12 +180,7 @@ const sanitizeKey = (text) => {
   //console.log('Header Row 2:', headerRow2 ? headerRow2.map(c => String(c || '').trim()) : []);
 
   // Define loan ranges
-  const loanRanges = [
-    '100000',
-    '100000 - 1',
-    '1',
-    'Total'
-  ];
+  const loanRanges = ["100000", "100000 - 1", "1", "Total"];
 
   // Each range has: Amount and # of Borrowers
   // Column indices: Code(0), Region(1), then for each range: Amount, # of Borrowers
@@ -197,23 +194,31 @@ const sanitizeKey = (text) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const code = String(row[0] || '').trim();
-    const region = String(row[1] || '').trim();
+    const code = String(row[0] || "").trim();
+    const region = String(row[1] || "").trim();
 
     // Skip if no region
     if (!region) continue;
-    
+
     // Skip footer notes
     //if (region.includes('NOTE') || region.includes('Note') || region.includes('Merchandise') || region.includes('Central Ethiopia Regional State') || re) continue;
-//if(i > 76 ) continue
+    //if(i > 76 ) continue
 
-if(code.includes('Note') || code.includes('NOTE') || region.includes('NOTE') || region.includes('Note') || region.includes('Central Ethiopia Regional State') || region.includes('South Ethiopia Regional State')) continue;
-  const normalizedCode = code === '2.' ? '2' : code;
-const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
+    if (
+      code.includes("Note") ||
+      code.includes("NOTE") ||
+      region.includes("NOTE") ||
+      region.includes("Note") ||
+      region.includes("Central Ethiopia Regional State") ||
+      region.includes("South Ethiopia Regional State")
+    )
+      continue;
+    const normalizedCode = code === "2." ? "2" : code;
+    const isSectionHeader = normalizedCode && !normalizedCode.includes(".");
     // Determine level
     let level = 0;
-    if (normalizedCode && normalizedCode !== '') {
-      const codeParts = code.split('.');
+    if (normalizedCode && normalizedCode !== "") {
+      const codeParts = code.split(".");
       level = codeParts.length;
     }
 
@@ -222,18 +227,20 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
 
     // For each loan range, extract Amount and # of Borrowers
     for (let j = 0; j < loanRanges.length; j++) {
-      const amountIndex = 2 + (j * 3);
-      const depositorsIndex = 3 + (j * 3);
-      const accountIndex = 4 + (j * 3);
-      
+      const amountIndex = 2 + j * 3;
+      const depositorsIndex = 3 + j * 3;
+      const accountIndex = 4 + j * 3;
+
       const amountKey = sanitizeKey(`${loanRanges[j]}_Amount`);
       const depositorsKey = sanitizeKey(`${loanRanges[j]}_Depositors`);
       const accountKey = sanitizeKey(`${loanRanges[j]}_Accounts`);
 
       // Get Amount
-      let amountValue = '0';
+      let amountValue = "0";
       if (amountIndex < row.length) {
-        const val = parseFloat(String(row[amountIndex] ?? "").replace(/[,%\s]/g, ""));
+        const val = parseFloat(
+          String(row[amountIndex] ?? "").replace(/[,%\s]/g, ""),
+        );
         if (!isNaN(val) && val !== 0) {
           amountValue = val.toFixed(2);
         }
@@ -241,9 +248,11 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       values[amountKey] = amountValue;
 
       // Get # of Depositors
-      let depositorsValue = '0';
+      let depositorsValue = "0";
       if (depositorsIndex < row.length) {
-        const val = parseFloat(String(row[depositorsIndex] ?? "").replace(/[,%\s]/g, ""));
+        const val = parseFloat(
+          String(row[depositorsIndex] ?? "").replace(/[,%\s]/g, ""),
+        );
         if (!isNaN(val) && val !== 0) {
           depositorsValue = val.toFixed(0);
         }
@@ -251,9 +260,11 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       values[depositorsKey] = depositorsValue;
 
       // Get # of Accounts
-      let accountsValue = '0';
+      let accountsValue = "0";
       if (accountIndex < row.length) {
-        const val = parseFloat(String(row[accountIndex] ?? "").replace(/[,%\s]/g, ""));
+        const val = parseFloat(
+          String(row[accountIndex] ?? "").replace(/[,%\s]/g, ""),
+        );
         if (!isNaN(val) && val !== 0) {
           accountsValue = val.toFixed(0);
         }
@@ -264,41 +275,39 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     // Create the entry
     const entry = {
       id: normalizedCode || ``,
-      sNo: normalizedCode || '',
+      sNo: normalizedCode || "",
       label: region,
       values: values,
       rowNumber: i + 1,
       level: level,
       isTotalRow: false,
       isSectionHeader: isSectionHeader || false,
-      children: []
+      children: [],
     };
 
     if (normalizedCode) {
       nodeMap.set(normalizedCode, entry);
     }
-
- 
   }
 
   // Build hierarchy for nodes with codes
   for (const [normalizedCode, node] of nodeMap) {
-    const codeParts = normalizedCode.split('.');
-    
+    const codeParts = normalizedCode.split(".");
+
     if (codeParts.length === 1) {
       // Region nodes (1, 2, 3, ...)
-      const existing = topLevelNodes.find(n => n.id === normalizedCode);
+      const existing = topLevelNodes.find((n) => n.id === normalizedCode);
       if (!existing) {
         topLevelNodes.push(node);
         //console.log(`Added region node: ${normalizedCode} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Loan type nodes (1.1, 1.2, etc.)
-      const parentCode = codeParts.slice(0, -1).join('.');
+      const parentCode = codeParts.slice(0, -1).join(".");
       const parent = nodeMap.get(parentCode);
-      
+
       if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
+        const exists = parent.children.some((child) => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
           //console.log(`Added node ${normalizedCode} as child of ${parentCode}`);
@@ -308,7 +317,9 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
+          const exists = baseParent.children.some(
+            (child) => child.id === node.id,
+          );
           if (!exists) {
             baseParent.children.push(node);
             //console.log(`Added node ${normalizedCode} as child of ${baseCode} (fallback)`);
@@ -327,10 +338,10 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     nodes.sort((a, b) => {
       if (a.isTotalRow && !b.isTotalRow) return 1;
       if (!a.isTotalRow && b.isTotalRow) return -1;
-      
+
       if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
+        const aParts = a.sNo.split(".").map(Number);
+        const bParts = b.sNo.split(".").map(Number);
         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
@@ -341,7 +352,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
       return 0;
     });
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length > 0) {
         sortChildren(node.children);
       }
@@ -352,7 +363,7 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
 
   // Clean up - remove empty children arrays
   const cleanData = (nodes) => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length === 0) {
         delete node.children;
       } else if (node.children) {
@@ -371,14 +382,13 @@ const isSectionHeader =  normalizedCode && !normalizedCode.includes('.')
     columnNames.push(sanitizeKey(`${range}_Amount`));
     columnNames.push(sanitizeKey(`${range}_Depositors`));
     columnNames.push(sanitizeKey(`${range}_Accounts`));
-
   }
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columnNames,
     additionalColumns: [],
-    noandtitles
+    noandtitles,
   };
 };
-export default extractDepositRangeRegionData
+export default extractDepositRangeRegionData;

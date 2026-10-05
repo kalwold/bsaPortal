@@ -1,4 +1,3 @@
-
 import { excelDateToISO } from "../../../utils";
 export const extractAggregateRecategorizedLoansMetadata = (data) => {
   const metadata = {
@@ -38,17 +37,19 @@ export const extractAggregateRecategorizedLoansMetadata = (data) => {
     // Excel row number, full row contents, and which value it picked).
     if (i <= 13) {
       console.log(
-        `[metadata] row[${i}] (Excel row ${i + 1}):`, row,
-        `| firstCell="${firstCell}" | labelValue picked="${labelValue}"`
+        `[metadata] row[${i}] (Excel row ${i + 1}):`,
+        row,
+        `| firstCell="${firstCell}" | labelValue picked="${labelValue}"`,
       );
     }
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("ANARN001") ) {
+      if (firstCell.includes("ANARN001")) {
         metadata.reportType = "credit-quarterly_aggregate-recategorized-loans";
-        metadata.reportTypeId = "credit-quarterly_aggregate-recategorized-loans";
+        metadata.reportTypeId =
+          "credit-quarterly_aggregate-recategorized-loans";
         metadata.departmentId = "credit";
         metadata.departmentName = "Credit";
       }
@@ -83,17 +84,13 @@ export const extractAggregateRecategorizedLoansMetadata = (data) => {
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    if (
-      i === 10 &&
-      firstCell &&
-      firstCell.toLowerCase().includes("end date")
-    ) {
+    if (i === 10 && firstCell && firstCell.toLowerCase().includes("end date")) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
     if (i === 12) {
       const unitCell = row.find(
-        (c) => c && String(c).toLowerCase().includes("million")
+        (c) => c && String(c).toLowerCase().includes("million"),
       );
       if (unitCell) metadata.unit = String(unitCell).trim();
     }
@@ -103,16 +100,19 @@ export const extractAggregateRecategorizedLoansMetadata = (data) => {
 const extractAggregateRecategorizedLoansData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
-   
-const noandtitles = [];
-noandtitles.push('S.No.', 'Description')
-  console.log('=== Extracting Restructured Loans Data (AL001) ===');
+
+  const noandtitles = [];
+  noandtitles.push("S.No.", "Description");
+  console.log("=== Extracting Restructured Loans Data (AL001) ===");
 
   // Log all rows to understand structure
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -120,16 +120,16 @@ noandtitles.push('S.No.', 'Description')
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'S.No.') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "S.No.") {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -142,8 +142,8 @@ noandtitles.push('S.No.', 'Description')
 
   // Define the columns for this report
   const columns = [
-    'Number_of_Restructured_Loans',
-    'Amount_of_Restructured_Loans'
+    "Number_of_Restructured_Loans",
+    "Amount_of_Restructured_Loans",
   ];
 
   const topLevelNodes = [];
@@ -162,33 +162,41 @@ noandtitles.push('S.No.', 'Description')
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const sNo = String(row[SNO_COL] || '').trim();
-    const label = String(row[LABEL_COL] || '').trim();
+    const sNo = String(row[SNO_COL] || "").trim();
+    const label = String(row[LABEL_COL] || "").trim();
 
     // Skip if no label
     if (!label) continue;
 
     // Skip note rows
-    if (label.includes('Note:') || label.includes('*Number')) continue;
+    if (label.includes("Note:") || label.includes("*Number")) continue;
 
     // Determine if this is a total row
-    const isTotalRow = label.includes('Total  Loans and Advances Re-Categorized from Non-Accrual To Accrual Status');
+    const isTotalRow = label.includes(
+      "Total  Loans and Advances Re-Categorized from Non-Accrual To Accrual Status",
+    );
 
     // Extract values
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+        let raw = String(row[index] ?? "").trim();
+        const isNegative = /^\(.*\)$/.test(raw);
+        raw = raw.replace(/[(),%\s]/g, "");
+        let val = parseFloat(raw);
         if (!isNaN(val) && val !== 0) {
+          if (isNegative) {
+            val = -Math.abs(val);
+          }
           return val.toFixed(2);
         }
-        return '0';
+        return "0";
       }
-      return '0';
+      return "0";
     };
 
     const values = {
-      'Number_of_Restructured_Loans': getValue(NUMBER_COL),
-      'Amount_of_Restructured_Loans': getValue(AMOUNT_COL)
+      Number_of_Restructured_Loans: getValue(NUMBER_COL),
+      Amount_of_Restructured_Loans: getValue(AMOUNT_COL),
     };
 
     // Determine level
@@ -196,14 +204,14 @@ noandtitles.push('S.No.', 'Description')
 
     const entry = {
       id: sNo || "",
-      sNo: sNo || '',
+      sNo: sNo || "",
       label: label,
       values: values,
       rowNumber: i + 1,
       level: level,
       isTotalRow: isTotalRow || false,
       isSectionHeader: false,
-      children: []
+      children: [],
     };
 
     topLevelNodes.push(entry);
@@ -213,20 +221,20 @@ noandtitles.push('S.No.', 'Description')
   topLevelNodes.sort((a, b) => {
     if (a.isTotalRow && !b.isTotalRow) return 1;
     if (!a.isTotalRow && b.isTotalRow) return -1;
-    
+
     const aNum = parseInt(a.sNo);
     const bNum = parseInt(b.sNo);
     if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
     return 0;
   });
 
-  console.log('Total entries:', topLevelNodes.length);
+  console.log("Total entries:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles
+    noandtitles,
   };
 };
-export default extractAggregateRecategorizedLoansData
+export default extractAggregateRecategorizedLoansData;

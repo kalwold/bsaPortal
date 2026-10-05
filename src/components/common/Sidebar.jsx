@@ -79,7 +79,7 @@ const Sidebar = () => {
     if (isResizing) return;
     try {
       localStorage.setItem(STORAGE_KEY, String(width));
-    } catch { }
+    } catch {}
   }, [width, isResizing]);
 
   const toggleDepartment = (deptId) => {
@@ -114,11 +114,12 @@ const Sidebar = () => {
     { to: "/reports", icon: FiFileText, label: "All Reports" },
   ];
 
-
   return (
-    <div ref={sidebarRef}
+    <div
+      ref={sidebarRef}
       style={{ width }}
-      className="relative flex-shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden">
+      className="relative flex-shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden"
+    >
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h1 className="text-xl font-bold text-[#48198B]">GBB BSA Report</h1>
         <p className="text-xs text-gray-400 mt-0.5">v1.0.0</p>
@@ -132,9 +133,10 @@ const Sidebar = () => {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${isActive
-                  ? "bg-blue-50 text-[#412985] font-medium"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-[#412985]"
+                `flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-blue-50 text-[#412985] font-medium"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-[#412985]"
                 }`
               }
             >
@@ -164,10 +166,11 @@ const Sidebar = () => {
                 {/* Department */}
                 <button
                   onClick={() => hasPeriods && toggleDepartment(dept.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${!hasPeriods
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                    }`}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
+                    !hasPeriods
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-50"
+                  }`}
                 >
                   <span className="flex items-center text-gray-700">
                     <Icon className="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" />
@@ -274,8 +277,9 @@ const Sidebar = () => {
         }}
         onDoubleClick={() => setWidth(DEFAULT_WIDTH)}
         style={{ touchAction: "none" }}
-        className={`absolute top-0 right-0 h-full w-1.5 cursor-col-resize z-10 transition-colors hover:bg-[#48198B]/30 ${isResizing ? "bg-[#48198B]/40" : ""
-          }`}
+        className={`absolute top-0 right-0 h-full w-1.5 cursor-col-resize z-10 transition-colors hover:bg-[#48198B]/30 ${
+          isResizing ? "bg-[#48198B]/40" : ""
+        }`}
         title="Drag to resize, double-click to reset"
       />
     </div>

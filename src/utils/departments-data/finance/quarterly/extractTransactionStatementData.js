@@ -37,15 +37,16 @@ export const extractTransactionStatementMetadata = (data) => {
     // Excel row number, full row contents, and which value it picked).
     if (i <= 13) {
       console.log(
-        `[metadata] row[${i}] (Excel row ${i + 1}):`, row,
-        `| firstCell="${firstCell}" | labelValue picked="${labelValue}"`
+        `[metadata] row[${i}] (Excel row ${i + 1}):`,
+        row,
+        `| firstCell="${firstCell}" | labelValue picked="${labelValue}"`,
       );
     }
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("TRAN_STATQQ001") ) {
+      if (firstCell.includes("TRAN_STATQQ001")) {
         metadata.reportType = "finance-quarterly_transaction-statement";
         metadata.reportTypeId = "finance-quarterly_transaction-statement";
         metadata.departmentId = "finance";
@@ -82,17 +83,13 @@ export const extractTransactionStatementMetadata = (data) => {
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    if (
-      i === 10 &&
-      firstCell &&
-      firstCell.toLowerCase().includes("end date")
-    ) {
+    if (i === 10 && firstCell && firstCell.toLowerCase().includes("end date")) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
     if (i === 12) {
       const unitCell = row.find(
-        (c) => c && String(c).toLowerCase().includes("million")
+        (c) => c && String(c).toLowerCase().includes("million"),
       );
       if (unitCell) metadata.unit = String(unitCell).trim();
     }
@@ -118,16 +115,16 @@ const extractTransactionStatementData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Code') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "Code") {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], currencies: [], additionalColumns: [] };
   }
 
@@ -143,11 +140,11 @@ const extractTransactionStatementData = (data) => {
   const NET = 8;
 
   const columns = [
-    'O_S_Balance_Made',
-    'Maturity_Made',
-    'O_S_Balance_Taken',
-    'Maturity_Taken',
-    'NET'
+    "O_S_Balance_Made",
+    "Maturity_Made",
+    "O_S_Balance_Taken",
+    "Maturity_Taken",
+    "NET",
   ];
 
   const topLevelNodes = [];
@@ -158,10 +155,10 @@ const extractTransactionStatementData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const leftCode = String(row[LEFT_CODE] || '').trim();
-    const leftDesc = String(row[LEFT_DESC] || '').trim();
-    const rightCode = String(row[RIGHT_CODE] || '').trim();
-    const rightDesc = String(row[RIGHT_DESC] || '').trim();
+    const leftCode = String(row[LEFT_CODE] || "").trim();
+    const leftDesc = String(row[LEFT_DESC] || "").trim();
+    const rightCode = String(row[RIGHT_CODE] || "").trim();
+    const rightDesc = String(row[RIGHT_DESC] || "").trim();
 
     // Skip if both sides are empty
     if (!leftCode && !leftDesc && !rightCode && !rightDesc) continue;
@@ -171,7 +168,7 @@ const extractTransactionStatementData = (data) => {
       if (index !== undefined && index < row.length) {
         const raw = row[index];
         // Handle empty/null
-        if (raw === null || raw === undefined || raw === '') return '0';
+        if (raw === null || raw === undefined || raw === "") return "0";
         // Handle numeric strings and numbers
         const val = parseFloat(raw);
         if (!isNaN(val)) {
@@ -180,42 +177,47 @@ const extractTransactionStatementData = (data) => {
         // If it's a string (not a number), return it as-is
         return String(raw).trim();
       }
-      return '0';
+      return "0";
     };
 
     const getStringValue = (index) => {
       if (index !== undefined && index < row.length) {
-        return String(row[index] || '').trim();
+        return String(row[index] || "").trim();
       }
-      return '';
+      return "";
     };
 
     // Extract values - use getValue for numeric fields and getStringValue for text fields
     const values = {
-      'O_S_Balance_Made': getValue(LEFT_OS),
-      'Maturity_Made': getStringValue(LEFT_MATURITY),
-      'O_S_Balance_Taken': getValue(RIGHT_OS),
-      'Maturity_Taken': getStringValue(RIGHT_MATURITY),
-      'NET': getValue(NET)
+      O_S_Balance_Made: getValue(LEFT_OS),
+      Maturity_Made: getStringValue(LEFT_MATURITY),
+      O_S_Balance_Taken: getValue(RIGHT_OS),
+      Maturity_Taken: getStringValue(RIGHT_MATURITY),
+      NET: getValue(NET),
     };
 
     // Determine level based on code depth
     let level = 0;
     let codeForLevel = leftCode || rightCode;
     if (codeForLevel) {
-      const codeParts = codeForLevel.split('.');
+      const codeParts = codeForLevel.split(".");
       level = codeParts.length;
     }
 
     // Check if this is a total row
-    const isTotalRow = leftDesc.includes('Total') || rightDesc.includes('Total');
+    const isTotalRow =
+      leftDesc.includes("Total") || rightDesc.includes("Total");
 
     // Check if this is a section header (like "DEPOSITS", "LOANS", "INVESTMENT")
-    const isSectionHeader = (level === 1 && leftDesc && leftDesc === leftDesc.toUpperCase() && !leftDesc.includes('.')) ||
-                            (level === 1 && rightDesc && rightDesc === rightDesc.toUpperCase());
+    const isSectionHeader =
+      (level === 1 &&
+        leftDesc &&
+        leftDesc === leftDesc.toUpperCase() &&
+        !leftDesc.includes(".")) ||
+      (level === 1 && rightDesc && rightDesc === rightDesc.toUpperCase());
 
     // Build a combined label
-    let combinedLabel = '';
+    let combinedLabel = "";
     if (leftDesc && rightDesc) {
       combinedLabel = `${leftDesc} | ${rightDesc}`;
     } else if (leftDesc) {
@@ -228,7 +230,7 @@ const extractTransactionStatementData = (data) => {
 
     const entry = {
       id: primaryCode || `row-${i}`,
-      sNo: primaryCode || '',
+      sNo: primaryCode || "",
       label: combinedLabel,
       values: values,
       leftCode: leftCode,
@@ -239,7 +241,7 @@ const extractTransactionStatementData = (data) => {
       level: level,
       isTotalRow: isTotalRow || false,
       isSectionHeader: isSectionHeader || false,
-      children: []
+      children: [],
     };
 
     if (primaryCode) {
@@ -254,16 +256,16 @@ const extractTransactionStatementData = (data) => {
 
   // Build hierarchy
   for (const [code, node] of nodeMap) {
-    const codeParts = code.split('.');
-    
+    const codeParts = code.split(".");
+
     if (codeParts.length <= 1) {
       continue;
     } else {
-      const parentCode = codeParts.slice(0, -1).join('.');
+      const parentCode = codeParts.slice(0, -1).join(".");
       const parent = nodeMap.get(parentCode);
-      
+
       if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
+        const exists = parent.children.some((child) => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
         }
@@ -271,7 +273,9 @@ const extractTransactionStatementData = (data) => {
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
+          const exists = baseParent.children.some(
+            (child) => child.id === node.id,
+          );
           if (!exists) {
             baseParent.children.push(node);
           }
@@ -297,13 +301,13 @@ const extractTransactionStatementData = (data) => {
     nodes.sort((a, b) => {
       if (a.isTotalRow && !b.isTotalRow) return 1;
       if (!a.isTotalRow && b.isTotalRow) return -1;
-      
+
       const aCode = a.sNo || a.leftCode || a.rightCode;
       const bCode = b.sNo || b.leftCode || b.rightCode;
-      
+
       if (aCode && bCode) {
-        const aParts = aCode.split('.').map(Number);
-        const bParts = bCode.split('.').map(Number);
+        const aParts = aCode.split(".").map(Number);
+        const bParts = bCode.split(".").map(Number);
         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
@@ -314,7 +318,7 @@ const extractTransactionStatementData = (data) => {
       return 0;
     });
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length > 0) {
         sortChildren(node.children);
       }
@@ -325,7 +329,7 @@ const extractTransactionStatementData = (data) => {
 
   // Clean up
   const cleanData = (nodes) => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length === 0) {
         delete node.children;
       } else if (node.children) {
@@ -335,12 +339,12 @@ const extractTransactionStatementData = (data) => {
   };
   cleanData(uniqueTopLevel);
 
-  console.log('Total top-level entries:', uniqueTopLevel.length);
+  console.log("Total top-level entries:", uniqueTopLevel.length);
 
   return {
     hierarchicalData: uniqueTopLevel,
     columns: columns,
-    additionalColumns: []
+    additionalColumns: [],
   };
 };
-export default extractTransactionStatementData
+export default extractTransactionStatementData;

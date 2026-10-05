@@ -1,4 +1,3 @@
-
 import { excelDateToISO } from "../../../utils";
 export const extractLiquidityMetadata = (data) => {
   const metadata = {
@@ -30,50 +29,51 @@ export const extractLiquidityMetadata = (data) => {
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
 
-if (firstCell.includes("ZS001")) {
+      if (firstCell.includes("ZS001")) {
         metadata.reportType = "finance-weekly_liquidity";
         metadata.departmentName = "Finance";
         metadata.departmentId = "finance";
         metadata.reportTypeId = "finance-weekly_liquidity";
         //console.log("Found Report Type:", metadata.reportType);
-      } 
+      }
     }
 
-    if (( i === 3) && (firstCell)) {
-       metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -83,47 +83,44 @@ if (firstCell.includes("ZS001")) {
     }
 
     if (
-      ( i === 12) &&
+      i === 12 &&
       (thirdCell || thirteenCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        thirteenCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+        thirteenCell.toLowerCase().includes("in") ||
+        firstCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = thirteenCell  || '';
+      metadata.unit = thirteenCell || "";
       //console.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractLiquidityRequirementData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
-   let noandtitles = [];
-    for (let i = 0; i < data.length; i++) {
+  let noandtitles = [];
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    
+
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if(i === 13){
-      noandtitles = [firstCell,secondCell]
+    if (i === 13) {
+      noandtitles = [firstCell, secondCell];
       //console.log("Found title:", noandtitles);
     }
   }
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    
+
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
     if (firstCell === "code" || secondCell === "Description") {
-    
       dataTableStart = i + 1;
       break;
     }
-   
   }
-
- 
 
   // Alternative: Look for "Required Liquid Assets"
   if (dataTableStart === -1) {
@@ -138,10 +135,10 @@ const extractLiquidityRequirementData = (data) => {
   }
 
   const headerRow = data[dataTableStart - 1];
-  
+
   const dayColumns = [];
   let dayStartIndex = -1;
-  
+
   // Look for day names (Thu, Fri, Sat, Sun, Mon, Tue, Wed)
   for (let i = 0; i < headerRow.length; i++) {
     const cell = String(headerRow[i] || "").trim();
@@ -193,7 +190,7 @@ const extractLiquidityRequirementData = (data) => {
     if (!description) continue;
     if (description.includes("Note:") || description.includes("_")) continue;
 
-    //  IDENTIFY ROW TYPES 
+    //  IDENTIFY ROW TYPES
     const isSectionHeader =
       description === "Required Liquid Assets" ||
       description === "Liquid Assets Held" ||
@@ -206,36 +203,35 @@ const extractLiquidityRequirementData = (data) => {
       description.includes("Liquidity Ratio");
 
     // EXTRACT VALUES FOR EACH DAY
-     const values = {};
+    const values = {};
 
-    const isNullSection = description === 'Required Liquid Assets' || 
-                      description === 'Liquid Assets Held';
+    const isNullSection =
+      description === "Required Liquid Assets" ||
+      description === "Liquid Assets Held";
 
-            if (isNullSection) {
-  // Section headers - set all values to null
-  for (let j = 0; j < dayColumns.length; j++) {
-    values[dayColumns[j]] = null;
-  }
-} else {
-
-    for (let j = 0; j < dayColumns.length; j++) {
-      
-      const colIndex = dayStartIndex + j;
-      if (colIndex < row.length) {
-       // const rawValue = parseFloat(row[colIndex]);
-        const raw = row[colIndex];
-       const cleaned = String(raw).replace(/,/g, "").trim();
-      const rawValue = parseFloat(cleaned);
-        if (!isNaN(rawValue) && rawValue !== 0) {
-          values[dayColumns[j]] = rawValue.toFixed(2);
+    if (isNullSection) {
+      // Section headers - set all values to null
+      for (let j = 0; j < dayColumns.length; j++) {
+        values[dayColumns[j]] = null;
+      }
+    } else {
+      for (let j = 0; j < dayColumns.length; j++) {
+        const colIndex = dayStartIndex + j;
+        if (colIndex < row.length) {
+          // const rawValue = parseFloat(row[colIndex]);
+          const raw = row[colIndex];
+          const cleaned = String(raw).replace(/,/g, "").trim();
+          const rawValue = parseFloat(cleaned);
+          if (!isNaN(rawValue) && rawValue !== 0) {
+            values[dayColumns[j]] = rawValue.toFixed(2);
+          } else {
+            values[dayColumns[j]] = "0";
+          }
         } else {
           values[dayColumns[j]] = "0";
         }
-      } else {
-        values[dayColumns[j]] = "0";
       }
-
-    }}
+    }
 
     // DETERMINE HIERARCHY LEVEL
     let level = 0;
@@ -261,7 +257,7 @@ const extractLiquidityRequirementData = (data) => {
       children: [],
     };
 
-    // BUILD HIERARCHY 
+    // BUILD HIERARCHY
     if (code) {
       nodeMap.set(code, entry);
     }
@@ -326,7 +322,7 @@ const extractLiquidityRequirementData = (data) => {
     }
   }
 
-  // SORT CHILDREN 
+  // SORT CHILDREN
   const sortChildren = (nodes) => {
     nodes.sort((a, b) => {
       // Total rows at the end
@@ -356,7 +352,7 @@ const extractLiquidityRequirementData = (data) => {
 
   sortChildren(topLevelNodes);
 
-  // CLEAN UP 
+  // CLEAN UP
   const cleanData = (nodes) => {
     nodes.forEach((node) => {
       if (node.children && node.children.length === 0) {
@@ -368,12 +364,12 @@ const extractLiquidityRequirementData = (data) => {
   };
   cleanData(topLevelNodes);
 
-  //  RETURN RESULT 
+  //  RETURN RESULT
   return {
     hierarchicalData: topLevelNodes,
     columns: dayColumns, // ['Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Weekly Average']
     additionalColumns: [],
-    noandtitles:noandtitles
+    noandtitles: noandtitles,
   };
 };
 

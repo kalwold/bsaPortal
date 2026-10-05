@@ -37,52 +37,51 @@ export const extractReserveBaseMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
-     
 
-if (firstCell.includes('RB001')){
-        metadata.reportType = 'finance-monthly_reserve';
-        metadata.departmentName = 'Finance';
-        metadata.departmentId='finance';
-        metadata.reportTypeId='finance-monthly_reserve'
-        
+      if (firstCell.includes("RB001")) {
+        metadata.reportType = "finance-monthly_reserve";
+        metadata.departmentName = "Finance";
+        metadata.departmentId = "finance";
+        metadata.reportTypeId = "finance-monthly_reserve";
       }
     }
 
-    if (( i === 3) && (firstCell)) {
-       metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -92,17 +91,18 @@ if (firstCell.includes('RB001')){
     }
 
     if (
-      ( i === 11) &&
+      i === 11 &&
       (thirdCell || thirtyThreeCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        thirtyThreeCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+        thirtyThreeCell.toLowerCase().includes("in") ||
+        firstCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = thirtyThreeCell  || '';
+      metadata.unit = thirtyThreeCell || "";
       //console.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractReserveBaseData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -131,8 +131,8 @@ const extractReserveBaseData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Code') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "Code") {
       dataTableStart = i + 1;
       //console.log('Found data table at row:', dataTableStart);
       break;
@@ -144,10 +144,10 @@ const extractReserveBaseData = (data) => {
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       if (!row || row.length === 0) continue;
-      const firstCell = String(row[0] || '').trim();
-      if (firstCell === '1') {
-        const secondCell = String(row[1] || '').trim();
-        if (secondCell && secondCell.includes('Reserve Base')) {
+      const firstCell = String(row[0] || "").trim();
+      if (firstCell === "1") {
+        const secondCell = String(row[1] || "").trim();
+        if (secondCell && secondCell.includes("Reserve Base")) {
           dataTableStart = i;
           //console.log('Found data table at row (alt):', dataTableStart);
           break;
@@ -163,28 +163,30 @@ const extractReserveBaseData = (data) => {
 
   // Get the header row to identify column positions
   const headerRow = data[dataTableStart - 1];
-  
+
   // Print header row for debugging
   //console.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
   // Find day columns
   const dayColumns = [];
   let dayStartIndex = -1;
-  
+
   for (let i = 0; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || '').trim().replace(/\s+/g, '_');
-if (cell === 'Day_1') {
-    dayStartIndex = i;
-    //console.log('Found Day 1 at column:', i, cell);
-  }
+    const cell = String(headerRow[i] || "")
+      .trim()
+      .replace(/\s+/g, "_");
+    if (cell === "Day_1") {
+      dayStartIndex = i;
+      //console.log('Found Day 1 at column:', i, cell);
+    }
 
-  if (cell && cell.startsWith('Day_') && !isNaN(cell.split('_')[1])) {
-    dayColumns.push(cell);
-  }
+    if (cell && cell.startsWith("Day_") && !isNaN(cell.split("_")[1])) {
+      dayColumns.push(cell);
+    }
 
-  if (cell === 'Monthly_Average') {
-    dayColumns.push(cell);
-  }
+    if (cell === "Monthly_Average") {
+      dayColumns.push(cell);
+    }
   }
 
   // If we couldn't find day columns, use default positions
@@ -208,76 +210,75 @@ if (cell === 'Day_1') {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const code = String(row[0] || '').trim();
-    const description = String(row[1] || '').trim();
+    const code = String(row[0] || "").trim();
+    const description = String(row[1] || "").trim();
 
     // Skip if no description or if it's a note
     if (!description) continue;
-    if (description.includes('Note:') || description.includes('Note')) continue;
+    if (description.includes("Note:") || description.includes("Note")) continue;
 
     // Skip if code is a formula or reference
-    if (code && code.startsWith('=')) continue;
+    if (code && code.startsWith("=")) continue;
 
     // Check if this is a section header (like "Reserve Base (1.1+1.2+1.3)")
-    const isSectionHeader = description.includes('Reserve Base') || 
-                           description.includes('Deductions Items') ||
-                           description.includes('Net Reserve Base') ||
-                           description.includes('Deposit Balance with NBE') ||
-                           description.includes('Excess/Deficiency') ||
-                           description.includes('Reserve Ratio');
+    const isSectionHeader =
+      description.includes("Reserve Base") ||
+      description.includes("Deductions Items") ||
+      description.includes("Net Reserve Base") ||
+      description.includes("Deposit Balance with NBE") ||
+      description.includes("Excess/Deficiency") ||
+      description.includes("Reserve Ratio");
 
     // Check if this is a total row (like for Reserve Ratio)
-    const isTotalRow = description.includes('Reserve Ratio');
+    const isTotalRow = description.includes("Reserve Ratio");
 
     // Extract values for each day
     const values = {};
 
     // Only extract values if not a section header without data
     //if (!isSectionHeader || description.includes('Reserve Base') || description.includes('Net Reserve Base')) {
-    if (!description.includes('Reserve Ratio')){ 
-    for (let j = 0; j < dayColumns.length; j++) {
+    if (!description.includes("Reserve Ratio")) {
+      for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
-        //  const rawValue = parseFloat(row[colIndex]);
+          //  const rawValue = parseFloat(row[colIndex]);
           const raw = row[colIndex];
-       const cleaned = String(raw).replace(/,/g, "").trim();
-      const rawValue = parseFloat(cleaned);
+          const cleaned = String(raw).replace(/,/g, "").trim();
+          const rawValue = parseFloat(cleaned);
           if (!isNaN(rawValue) && rawValue !== 0) {
             values[dayColumns[j]] = rawValue.toFixed(2);
           } else {
-            values[dayColumns[j]] = '0';
+            values[dayColumns[j]] = "0";
           }
         } else {
-          values[dayColumns[j]] = '0';
+          values[dayColumns[j]] = "0";
         }
       }
     } else {
       // For section headers without data, set all to null
-       for (let j = 0; j < dayColumns.length; j++) {
+      for (let j = 0; j < dayColumns.length; j++) {
         const colIndex = dayStartIndex + j;
         if (colIndex < row.length) {
-        //  const rawValue = parseFloat(row[colIndex]);
+          //  const rawValue = parseFloat(row[colIndex]);
           const raw = row[colIndex];
-       const cleaned = String(raw).replace(/,/g, "").trim();
-      const rawValue = parseFloat(cleaned);
+          const cleaned = String(raw).replace(/,/g, "").trim();
+          const rawValue = parseFloat(cleaned);
           if (!isNaN(rawValue) && rawValue !== 0) {
-            values[dayColumns[j]] = (rawValue).toFixed(2) ;
+            values[dayColumns[j]] = rawValue.toFixed(2);
           } else {
-            values[dayColumns[j]] = '0';
+            values[dayColumns[j]] = "0";
           }
         } else {
-          values[dayColumns[j]] = '0';
+          values[dayColumns[j]] = "0";
         }
-
-       
       }
     }
 
     // Determine level
     let level = 0;
-    if (code && code !== '') {
+    if (code && code !== "") {
       // Code like "1", "1.1", "1.2"
-      const codeParts = code.split('.');
+      const codeParts = code.split(".");
       level = codeParts.length;
     } else if (isSectionHeader) {
       level = 0;
@@ -287,14 +288,14 @@ if (cell === 'Day_1') {
 
     const entry = {
       id: code || ``,
-      sNo: code || '',
+      sNo: code || "",
       label: description,
       values: values,
       rowNumber: i + 1,
       level: level,
       isTotalRow: isTotalRow || false,
       isSectionHeader: isSectionHeader || false,
-      children: []
+      children: [],
     };
 
     if (code) {
@@ -325,20 +326,20 @@ if (cell === 'Day_1') {
 
   // Build hierarchy for nodes with codes
   for (const [code, node] of nodeMap) {
-    const codeParts = code.split('.');
-    
+    const codeParts = code.split(".");
+
     if (codeParts.length === 1) {
-      const existing = topLevelNodes.find(n => n.id === code);
+      const existing = topLevelNodes.find((n) => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
         //console.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
-      const parentCode = codeParts.slice(0, -1).join('.');
+      const parentCode = codeParts.slice(0, -1).join(".");
       const parent = nodeMap.get(parentCode);
-      
+
       if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
+        const exists = parent.children.some((child) => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
           //console.log(`Added node ${code} as child of ${parentCode}`);
@@ -347,7 +348,9 @@ if (cell === 'Day_1') {
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
+          const exists = baseParent.children.some(
+            (child) => child.id === node.id,
+          );
           if (!exists) {
             baseParent.children.push(node);
             //console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
@@ -365,10 +368,10 @@ if (cell === 'Day_1') {
     nodes.sort((a, b) => {
       if (a.isTotalRow && !b.isTotalRow) return 1;
       if (!a.isTotalRow && b.isTotalRow) return -1;
-      
+
       if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
+        const aParts = a.sNo.split(".").map(Number);
+        const bParts = b.sNo.split(".").map(Number);
         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
@@ -379,7 +382,7 @@ if (cell === 'Day_1') {
       return 0;
     });
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length > 0) {
         sortChildren(node.children);
       }
@@ -390,7 +393,7 @@ if (cell === 'Day_1') {
 
   // Clean up - remove empty children arrays
   const cleanData = (nodes) => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length === 0) {
         delete node.children;
       } else if (node.children) {
@@ -407,7 +410,7 @@ if (cell === 'Day_1') {
     hierarchicalData: topLevelNodes,
     columns: dayColumns,
     additionalColumns: [],
-    noandtitles:noandtitles
+    noandtitles: noandtitles,
   };
 };
 

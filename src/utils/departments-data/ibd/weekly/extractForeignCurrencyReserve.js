@@ -12,7 +12,14 @@ const HEADER_DEPTH = 2; // rows 9-10 define the columns
 const ANCHOR_RE = /^(s\.?\s*no\.?|no\.?)$/i;
 
 // 0-based rows of the top block in this template
-const ROW = { title: 3, institution: 4, financialYear: 5, startDate: 6, endDate: 7, unit: 7 };
+const ROW = {
+  title: 3,
+  institution: 4,
+  financialYear: 5,
+  startDate: 6,
+  endDate: 7,
+  unit: 7,
+};
 
 const TOTAL_RE = /total/i;
 const UNIT_RE = /million|thousand/i; // "(Amount in Thousands)"
@@ -29,7 +36,8 @@ const cleanHeader = (text) =>
     .replace(/[^A-Za-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 
-const getStr = (row, idx) => (row && idx < row.length ? String(row[idx] ?? "").trim() : "");
+const getStr = (row, idx) =>
+  row && idx < row.length ? String(row[idx] ?? "").trim() : "";
 
 // Numbers may arrive as formatted text ("1,250.50", "12.5%"). Blank / zero -> "0".
 const getNum = (row, idx) => {
@@ -41,7 +49,10 @@ const getNum = (row, idx) => {
 };
 
 const isNumericSNo = (v) =>
-  v !== undefined && v !== null && String(v).trim() !== "" && !isNaN(parseFloat(v));
+  v !== undefined &&
+  v !== null &&
+  String(v).trim() !== "" &&
+  !isNaN(parseFloat(v));
 
 // 1.1, 1.2 ... (non-integer) are children of section 1
 const isChildSNo = (v) => isNumericSNo(v) && !Number.isInteger(parseFloat(v));
@@ -78,7 +89,9 @@ const buildColumns = (data, headerRowIdx) => {
       continue; // empty column
     }
 
-    const chain = parts.filter(Boolean).filter((p, i, a) => i === 0 || p !== a[i - 1]);
+    const chain = parts
+      .filter(Boolean)
+      .filter((p, i, a) => i === 0 || p !== a[i - 1]);
     let key = chain.join("_");
     let n = 2;
     while (used.has(key)) key = `${chain.join("_")}_${n++}`;
@@ -120,7 +133,12 @@ export const extractForeignCurrencyReserveMetadata = (data) => {
     const labelValue = (() => {
       for (let c = 1; c <= 5; c++) {
         const v = row[c];
-        if (v !== undefined && v !== null && String(v).trim() !== "" && !UNIT_RE.test(String(v))) {
+        if (
+          v !== undefined &&
+          v !== null &&
+          String(v).trim() !== "" &&
+          !UNIT_RE.test(String(v))
+        ) {
           return String(v).trim();
         }
       }
@@ -141,7 +159,10 @@ export const extractForeignCurrencyReserveMetadata = (data) => {
       metadata.reportTitle = firstCell.replace(/\s+/g, " ").trim();
     }
 
-    if (i === ROW.institution && (firstLower.includes("instiution") || firstLower.includes("institution"))) {
+    if (
+      i === ROW.institution &&
+      (firstLower.includes("instiution") || firstLower.includes("institution"))
+    ) {
       metadata.institutionCode = labelValue || "";
     }
 
@@ -179,10 +200,18 @@ const extractForeignCurrencyReserveData = (data) => {
   const headerRowIdx = locateHeader(data);
 
   if (headerRowIdx === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
-  const noandtitles = [getStr(data[headerRowIdx], 0), getStr(data[headerRowIdx], 1)];
+  const noandtitles = [
+    getStr(data[headerRowIdx], 0),
+    getStr(data[headerRowIdx], 1),
+  ];
   const cols = buildColumns(data, headerRowIdx);
   const entries = [];
 
@@ -207,7 +236,9 @@ const extractForeignCurrencyReserveData = (data) => {
     // ---- currency rows: 1.1, 1.2 ... (level 2)
     if (numbered && isChildSNo(sNoRaw)) {
       childCount++;
-      const sNo = section ? `${section.id}.${childCount}` : String(sNoRaw).trim();
+      const sNo = section
+        ? `${section.id}.${childCount}`
+        : String(sNoRaw).trim();
       entries.push({
         id: sNo,
         sNo,

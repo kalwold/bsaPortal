@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractRestructuredAbove5PctMetadata=(data)=>{
+export const extractRestructuredAbove5PctMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -37,83 +37,83 @@ export const extractRestructuredAbove5PctMetadata=(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       //consol.log("Found Return Key:", metadata.ReturnKey);
-     
 
-  if (firstCell.includes('RLAFCRC001') || firstCell.includes('RC001')) {
-        metadata.reportType = 'credit-quarterly_restructured-above-5pct';
-        metadata.reportTypeId = 'credit-quarterly_restructured-above-5pct';
-        metadata.departmentId = 'credit';
-        metadata.departmentName = 'Credit';
+      if (firstCell.includes("RLAFCRC001") || firstCell.includes("RC001")) {
+        metadata.reportType = "credit-quarterly_restructured-above-5pct";
+        metadata.reportTypeId = "credit-quarterly_restructured-above-5pct";
+        metadata.departmentId = "credit";
+        metadata.departmentName = "Credit";
       }
-
     }
 
-    if (( i === 3) && (firstCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       //consol.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //consol.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //consol.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //consol.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
       metadata.endDate = excelDateToISO(thirdCell) || "";
       // metadata.endDate =excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-      //consol.log("Found End Date:", metadata.endDate); 
+      //consol.log("Found End Date:", metadata.endDate);
     }
 
     if (
-      ( i === 12) &&
-      (fourthCell.toLowerCase().includes("in") || fourthCell.toLowerCase().includes('In'))
+      i === 12 &&
+      (fourthCell.toLowerCase().includes("in") ||
+        fourthCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = twelveCell  || '';
+      metadata.unit = twelveCell || "";
       //consol.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractRestructuredAbove5PctData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
-     let noandtitles = [];
-    for (let i = 0; i < data.length; i++) {
+  let noandtitles = [];
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    
+
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
 
-    if(i === 13){
-      noandtitles = [firstCell,secondCell]
+    if (i === 13) {
+      noandtitles = [firstCell, secondCell];
       //console.log("Found title:", noandtitles);
     }
   }
@@ -122,7 +122,10 @@ const extractRestructuredAbove5PctData = (data) => {
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -130,16 +133,16 @@ const extractRestructuredAbove5PctData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'S.No.') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "S.No.") {
       dataTableStart = i + 2; // Skip header row and empty row
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -159,17 +162,17 @@ const extractRestructuredAbove5PctData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'Type_of_Loan_and_Advance',
-    'Sector',
-    'Number_of_Iterations',
-    'Types_of_Restructuring',
-    'Original_Amount_of_Loans',
-    'Amount_after_Latest_Restructuring',
-    'Date_of_Last_Restructuring',
-    'Classification_Status',
-    'Types_of_Collateral',
-    'Value_of_Collateral',
-    'Percent_of_Bank_Total_Capital'
+    "Type_of_Loan_and_Advance",
+    "Sector",
+    "Number_of_Iterations",
+    "Types_of_Restructuring",
+    "Original_Amount_of_Loans",
+    "Amount_after_Latest_Restructuring",
+    "Date_of_Last_Restructuring",
+    "Classification_Status",
+    "Types_of_Collateral",
+    "Value_of_Collateral",
+    "Percent_of_Bank_Total_Capital",
   ];
 
   const topLevelNodes = [];
@@ -177,20 +180,20 @@ const extractRestructuredAbove5PctData = (data) => {
   // Helper functions
   const getValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-     const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+      const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
       if (!isNaN(val) && val !== 0) {
         return val.toFixed(2);
       }
-      return '0';
+      return "0";
     }
-    return '0';
+    return "0";
   };
 
   const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return '';
+    return "";
   };
 
   // Parse each row
@@ -198,36 +201,39 @@ const extractRestructuredAbove5PctData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const sNo = String(row[SNO_COL] || '').trim();
-    const counterparty = String(row[COUNTERPARTY_COL] || '').trim();
- const isTotalRow = (counterparty=== 'Total')
+    const sNo = String(row[SNO_COL] || "").trim();
+    const counterparty = String(row[COUNTERPARTY_COL] || "").trim();
+    const isTotalRow = counterparty === "Total";
 
-    
     // Skip if no counterparty
     if (!counterparty) continue;
 
     // Skip if this is a note row
-    if (counterparty.includes('Note:') || 
-        counterparty.includes('*If a counterparty') || 
-        counterparty.includes('**Total Capital')) continue;
+    if (
+      counterparty.includes("Note:") ||
+      counterparty.includes("*If a counterparty") ||
+      counterparty.includes("**Total Capital")
+    )
+      continue;
 
     // Extract values
     const values = {
-      
-      'Type_of_Loan_and_Advance': getStringValue(LOAN_TYPE_COL, row),
-      'Sector': getStringValue(SECTOR_COL, row),
-      'Number_of_Iterations': getValue(ITERATIONS_COL, row),
-      'Types_of_Restructuring': getStringValue(RESTRUCTURING_TYPES_COL, row),
-      'Original_Amount_of_Loans': getValue(ORIGINAL_AMOUNT_COL, row),
-      'Amount_after_Latest_Restructuring': getValue(LATEST_AMOUNT_COL, row),
-      'Date_of_Last_Restructuring': getStringValue(LAST_RESTRUCTURING_DATE_COL, row),
-      'Classification_Status': getStringValue(CLASSIFICATION_COL, row),
-      'Types_of_Collateral': getStringValue(COLLATERAL_TYPE_COL, row),
-      'Value_of_Collateral': getValue(COLLATERAL_VALUE_COL, row),
-      'Percent_of_Bank_Total_Capital': getValue(PERCENT_CAPITAL_COL, row)
+      Type_of_Loan_and_Advance: getStringValue(LOAN_TYPE_COL, row),
+      Sector: getStringValue(SECTOR_COL, row),
+      Number_of_Iterations: getValue(ITERATIONS_COL, row),
+      Types_of_Restructuring: getStringValue(RESTRUCTURING_TYPES_COL, row),
+      Original_Amount_of_Loans: getValue(ORIGINAL_AMOUNT_COL, row),
+      Amount_after_Latest_Restructuring: getValue(LATEST_AMOUNT_COL, row),
+      Date_of_Last_Restructuring: getStringValue(
+        LAST_RESTRUCTURING_DATE_COL,
+        row,
+      ),
+      Classification_Status: getStringValue(CLASSIFICATION_COL, row),
+      Types_of_Collateral: getStringValue(COLLATERAL_TYPE_COL, row),
+      Value_of_Collateral: getValue(COLLATERAL_VALUE_COL, row),
+      Percent_of_Bank_Total_Capital: getValue(PERCENT_CAPITAL_COL, row),
     };
 
-   
     const entry = {
       id: sNo || ``,
       sNo: sNo,
@@ -237,7 +243,7 @@ const extractRestructuredAbove5PctData = (data) => {
       level: 1,
       isTotalRow: isTotalRow,
       isSectionHeader: false,
-      children: []
+      children: [],
     };
 
     topLevelNodes.push(entry);
@@ -251,13 +257,13 @@ const extractRestructuredAbove5PctData = (data) => {
     return 0;
   });
 
-  console.log('Total entries:', topLevelNodes.length);
+  console.log("Total entries:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles
+    noandtitles,
   };
 };
-export default extractRestructuredAbove5PctData
+export default extractRestructuredAbove5PctData;

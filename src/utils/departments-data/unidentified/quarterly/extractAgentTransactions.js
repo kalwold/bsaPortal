@@ -1,12 +1,17 @@
 import { excelDateToISO } from "../../../utils";
 
 // report type for QA001
-const REPORT_TYPE_ID = "unidentified-quarterly_agent-transaction-by-type-and-amount";
+const REPORT_TYPE_ID =
+  "unidentified-quarterly_agent-transaction-by-type-and-amount";
 const DEPARTMENT_ID = "unidentified";
 const DEPARTMENT_NAME = "Unidentified";
 
-const clean = (v) => String(v ?? "").replace(/\s+/g, " ").trim();
-const isFilled = (v) => v !== undefined && v !== null && String(v).trim() !== "";
+const clean = (v) =>
+  String(v ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+const isFilled = (v) =>
+  v !== undefined && v !== null && String(v).trim() !== "";
 
 /* ------------------------------------------------------------------ */
 /* Metadata                                                            */
@@ -116,7 +121,8 @@ const formatValue = (n) => (n === 0 ? "0" : n.toFixed(2));
 // Input cells of one row as numbers
 const readInputs = (row) => {
   const nums = {};
-  for (const [key, idx] of Object.entries(INPUT_COLUMNS)) nums[key] = toNumber(row[idx]);
+  for (const [key, idx] of Object.entries(INPUT_COLUMNS))
+    nums[key] = toNumber(row[idx]);
   return nums;
 };
 
@@ -134,7 +140,10 @@ const extractAgentTransactionsData = (data) => {
     if (!row || row.length === 0) continue;
     const firstCell = clean(row[0]).toLowerCase();
     const secondCell = clean(row[1]).toLowerCase();
-    if (firstCell.startsWith("s.no") && secondCell.includes("type of transaction")) {
+    if (
+      firstCell.startsWith("s.no") &&
+      secondCell.includes("type of transaction")
+    ) {
       dataTableStart = i + 1;
       break;
     }

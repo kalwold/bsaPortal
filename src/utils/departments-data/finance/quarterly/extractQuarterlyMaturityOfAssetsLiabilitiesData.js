@@ -95,7 +95,10 @@ const extractQuarterlyMaturityOfAssetsLiabilitiesData = (data) => {
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
-    if (firstCell === "Code" && secondCell.toLowerCase().includes("time band")) {
+    if (
+      firstCell === "Code" &&
+      secondCell.toLowerCase().includes("time band")
+    ) {
       headerRowIndex = i;
       dataTableStart = i + 1;
       break;
@@ -131,10 +134,12 @@ const extractQuarterlyMaturityOfAssetsLiabilitiesData = (data) => {
     if (!description) continue;
 
     const isAssetsSection = description === "ASSETS";
-    const isLiabilitiesSection = description.toUpperCase().startsWith("LIABILITIES");
+    const isLiabilitiesSection = description
+      .toUpperCase()
+      .startsWith("LIABILITIES");
     const isTotalRow = description.trim().toUpperCase() === "TOTAL";
     const isMismatchRow = description.toUpperCase().includes("MISMATCH");
-   
+
     const values = {};
     columnIndexes.forEach((colIdx, idx) => {
       const raw = parseFloat(row[colIdx]);
@@ -168,7 +173,7 @@ const extractQuarterlyMaturityOfAssetsLiabilitiesData = (data) => {
     } else if (isLiabilitiesSection) {
       topLevelNodes.push(entry);
       liabilitiesNode = entry;
-    } 
+    }
   }
 
   // Nest coded rows: 1.x under ASSETS(1), 2.x under LIABILITIES(2), n.n.n under its parent code
@@ -177,7 +182,8 @@ const extractQuarterlyMaturityOfAssetsLiabilitiesData = (data) => {
 
     if (codeParts.length === 1) {
       const codeNum = parseInt(codeParts[0], 10);
-      const parentSection = codeNum === 1 ? assetsNode : codeNum === 2 ? liabilitiesNode : null;
+      const parentSection =
+        codeNum === 1 ? assetsNode : codeNum === 2 ? liabilitiesNode : null;
       if (parentSection && parentSection !== node) {
         if (!parentSection.children.some((c) => c.id === code)) {
           parentSection.children.push(node);
@@ -204,7 +210,8 @@ const extractQuarterlyMaturityOfAssetsLiabilitiesData = (data) => {
       return aParts.length - bParts.length;
     });
     nodes.forEach((node) => {
-      if (node.children && node.children.length > 0) sortChildren(node.children);
+      if (node.children && node.children.length > 0)
+        sortChildren(node.children);
     });
   };
   sortChildren(topLevelNodes);

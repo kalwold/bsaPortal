@@ -19,7 +19,7 @@ export const DEPARTMENTS = [
   digitalConfig,
   unidentifiedConfig,
   hrConfig,
-  branchOpsConfig
+  branchOpsConfig,
 ];
 
 export const ALL_REPORTS = DEPARTMENTS.flatMap((d) =>

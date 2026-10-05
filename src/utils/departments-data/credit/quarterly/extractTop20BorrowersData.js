@@ -38,15 +38,19 @@ export const extractTop20BorrowersMetadata = (data) => {
     // Excel row number, full row contents, and which value it picked).
     if (i <= 13) {
       console.log(
-        `[metadata] row[${i}] (Excel row ${i + 1}):`, row,
-        `| firstCell="${firstCell}" | labelValue picked="${labelValue}"`
+        `[metadata] row[${i}] (Excel row ${i + 1}):`,
+        row,
+        `| firstCell="${firstCell}" | labelValue picked="${labelValue}"`,
       );
     }
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("TOP_20_BOR_TB001") || firstCell.includes("TB001")) {
+      if (
+        firstCell.includes("TOP_20_BOR_TB001") ||
+        firstCell.includes("TB001")
+      ) {
         metadata.reportType = "credit-quarterly_top20-borrowers";
         metadata.reportTypeId = "credit-quarterly_top20-borrowers";
         metadata.departmentId = "credit";
@@ -83,17 +87,13 @@ export const extractTop20BorrowersMetadata = (data) => {
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    if (
-      i === 10 &&
-      firstCell &&
-      firstCell.toLowerCase().includes("end date")
-    ) {
+    if (i === 10 && firstCell && firstCell.toLowerCase().includes("end date")) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
     if (i === 12) {
       const unitCell = row.find(
-        (c) => c && String(c).toLowerCase().includes("million")
+        (c) => c && String(c).toLowerCase().includes("million"),
       );
       if (unitCell) metadata.unit = String(unitCell).trim();
     }
@@ -121,21 +121,36 @@ const extractTop20BorrowersData = (data) => {
     }
   }
 
-  console.log('[TB001] "S.No." header found at row index:', headerRowIdx,
-    headerRowIdx === -1 ? '(NOT FOUND — check that A14 literally reads "S.No.")' : `(Excel row ${headerRowIdx + 1})`);
+  console.log(
+    '[TB001] "S.No." header found at row index:',
+    headerRowIdx,
+    headerRowIdx === -1
+      ? '(NOT FOUND — check that A14 literally reads "S.No.")'
+      : `(Excel row ${headerRowIdx + 1})`,
+  );
 
   if (headerRowIdx === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles,
+    };
   }
 
   // Header spans 4 rows (main header, on/off balance sheet, approved/outstanding, A/B/C/D=B+C)
   const dataTableStart = headerRowIdx + 4;
-  console.log('[TB001] data rows expected to start at index:', dataTableStart, `(Excel row ${dataTableStart + 1})`);
+  console.log(
+    "[TB001] data rows expected to start at index:",
+    dataTableStart,
+    `(Excel row ${dataTableStart + 1})`,
+  );
 
-    const getNum = (row, idx) => {
+  const getNum = (row, idx) => {
     if (idx < row.length) {
       const raw = row[idx];
-      if (raw === undefined || raw === null || String(raw).trim() === "") return "0";
+      if (raw === undefined || raw === null || String(raw).trim() === "")
+        return "0";
       // Cells arrive from XLSX as formatted display strings (the parser
       // calls sheet_to_json with raw:false), e.g. "7,877,545.00" for a
       // number formatted with thousands separators. parseFloat() stops
@@ -149,7 +164,8 @@ const extractTop20BorrowersData = (data) => {
     }
     return "0";
   };
-  const getStr = (row, idx) => String((idx < row.length && row[idx]) || "").trim();
+  const getStr = (row, idx) =>
+    String((idx < row.length && row[idx]) || "").trim();
 
   const entries = [];
 
@@ -159,14 +175,19 @@ const extractTop20BorrowersData = (data) => {
 
     const sNoRaw = row[0];
     const nameCell = getStr(row, 1);
-    const isNumericSNo = sNoRaw !== undefined && sNoRaw !== "" && !isNaN(parseFloat(sNoRaw));
+    const isNumericSNo =
+      sNoRaw !== undefined && sNoRaw !== "" && !isNaN(parseFloat(sNoRaw));
     const isTotalLabel = /sub total|grand total/i.test(nameCell);
 
     if (!isNumericSNo && !isTotalLabel) {
-      console.log(`[TB001] row[${i}] (Excel row ${i + 1}) skipped — sNo="${sNoRaw}", name="${nameCell}"`);
+      console.log(
+        `[TB001] row[${i}] (Excel row ${i + 1}) skipped — sNo="${sNoRaw}", name="${nameCell}"`,
+      );
       continue; // skip notes / blank rows
     }
-    console.log(`[TB001] row[${i}] (Excel row ${i + 1}) included — sNo="${sNoRaw}", name="${nameCell}", isTotalLabel=${isTotalLabel}`);
+    console.log(
+      `[TB001] row[${i}] (Excel row ${i + 1}) included — sNo="${sNoRaw}", name="${nameCell}", isTotalLabel=${isTotalLabel}`,
+    );
 
     const values = {
       Collateral_Value: getNum(row, 2),

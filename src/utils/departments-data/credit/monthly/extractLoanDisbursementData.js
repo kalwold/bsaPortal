@@ -29,49 +29,50 @@ export const extractDisbursementMetadata = (data) => {
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
 
-if (firstCell.includes('LOA_ADV_OUT') || firstCell.includes('LA001')) {
-        metadata.reportType = 'credit-monthly_loan-disbursement';
-        metadata.departmentId = 'credit';
-        metadata.departmentName = 'Credit';
-        metadata.reportTypeId = 'credit-monthly_loan-disbursement';
+      if (firstCell.includes("LOA_ADV_OUT") || firstCell.includes("LA001")) {
+        metadata.reportType = "credit-monthly_loan-disbursement";
+        metadata.departmentId = "credit";
+        metadata.departmentName = "Credit";
+        metadata.reportTypeId = "credit-monthly_loan-disbursement";
       }
     }
 
-    if (( i === 3) && (firstCell)) {
-       metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -81,23 +82,23 @@ if (firstCell.includes('LOA_ADV_OUT') || firstCell.includes('LA001')) {
     }
 
     if (
-      ( i === 13) &&
+      i === 13 &&
       (thirdCell || thirteenCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        thirteenCell.toLowerCase().includes("in") || thirteenCell.toLowerCase().includes('In'))
+        thirteenCell.toLowerCase().includes("in") ||
+        thirteenCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = thirteenCell  || '';
+      metadata.unit = thirteenCell || "";
       //console.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractLoanDisbursementData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
-    let noandtitles = [];
-
+  let noandtitles = [];
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
@@ -124,8 +125,8 @@ const extractLoanDisbursementData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'Code') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "Code") {
       dataTableStart = i + 1;
       //console.log('Found data table at row:', dataTableStart);
       break;
@@ -137,10 +138,10 @@ const extractLoanDisbursementData = (data) => {
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       if (!row || row.length === 0) continue;
-      const firstCell = String(row[0] || '').trim();
-      if (firstCell === '1') {
-        const secondCell = String(row[1] || '').trim();
-        if (secondCell && secondCell.includes('Agriculture')) {
+      const firstCell = String(row[0] || "").trim();
+      if (firstCell === "1") {
+        const secondCell = String(row[1] || "").trim();
+        if (secondCell && secondCell.includes("Agriculture")) {
           dataTableStart = i;
           //console.log('Found data table at row (alt):', dataTableStart);
           break;
@@ -158,42 +159,40 @@ const extractLoanDisbursementData = (data) => {
   const headerRow = data[dataTableStart - 1];
   //console.log('Header row:', headerRow.map(c => String(c || '').trim()));
 
-    const sanitizeKey = (text) => {
-    return text
-      .trim()
-      .replace(/\s+/g, '_')           // Replace spaces with underscores
+  const sanitizeKey = (text) => {
+    return text.trim().replace(/\s+/g, "_"); // Replace spaces with underscores
     //   .replace(/[^a-zA-Z0-9_]/g, '')  // Remove special characters
     //   .replace(/_+/g, '_');           // Replace multiple underscores with single
   };
   // Define column groups
   const columnGroups = [
-    { prefix: 'Public_Enterprise', baseIndex: 2 },
-    { prefix: 'Cooperatives', baseIndex: 5 },
-    { prefix: 'Private_Individuals', baseIndex: 8 },
-    { prefix: 'Total', baseIndex: 11 }
+    { prefix: "Public_Enterprise", baseIndex: 2 },
+    { prefix: "Cooperatives", baseIndex: 5 },
+    { prefix: "Private_Individuals", baseIndex: 8 },
+    { prefix: "Total", baseIndex: 11 },
   ];
 
   // Each group has: Disbursement, Collection, Outstanding
   const columns = [];
   for (const group of columnGroups) {
-        const disbursementKey = sanitizeKey(`${group.prefix}_Disbursement`);
+    const disbursementKey = sanitizeKey(`${group.prefix}_Disbursement`);
     const collectionKey = sanitizeKey(`${group.prefix}_Collection`);
     const outstandingKey = sanitizeKey(`${group.prefix}_Outstanding`);
 
     columns.push({
       key: disbursementKey,
       index: group.baseIndex,
-      displayName: `${group.prefix} Disbursement`
+      displayName: `${group.prefix} Disbursement`,
     });
     columns.push({
       key: collectionKey,
       index: group.baseIndex + 1,
-      displayName: `${group.prefix} Collection`
+      displayName: `${group.prefix} Collection`,
     });
     columns.push({
       key: outstandingKey,
       index: group.baseIndex + 2,
-       displayName: `${group.prefix} Outstanding`
+      displayName: `${group.prefix} Outstanding`,
     });
   }
 
@@ -207,34 +206,33 @@ const extractLoanDisbursementData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const code = String(row[0] || '').trim();
-    const description = String(row[1] || '').trim();
+    const code = String(row[0] || "").trim();
+    const description = String(row[1] || "").trim();
 
     // Skip if no description
     if (!description) continue;
-if (i>40) continue;
+    if (i > 40) continue;
     // Skip footer rows or notes
-    if (description.includes('Note:') || description.includes('Note')) continue;
+    if (description.includes("Note:") || description.includes("Note")) continue;
 
     // Check if this is a total row
-    const isTotalRow = description === 'Total' || 
-                       description.includes('Total') ;
+    const isTotalRow = description === "Total" || description.includes("Total");
     // Check if this is a parent section (like 4 International Trade)
-    const isParent = code && code.includes('.') && !code.match(/\.\d+$/);
+    const isParent = code && code.includes(".") && !code.match(/\.\d+$/);
 
     // Extract values for each column
     const values = {};
     for (const col of columns) {
-      let value = '0';
+      let value = "0";
       if (col.index < row.length) {
         const raw = row[col.index];
-       const cleaned = String(raw).replace(/,/g, "").trim();
-      const rawValue = parseFloat(cleaned);
-        
+        const cleaned = String(raw).replace(/,/g, "").trim();
+        const rawValue = parseFloat(cleaned);
+
         if (!isNaN(rawValue) && rawValue !== 0) {
           value = rawValue.toFixed(2);
         } else {
-          value = '0';
+          value = "0";
         }
       }
       values[col.key] = value;
@@ -242,8 +240,8 @@ if (i>40) continue;
 
     // Determine level
     let level = 0;
-    if (code && code !== '') {
-      const codeParts = code.split('.');
+    if (code && code !== "") {
+      const codeParts = code.split(".");
       level = codeParts.length;
     } else if (isTotalRow) {
       level = 0;
@@ -254,14 +252,14 @@ if (i>40) continue;
 
     const entry = {
       id: code || ``,
-      sNo: code || '',
+      sNo: code || "",
       label: description,
       values: values,
       rowNumber: i + 1,
       level: level,
       isTotalRow: isTotalRow || false,
       isSectionHeader: isSectionHeader || false,
-      children: []
+      children: [],
     };
 
     if (code) {
@@ -273,35 +271,35 @@ if (i>40) continue;
       if (isTotalRow) {
         // Find the appropriate parent based on description
         let parent = null;
-        if (description.includes('Total') && !description.includes('Lending')) {
+        if (description.includes("Total") && !description.includes("Lending")) {
           // This is the main total row - find the parent
-          const totalParent = nodeMap.get('13');
+          const totalParent = nodeMap.get("13");
           if (totalParent) {
             totalParent.children.push(entry);
             //console.log(`Added ${description} as child of 13`);
           } else {
             topLevelNodes.push(entry);
           }
-        } else if (description === 'Lending to Government') {
-          parent = nodeMap.get('14');
-        } else if (description === 'Direct Advance') {
-          parent = nodeMap.get('15');
-        } else if (description === 'Government Bonds') {
-          parent = nodeMap.get('16');
-        } else if (description === 'Special Bank') {
-          parent = nodeMap.get('17');
-        } else if (description === 'Treasury bills') {
-          parent = nodeMap.get('18');
-        } else if (description === 'Loans & Advances in legal') {
-          parent = nodeMap.get('19');
-        } else if (description === 'Interbank lending') {
-          parent = nodeMap.get('20');
-        } else if (description === 'others') {
-          parent = nodeMap.get('21');
+        } else if (description === "Lending to Government") {
+          parent = nodeMap.get("14");
+        } else if (description === "Direct Advance") {
+          parent = nodeMap.get("15");
+        } else if (description === "Government Bonds") {
+          parent = nodeMap.get("16");
+        } else if (description === "Special Bank") {
+          parent = nodeMap.get("17");
+        } else if (description === "Treasury bills") {
+          parent = nodeMap.get("18");
+        } else if (description === "Loans & Advances in legal") {
+          parent = nodeMap.get("19");
+        } else if (description === "Interbank lending") {
+          parent = nodeMap.get("20");
+        } else if (description === "others") {
+          parent = nodeMap.get("21");
         }
-        
+
         if (parent) {
-          const exists = parent.children.some(child => child.id === entry.id);
+          const exists = parent.children.some((child) => child.id === entry.id);
           if (!exists) {
             parent.children.push(entry);
           }
@@ -317,22 +315,22 @@ if (i>40) continue;
 
   // Build hierarchy for nodes with codes
   for (const [code, node] of nodeMap) {
-    const codeParts = code.split('.');
-    
+    const codeParts = code.split(".");
+
     if (codeParts.length === 1) {
       // Top level nodes (1-22)
-      const existing = topLevelNodes.find(n => n.id === code);
+      const existing = topLevelNodes.find((n) => n.id === code);
       if (!existing) {
         topLevelNodes.push(node);
         //console.log(`Added top-level node: ${code} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Child nodes (4.1, 4.2, etc.)
-      const parentCode = codeParts.slice(0, -1).join('.');
+      const parentCode = codeParts.slice(0, -1).join(".");
       const parent = nodeMap.get(parentCode);
-      
+
       if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
+        const exists = parent.children.some((child) => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
           //console.log(`Added node ${code} as child of ${parentCode}`);
@@ -342,7 +340,9 @@ if (i>40) continue;
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
+          const exists = baseParent.children.some(
+            (child) => child.id === node.id,
+          );
           if (!exists) {
             baseParent.children.push(node);
             //console.log(`Added node ${code} as child of ${baseCode} (fallback)`);
@@ -361,10 +361,10 @@ if (i>40) continue;
     nodes.sort((a, b) => {
       // if (a.isTotalRow && !b.isTotalRow) return 1;
       // if (!a.isTotalRow && b.isTotalRow) return -1;
-      
+
       if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
+        const aParts = a.sNo.split(".").map(Number);
+        const bParts = b.sNo.split(".").map(Number);
         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
@@ -375,7 +375,7 @@ if (i>40) continue;
       return 0;
     });
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length > 0) {
         sortChildren(node.children);
       }
@@ -386,7 +386,7 @@ if (i>40) continue;
 
   // Clean up - remove empty children arrays
   const cleanData = (nodes) => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length === 0) {
         delete node.children;
       } else if (node.children) {
@@ -400,13 +400,13 @@ if (i>40) continue;
   //console.log('Top-level nodes:', topLevelNodes.map(n => n.sNo + ' - ' + n.label));
 
   // Get column names for columns
-  const currencyColumns = columns.map(c => c.key);
+  const currencyColumns = columns.map((c) => c.key);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: currencyColumns,
     additionalColumns: [],
-    noandtitles
+    noandtitles,
+  };
 };
-}
 export default extractLoanDisbursementData;

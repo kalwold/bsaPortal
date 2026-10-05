@@ -2,7 +2,10 @@ import { excelDateToISO } from "../../../utils";
 
 const FIRST_VALUE_COL = 1; // A = label, values start at B
 
-const normText = (v) => String(v ?? "").replace(/[\s\u00a0]+/g, " ").trim();
+const normText = (v) =>
+  String(v ?? "")
+    .replace(/[\s\u00a0]+/g, " ")
+    .trim();
 const TOTAL_RE = /^total/i;
 
 const cleanHeader = (text) => {
@@ -58,7 +61,9 @@ const buildColumns = (data, headerRowIdx, dataTableStart) => {
     else if (lowerHasText) parts[0] = currentParent;
     else continue;
 
-    const chain = parts.filter(Boolean).filter((p, i, a) => i === 0 || p !== a[i - 1]);
+    const chain = parts
+      .filter(Boolean)
+      .filter((p, i, a) => i === 0 || p !== a[i - 1]);
     let key = chain.join("_");
     let n = 2;
     while (used.has(key)) key = `${chain.join("_")}_${n++}`;
@@ -100,7 +105,10 @@ export const extractQuarterlyAtmPosMetadata = (data) => {
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
-      if (firstCell.includes("QUA_ATM_POS_QP001") || firstCell.includes("QP001")) {
+      if (
+        firstCell.includes("QUA_ATM_POS_QP001") ||
+        firstCell.includes("QP001")
+      ) {
         metadata.reportType = "digital-quarterly_atm-pos";
         metadata.reportTypeId = "digital-quarterly_atm-pos";
         metadata.departmentId = "digital-banking";
@@ -121,11 +129,19 @@ export const extractQuarterlyAtmPosMetadata = (data) => {
       metadata.institutionCode = labelValue || "";
     }
 
-    if (i === 8 && firstCell && firstCell.toLowerCase().includes("financial year")) {
+    if (
+      i === 8 &&
+      firstCell &&
+      firstCell.toLowerCase().includes("financial year")
+    ) {
       metadata.financialYear = labelValue || "";
     }
 
-    if (i === 9 && firstCell && firstCell.toLowerCase().includes("start date")) {
+    if (
+      i === 9 &&
+      firstCell &&
+      firstCell.toLowerCase().includes("start date")
+    ) {
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
@@ -145,7 +161,12 @@ const extractQuarterlyAtmPosData = (data) => {
   const { headerRowIdx, dataTableStart } = locateHeader(data);
 
   if (headerRowIdx === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
   // No S.No column in this template: first title is empty, second is the
@@ -156,7 +177,9 @@ const extractQuarterlyAtmPosData = (data) => {
 
   const getNum = (row, idx) => {
     if (idx < row.length) {
-      const val = parseFloat(String(row[idx] ?? "").replace(/[,%\s\u00a0]/g, ""));
+      const val = parseFloat(
+        String(row[idx] ?? "").replace(/[,%\s\u00a0]/g, ""),
+      );
       if (!isNaN(val) && val !== 0) return val.toFixed(2);
     }
     return "0";

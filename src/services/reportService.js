@@ -1,6 +1,5 @@
-
 import api from "./api";
-import {DEPARTMENT_DATA} from "../utils/departments";
+import { DEPARTMENT_DATA } from "../utils/departments";
 
 export const getDepartmentById = (deptId) => {
   return DEPARTMENT_DATA.find((dept) => dept.id === deptId);

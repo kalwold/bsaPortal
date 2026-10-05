@@ -1,6 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractCollateralizedPropertyAcquiredLast18Metadata = (data)=>{
-
+export const extractCollateralizedPropertyAcquiredLast18Metadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -17,24 +16,26 @@ export const extractCollateralizedPropertyAcquiredLast18Metadata = (data)=>{
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]?row[0]:'').trim();
-    const secondCell = String(row[1]?row[1]:'').trim();
-    const thirdCell = String(row[2]?row[2]:'').trim();
-    const fourthCell = String(row[3]?row[3]:'').trim();
+    const firstCell = String(row[0] ? row[0] : "").trim();
+    const secondCell = String(row[1] ? row[1] : "").trim();
+    const thirdCell = String(row[2] ? row[2] : "").trim();
+    const fourthCell = String(row[3] ? row[3] : "").trim();
 
     if (i === 0 && firstCell) {
-   metadata.ReturnKey = firstCell;
+      metadata.ReturnKey = firstCell;
 
       if (firstCell.includes("COL_ACQ_18M") || firstCell.includes("OL001")) {
-        metadata.reportType = "credit-quarterly_collateralized-property-acquired-last18";
-        metadata.reportTypeId = "credit-quarterly_collateralized-property-acquired-last18";
+        metadata.reportType =
+          "credit-quarterly_collateralized-property-acquired-last18";
+        metadata.reportTypeId =
+          "credit-quarterly_collateralized-property-acquired-last18";
         metadata.departmentName = "Credit";
         metadata.departmentId = "credit";
       }
     }
 
-      if (( i === 3 ) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
@@ -60,12 +61,12 @@ export const extractCollateralizedPropertyAcquiredLast18Metadata = (data)=>{
 
   return metadata;
 };
-const extractCollateralizedPropertyAcquiredLast18Data=(data)=>{
+const extractCollateralizedPropertyAcquiredLast18Data = (data) => {
   const additionalColumns = [];
   let noandtitles = [];
-  let dataTableStartIndex = -1
-console.log("input data", data)
- for (let i = 0; i < data.length; i++) {
+  let dataTableStartIndex = -1;
+  console.log("input data", data);
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
     const firstCell = String(row[0]).trim();
@@ -80,58 +81,56 @@ console.log("input data", data)
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-  
+
     const firstCell = String(row[0]).trim();
-     if (firstCell.includes("S.No.")) {
+    if (firstCell.includes("S.No.")) {
       console.log("Found data table header at row", i);
       dataTableStartIndex = i + 2;
       break;
     }
   }
-if (dataTableStartIndex === -1) {
-      console.log("Could not find data table");
-      return { hierarchicalData: [], columns: [], additionalColumns: [] };
-    }
-  
-     const headerRow = data[dataTableStartIndex - 1];
-    console.log(
-      "Header row:",
-      headerRow.map((c) => String(c || "").trim()),
-    );
+  if (dataTableStartIndex === -1) {
+    console.log("Could not find data table");
+    return { hierarchicalData: [], columns: [], additionalColumns: [] };
+  }
 
-    const columnMap = {
+  const headerRow = data[dataTableStartIndex - 1];
+  console.log(
+    "Header row:",
+    headerRow.map((c) => String(c || "").trim()),
+  );
+
+  const columnMap = {
     sNo: 0,
     borrowerName: 1,
     outstandingPrincipal: 2,
     outstandingInterest: 3,
     collateralType: 4,
-    askedPrice:5,
-    highestOfferd:6,
-    averageMarketValue:7,
+    askedPrice: 5,
+    highestOfferd: 6,
+    averageMarketValue: 7,
     acquiredDate: 8,
     reevaluationDate: 9,
-    acquisitionExpenses:10,
-    netMarketValue:11
+    acquisitionExpenses: 10,
+    netMarketValue: 11,
+  };
 
-    };
-
-      const columnNames = [
+  const columnNames = [
     "Outstanding_Balance_Principal",
     "Outstanding_Balance_Interest",
     "Type_of_Collateral",
     "Asked_Reserve_Price",
-   "Highest_offered_bid_amount",
-   "Avarage_Market_Value",
+    "Highest_offered_bid_amount",
+    "Avarage_Market_Value",
     "Acquired_Date",
     "Reevaluation_Date",
     "Expenses_related_to_the_acquisition",
-    "Net_Market_Value"
+    "Net_Market_Value",
   ];
 
   const topLevelNodes = [];
 
-
-    for (let i = dataTableStartIndex; i < data.length; i++) {
+  for (let i = dataTableStartIndex; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
 
@@ -140,11 +139,16 @@ if (dataTableStartIndex === -1) {
 
     if (!borrowerName) continue;
 
- 
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+        let raw = String(row[index] ?? "").trim();
+        const isNegative = /^\(.*\)$/.test(raw);
+        raw = raw.replace(/[(),%\s]/g, "");
+        let val = parseFloat(raw);
         if (!isNaN(val) && val !== 0) {
+          if (isNegative) {
+            val = -Math.abs(val);
+          }
           return val.toFixed(2);
         }
         return "0";
@@ -159,7 +163,7 @@ if (dataTableStartIndex === -1) {
       return "";
     };
 
-      const getDateValue = (index) => {
+    const getDateValue = (index) => {
       if (index !== undefined && index < row.length) {
         return excelDateToISO(row[index]);
       }
@@ -176,19 +180,16 @@ if (dataTableStartIndex === -1) {
     );
     values["Type_of_Collateral"] = getStringValue(columnMap.collateralType);
     values["Asked_Reserve_Price"] = getValue(columnMap.askedPrice);
-    values["Highest_offered_bid_amount"] = getValue(
-      columnMap.highestOfferd,
-    );
+    values["Highest_offered_bid_amount"] = getValue(columnMap.highestOfferd);
     values["Avarage_Market_Value"] = getValue(columnMap.averageMarketValue);
-    values["Acquired_Date"] = getStringValue(
-      columnMap.acquiredDate
-    );
+    values["Acquired_Date"] = getStringValue(columnMap.acquiredDate);
     values["Reevaluation_Date"] = getStringValue(columnMap.reevaluationDate);
-    values["Expenses_related_to_the_acquisition"] = getValue(columnMap.acquisitionExpenses)
-    values["Net_Market_Value"]=getValue(columnMap.netMarketValue)
+    values["Expenses_related_to_the_acquisition"] = getValue(
+      columnMap.acquisitionExpenses,
+    );
+    values["Net_Market_Value"] = getValue(columnMap.netMarketValue);
 
-
-    const isTotalRow = (borrowerName === "Total");
+    const isTotalRow = borrowerName === "Total";
 
     const entry = {
       id: sNo,
@@ -205,7 +206,7 @@ if (dataTableStartIndex === -1) {
     topLevelNodes.push(entry);
   }
 
-topLevelNodes.sort((a, b) => {
+  topLevelNodes.sort((a, b) => {
     const aSNo = parseInt(a.sNo);
     const bSNo = parseInt(b.sNo);
     if (isNaN(aSNo) && isNaN(bSNo)) return 0;
@@ -220,7 +221,5 @@ topLevelNodes.sort((a, b) => {
     additionalColumns,
     noandtitles,
   };
-
-
-}
-export default extractCollateralizedPropertyAcquiredLast18Data
+};
+export default extractCollateralizedPropertyAcquiredLast18Data;

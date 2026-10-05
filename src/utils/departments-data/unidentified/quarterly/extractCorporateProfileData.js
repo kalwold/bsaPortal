@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractCorporateProfileMetadata =(data)=>{
+export const extractCorporateProfileMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -15,12 +15,11 @@ export const extractCorporateProfileMetadata =(data)=>{
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-   
+
     if (!row || row.length === 0) continue;
 
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
- 
 
     const labelValue = (() => {
       for (let c = 1; c <= 5; c++) {
@@ -31,12 +30,11 @@ export const extractCorporateProfileMetadata =(data)=>{
       }
       return "";
     })();
-    
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("CP1_CP001") ) {
+      if (firstCell.includes("CP1_CP001")) {
         metadata.reportType = "unidentified-quarterly_corporate-profile";
         metadata.reportTypeId = "unidentified-quarterly_corporate-profile";
         metadata.departmentId = "unidentified";
@@ -86,8 +84,8 @@ export const extractCorporateProfileMetadata =(data)=>{
   }
   return metadata;
 };
-const extractCorporateProfileData=(data)=>{
-      const columns = ["Data"];
+const extractCorporateProfileData = (data) => {
+  const columns = ["Data"];
   let dataTableStart = -1;
 
   // Find the header row: "S.No." | "Description"
@@ -100,20 +98,20 @@ const extractCorporateProfileData=(data)=>{
       break;
     }
   }
-if (dataTableStart === -1) {
+  if (dataTableStart === -1) {
     return { hierarchicalData: [], columns, additionalColumns: [] };
   }
 
-    const getStringValue = (index, row) => {
+  const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return '';
+    return "";
   };
   const nodeMap = new Map();
   const topLevelNodes = [];
 
-for (let i = dataTableStart; i < data.length; i++) {
+  for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
@@ -121,16 +119,16 @@ for (let i = dataTableStart; i < data.length; i++) {
     const description = String(row[1] || "").trim();
     if (!description || !code) continue;
 
-    const value = getStringValue(2,row)
+    const value = getStringValue(2, row);
 
     const codeParts = code.split(".");
     const level = codeParts.length;
- 
+
     const entry = {
       id: code,
       sNo: code,
       label: description,
-      values: { 'Data': value },
+      values: { Data: value },
       rowNumber: i + 1,
       level,
       isTotalRow: false,
@@ -164,6 +162,11 @@ for (let i = dataTableStart; i < data.length; i++) {
   };
   cleanData(topLevelNodes);
 
-  return { hierarchicalData: topLevelNodes, columns, additionalColumns: [], noandtitles:['CP1. Head Office Address','Description']};
-}
-export default extractCorporateProfileData
+  return {
+    hierarchicalData: topLevelNodes,
+    columns,
+    additionalColumns: [],
+    noandtitles: ["CP1. Head Office Address", "Description"],
+  };
+};
+export default extractCorporateProfileData;

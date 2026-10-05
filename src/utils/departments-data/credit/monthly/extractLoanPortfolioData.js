@@ -13,7 +13,7 @@ export const extractPortfolioMetadata = (data) => {
     departmentId: "",
   };
 
-  console.log("data.length  ", data.length)
+  console.log("data.length  ", data.length);
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
@@ -28,49 +28,50 @@ export const extractPortfolioMetadata = (data) => {
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
       console.log("Found Return Key:", metadata.ReturnKey);
-if (firstCell.includes('LOA_PORT') || firstCell.includes('EP001')) {
-        metadata.reportType = 'credit-monthly_loan-portfolio';
-        metadata.departmentId = 'credit';
-        metadata.departmentName = 'Credit';
-        metadata.reportTypeId = 'credit-monthly_loan-portfolio';
+      if (firstCell.includes("LOA_PORT") || firstCell.includes("EP001")) {
+        metadata.reportType = "credit-monthly_loan-portfolio";
+        metadata.departmentId = "credit";
+        metadata.departmentName = "Credit";
+        metadata.reportTypeId = "credit-monthly_loan-portfolio";
       }
     }
 
-    if (( i === 3) && (firstCell)) {
-       metadata.reportTitle = firstCell || '';
+    if (i === 3 && firstCell) {
+      metadata.reportTitle = firstCell || "";
       console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 7 )&&
-      (firstCell ) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      i === 7 &&
+      firstCell &&
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 8)&&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 9) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 10 ) &&
+      i === 10 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -80,17 +81,18 @@ if (firstCell.includes('LOA_PORT') || firstCell.includes('EP001')) {
     }
 
     if (
-      ( i === 12) &&
+      i === 12 &&
       (thirdCell || fourthCell || firstCell) &&
       (thirdCell.toLowerCase().includes("in") ||
-        fourthCell.toLowerCase().includes("in") || firstCell.toLowerCase().includes('In'))
+        fourthCell.toLowerCase().includes("in") ||
+        firstCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = fourthCell  || '';
+      metadata.unit = fourthCell || "";
       console.log("Found Unit:", metadata.unit);
     }
   }
-return metadata
-}
+  return metadata;
+};
 const extractLoanPortfolioData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
@@ -122,7 +124,7 @@ const extractLoanPortfolioData = (data) => {
     if (row) {
       console.log(
         `Row ${i}:`,
-        row.map((c) => String(c || "").trim())
+        row.map((c) => String(c || "").trim()),
       );
     }
   }
@@ -140,10 +142,7 @@ const extractLoanPortfolioData = (data) => {
     if (firstCell === "Code") {
       dataTableStart = i + 1;
 
-      console.log(
-        "Found data table at row:",
-        dataTableStart
-      );
+      console.log("Found data table at row:", dataTableStart);
 
       break;
     }
@@ -161,16 +160,10 @@ const extractLoanPortfolioData = (data) => {
       const firstCell = String(row[0] || "").trim();
       const secondCell = String(row[1] || "").trim();
 
-      if (
-        firstCell === "1.1" ||
-        secondCell === "Advance on import bills"
-      ) {
+      if (firstCell === "1.1" || secondCell === "Advance on import bills") {
         dataTableStart = i;
 
-        console.log(
-          "Found data table at row (alt):",
-          dataTableStart
-        );
+        console.log("Found data table at row (alt):", dataTableStart);
 
         break;
       }
@@ -190,12 +183,12 @@ const extractLoanPortfolioData = (data) => {
         "Disbursement_Amount",
         "Disbursement_Percentage",
         "Outstanding_Amount",
-        "Outstanding_Percentage"
+        "Outstanding_Percentage",
       ],
 
       additionalColumns: [],
 
-      noandtitles
+      noandtitles,
     };
   }
 
@@ -246,12 +239,10 @@ const extractLoanPortfolioData = (data) => {
     // =====================================================
 
     // 1.1, 1.2, 1.3, ...
-    const isSection1Item =
-      /^1\.\d+$/.test(code);
+    const isSection1Item = /^1\.\d+$/.test(code);
 
     // 2.1, 2.2, ...
-    const isSection2Item =
-      /^2\.\d+$/.test(code);
+    const isSection2Item = /^2\.\d+$/.test(code);
 
     // Any Total row
     const isTotalRow =
@@ -276,10 +267,8 @@ const extractLoanPortfolioData = (data) => {
 
     const isSection2Total =
       isTotalRow &&
-      (
-        normalizedDescription.includes("2.1-2.2") ||
-        normalizedDescription.includes("2.1to2.2")
-      );
+      (normalizedDescription.includes("2.1-2.2") ||
+        normalizedDescription.includes("2.1to2.2"));
 
     // =====================================================
     // 9. Extract values
@@ -299,7 +288,6 @@ const extractLoanPortfolioData = (data) => {
         .trim();
 
       const val = parseFloat(rawValue);
-      
 
       if (!isNaN(val)) {
         disbursementAmount = val.toFixed(2);
@@ -318,7 +306,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        disbursementPercentage = (val).toFixed(2) ;
+        disbursementPercentage = val.toFixed(2);
       }
     }
 
@@ -349,7 +337,7 @@ const extractLoanPortfolioData = (data) => {
       const val = parseFloat(rawValue);
 
       if (!isNaN(val)) {
-        outstandingPercentage = (val).toFixed(2) ;
+        outstandingPercentage = val.toFixed(2);
       }
     }
 
@@ -363,13 +351,10 @@ const extractLoanPortfolioData = (data) => {
       label: description,
 
       values: {
-        "Disbursement_Amount": disbursementAmount,
-        "Disbursement_Percentage":
-          disbursementPercentage,
-        "Outstanding_Amount":
-          outstandingAmount,
-        "Outstanding_Percentage":
-          outstandingPercentage
+        Disbursement_Amount: disbursementAmount,
+        Disbursement_Percentage: disbursementPercentage,
+        Outstanding_Amount: outstandingAmount,
+        Outstanding_Percentage: outstandingPercentage,
       },
 
       rowNumber: i + 1,
@@ -380,7 +365,7 @@ const extractLoanPortfolioData = (data) => {
       isSectionHeader: false,
       isMainSection: false,
 
-      children: []
+      children: [],
     };
 
     // =====================================================
@@ -396,20 +381,18 @@ const extractLoanPortfolioData = (data) => {
     // =====================================================
 
     if (isSection1Item) {
-
       // Create parent 1
       if (!section1Parent) {
-
         section1Parent = {
           id: "1",
           sNo: "1",
           label: "Loans by Category",
 
           values: {
-            "Disbursement_Amount": "0.00",
-            "Disbursement_Percentage": "0.00",
-            "Outstanding_Amount": "0.00",
-            "Outstanding_Percentage": "0.00"
+            Disbursement_Amount: "0.00",
+            Disbursement_Percentage: "0.00",
+            Outstanding_Amount: "0.00",
+            Outstanding_Percentage: "0.00",
           },
 
           rowNumber: dataTableStart,
@@ -420,7 +403,7 @@ const extractLoanPortfolioData = (data) => {
           isSectionHeader: true,
           isMainSection: false,
 
-          children: []
+          children: [],
         };
 
         topLevelNodes.push(section1Parent);
@@ -430,9 +413,7 @@ const extractLoanPortfolioData = (data) => {
 
       section1Parent.children.push(entry);
 
-      console.log(
-        `Added ${code} under section 1`
-      );
+      console.log(`Added ${code} under section 1`);
 
       continue;
     }
@@ -449,20 +430,18 @@ const extractLoanPortfolioData = (data) => {
     // =====================================================
 
     if (isSection2Item) {
-
       // Create parent 2
       if (!section2Parent) {
-
         section2Parent = {
           id: "2",
           sNo: "2",
           label: "Loans by Purpose",
 
           values: {
-            "Disbursement_Amount": "0.00",
-            "Disbursement_Percentage": "0.00",
-            "Outstanding_Amount": "0.00",
-            "Outstanding_Percentage": "0.00"
+            Disbursement_Amount: "0.00",
+            Disbursement_Percentage: "0.00",
+            Outstanding_Amount: "0.00",
+            Outstanding_Percentage: "0.00",
           },
 
           rowNumber: i + 1,
@@ -473,7 +452,7 @@ const extractLoanPortfolioData = (data) => {
           isSectionHeader: true,
           isMainSection: false,
 
-          children: []
+          children: [],
         };
 
         topLevelNodes.push(section2Parent);
@@ -497,9 +476,7 @@ const extractLoanPortfolioData = (data) => {
 
       section2Parent.children.push(entry);
 
-      console.log(
-        `Added ${code} under section 2`
-      );
+      console.log(`Added ${code} under section 2`);
 
       continue;
     }
@@ -518,19 +495,13 @@ const extractLoanPortfolioData = (data) => {
     // =====================================================
 
     if (isSection2Total) {
-
       if (section2Parent) {
-
         entry.level = 1;
 
         section2Parent.children.push(entry);
 
-        console.log(
-          "Added TOTAL 2.1-2.2 under section 2"
-        );
-
+        console.log("Added TOTAL 2.1-2.2 under section 2");
       } else {
-
         entry.level = 0;
 
         topLevelNodes.push(entry);
@@ -556,40 +527,32 @@ const extractLoanPortfolioData = (data) => {
     // =====================================================
 
     if (isTotalRow) {
-
       // -----------------------------------------------
       // Total belongs to current 2.1 / 2.2
       // -----------------------------------------------
       if (currentSubsection) {
-
         entry.level = 2;
 
         currentSubsection.children.push(entry);
 
-        console.log(
-          `Added TOTAL under ${currentSubsection.sNo}`
-        );
+        console.log(`Added TOTAL under ${currentSubsection.sNo}`);
       }
 
       // -----------------------------------------------
       // Otherwise total belongs to section 1
       // -----------------------------------------------
       else if (section1Parent) {
-
         entry.level = 1;
 
         section1Parent.children.push(entry);
 
-        console.log(
-          "Added TOTAL under section 1"
-        );
+        console.log("Added TOTAL under section 1");
       }
 
       // -----------------------------------------------
       // Fallback
       // -----------------------------------------------
       else {
-
         entry.level = 0;
 
         topLevelNodes.push(entry);
@@ -604,42 +567,33 @@ const extractLoanPortfolioData = (data) => {
 
     // If inside 2.1 or 2.2
     if (currentSubsection) {
-
       entry.level = 2;
 
       currentSubsection.children.push(entry);
 
-      console.log(
-        `Added ${code} under ${currentSubsection.sNo}`
-      );
+      console.log(`Added ${code} under ${currentSubsection.sNo}`);
 
       continue;
     }
 
     // If inside section 1
     if (section1Parent) {
-
       entry.level = 1;
 
       section1Parent.children.push(entry);
 
-      console.log(
-        `Added ${code} under section 1`
-      );
+      console.log(`Added ${code} under section 1`);
 
       continue;
     }
 
     // If inside section 2
     if (section2Parent) {
-
       entry.level = 1;
 
       section2Parent.children.push(entry);
 
-      console.log(
-        `Added ${code} under section 2`
-      );
+      console.log(`Added ${code} under section 2`);
 
       continue;
     }
@@ -658,9 +612,7 @@ const extractLoanPortfolioData = (data) => {
   // =====================================================
 
   const sortChildren = (nodes) => {
-
     nodes.sort((a, b) => {
-
       // Total always comes last
       if (a.isTotalRow && !b.isTotalRow) {
         return 1;
@@ -672,33 +624,17 @@ const extractLoanPortfolioData = (data) => {
 
       // Sort by S.No
       if (a.sNo && b.sNo) {
+        const aParts = a.sNo.split(".").map(Number);
 
-        const aParts = a.sNo
-          .split(".")
-          .map(Number);
+        const bParts = b.sNo.split(".").map(Number);
 
-        const bParts = b.sNo
-          .split(".")
-          .map(Number);
-
-        for (
-          let i = 0;
-          i < Math.min(
-            aParts.length,
-            bParts.length
-          );
-          i++
-        ) {
-
+        for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
           }
         }
 
-        return (
-          aParts.length -
-          bParts.length
-        );
+        return aParts.length - bParts.length;
       }
 
       return 0;
@@ -706,14 +642,9 @@ const extractLoanPortfolioData = (data) => {
 
     // Recursively sort children
     nodes.forEach((node) => {
-
-      if (
-        node.children &&
-        node.children.length > 0
-      ) {
+      if (node.children && node.children.length > 0) {
         sortChildren(node.children);
       }
-
     });
   };
 
@@ -724,21 +655,12 @@ const extractLoanPortfolioData = (data) => {
   // =====================================================
 
   const cleanData = (nodes) => {
-
     nodes.forEach((node) => {
-
-      if (
-        node.children &&
-        node.children.length === 0
-      ) {
-
+      if (node.children && node.children.length === 0) {
         delete node.children;
-
       } else if (node.children) {
-
         cleanData(node.children);
       }
-
     });
   };
 
@@ -748,26 +670,14 @@ const extractLoanPortfolioData = (data) => {
   // 18. Debug final hierarchy
   // =====================================================
 
-  console.log(
-    "Final top-level nodes:",
-    topLevelNodes.length
-  );
+  console.log("Final top-level nodes:", topLevelNodes.length);
 
   console.log(
     "Top-level nodes:",
-    topLevelNodes.map(
-      (n) => `${n.sNo} - ${n.label}`
-    )
+    topLevelNodes.map((n) => `${n.sNo} - ${n.label}`),
   );
 
-  console.log(
-    "FINAL HIERARCHY:",
-    JSON.stringify(
-      topLevelNodes,
-      null,
-      2
-    )
-  );
+  console.log("FINAL HIERARCHY:", JSON.stringify(topLevelNodes, null, 2));
 
   // =====================================================
   // 19. Return
@@ -780,12 +690,12 @@ const extractLoanPortfolioData = (data) => {
       "Disbursement_Amount",
       "Disbursement_Percentage",
       "Outstanding_Amount",
-      "Outstanding_Percentage"
+      "Outstanding_Percentage",
     ],
 
     additionalColumns: [],
 
-    noandtitles
+    noandtitles,
   };
 };
 

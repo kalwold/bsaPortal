@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { DEPARTMENT_DATA } from '../utils/departments';
-import ReportUpload from '../components/reports/ReportUpload';
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { DEPARTMENT_DATA } from "../utils/departments";
+import ReportUpload from "../components/reports/ReportUpload";
 
 const UploadPage = () => {
   const { user } = useAuth();
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedReportType, setSelectedReportType] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedReportType, setSelectedReportType] = useState("");
 
   const departments = DEPARTMENT_DATA;
 
   const getReportTypes = (deptId) => {
-    const dept = departments.find(d => d.id === deptId);
+    const dept = departments.find((d) => d.id === deptId);
     return dept ? dept.reportTypes : [];
   };
 
@@ -37,7 +37,7 @@ const UploadPage = () => {
               value={selectedDepartment}
               onChange={(e) => {
                 setSelectedDepartment(e.target.value);
-                setSelectedReportType('');
+                setSelectedReportType("");
               }}
             >
               <option value="">Select Department</option>
@@ -74,8 +74,8 @@ const UploadPage = () => {
           departmentId={selectedDepartment}
           reportType={selectedReportType}
           onSuccess={() => {
-            setSelectedReportType('');
-            setSelectedDepartment('');
+            setSelectedReportType("");
+            setSelectedDepartment("");
           }}
         />
       ) : (

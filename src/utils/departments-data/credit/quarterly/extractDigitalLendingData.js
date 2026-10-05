@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractDigitalLendingMetadata=(data)=>{
+export const extractDigitalLendingMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -38,50 +38,51 @@ export const extractDigitalLendingMetadata=(data)=>{
       metadata.ReturnKey = firstCell;
       //console.log("Found Return Key:", metadata.ReturnKey);
 
-     if (firstCell.includes("DigitalLendingDL001")) {
+      if (firstCell.includes("DigitalLendingDL001")) {
         metadata.reportType = "credit-quarterly_digital-lending";
         metadata.departmentName = "Credit";
         metadata.departmentId = "credit";
         metadata.reportTypeId = "credit-quarterly_digital-lending";
         //console.log("Found Report Type:", metadata.reportType);
-      } 
+      }
     }
 
-    if (( i === 2) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 2 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
     if (
-     (i === 6 )&&
+      i === 6 &&
       (firstCell || secondCell) &&
-     ( (firstCell || secondCell).includes("Instiution") ||  (firstCell || secondCell).includes("Institution "))
+      ((firstCell || secondCell).includes("Instiution") ||
+        (firstCell || secondCell).includes("Institution "))
     ) {
-      metadata.institutionCode = thirdCell || '';
+      metadata.institutionCode = thirdCell || "";
       //console.log("Found Institution Code:", metadata.institutionCode);
     }
 
     if (
-      (i === 7)&&
+      i === 7 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Financial Year")
     ) {
-      metadata.financialYear = thirdCell || '';
+      metadata.financialYear = thirdCell || "";
       //console.log("Found Financial Year:", metadata.financialYear);
     }
 
     if (
-      ( i === 8) &&
+      i === 8 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("Start Date")
     ) {
-     // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
-     metadata.startDate = excelDateToISO(thirdCell) || '';
+      // metadata.startDate = excelDateToISO(secondCell||thirdCell  || fourthCell || "");
+      metadata.startDate = excelDateToISO(thirdCell) || "";
       //console.log("Found Start Date:", metadata.startDate);
     }
 
     if (
-      (i === 9 ) &&
+      i === 9 &&
       (firstCell || secondCell) &&
       (firstCell || secondCell).includes("End Date")
     ) {
@@ -91,29 +92,33 @@ export const extractDigitalLendingMetadata=(data)=>{
     }
 
     if (
-      ( i === 11) &&
-      (secondCell.toLowerCase().includes("in") || secondCell.toLowerCase().includes('In'))
+      i === 11 &&
+      (secondCell.toLowerCase().includes("in") ||
+        secondCell.toLowerCase().includes("In"))
     ) {
-      metadata.unit = secondCell  || '';
+      metadata.unit = secondCell || "";
       //console.log("Found Unit:", metadata.unit);
     }
   }
 
   return metadata;
 };
-const extractDigitalLendingData =(data)=>{
+const extractDigitalLendingData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
-   
-const noandtitles = [];
-noandtitles.push('S.No.', 'Description')
-  console.log('=== Extracting Restructured Loans Data (AL001) ===');
+
+  const noandtitles = [];
+  noandtitles.push("S.No.", "Description");
+  console.log("=== Extracting Restructured Loans Data (AL001) ===");
 
   // Log all rows to understand structure
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -121,36 +126,35 @@ noandtitles.push('S.No.', 'Description')
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'S.No.') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "S.No.") {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
   // Column indices
-  const colIndex={
-   sNo:0,
-   disbursment :1,
-   collection :2,
-   outstanding:3,
-   noAccount :2,
-   noBorrowers:3,
-
-  }
+  const colIndex = {
+    sNo: 0,
+    disbursment: 1,
+    collection: 2,
+    outstanding: 3,
+    noAccount: 2,
+    noBorrowers: 3,
+  };
   // Define the columns for this report
   const columns = [
-    'Disbursment',
-    'Collections',
-    'Outstanding',
-    'No_Of_Borrowers_accounts',
-    'No_Of_Borrowers'
+    "Disbursment",
+    "Collections",
+    "Outstanding",
+    "No_Of_Borrowers_accounts",
+    "No_Of_Borrowers",
   ];
 
   const topLevelNodes = [];
@@ -169,35 +173,38 @@ noandtitles.push('S.No.', 'Description')
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const sNo = String(row[colIndex.sNo] || '').trim();
-   
-
-
+    const sNo = String(row[colIndex.sNo] || "").trim();
 
     // Skip note rows
-    if (sNo.includes('Note:') ) continue;
+    if (sNo.includes("Note:")) continue;
 
     // Determine if this is a total row
-    const isTotalRow = sNo.includes('Total Digital Lending ');
+    const isTotalRow = sNo.includes("Total Digital Lending ");
 
     // Extract values
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+        let raw = String(row[index] ?? "").trim();
+        const isNegative = /^\(.*\)$/.test(raw);
+        raw = raw.replace(/[(),%\s]/g, "");
+        let val = parseFloat(raw);
         if (!isNaN(val) && val !== 0) {
+          if (isNegative) {
+            val = -Math.abs(val);
+          }
           return val.toFixed(2);
         }
-        return '0';
+        return "0";
       }
-      return '0';
+      return "0";
     };
 
     const values = {
-      'Disbursment': getValue(colIndex.disbursment),
-      'Collections': getValue(colIndex.collection),
-      'Outstanding': getValue(colIndex.outstanding),
-      'No_Of_Borrowers_accounts': getValue(colIndex.noAccount),
-      'No_Of_Borrowers': getValue(colIndex.noBorrowers),
+      Disbursment: getValue(colIndex.disbursment),
+      Collections: getValue(colIndex.collection),
+      Outstanding: getValue(colIndex.outstanding),
+      No_Of_Borrowers_accounts: getValue(colIndex.noAccount),
+      No_Of_Borrowers: getValue(colIndex.noBorrowers),
     };
 
     // Determine level
@@ -205,14 +212,14 @@ noandtitles.push('S.No.', 'Description')
 
     const entry = {
       id: sNo || "",
-      sNo: sNo || '',
+      sNo: sNo || "",
       label: sNo,
       values: values,
       rowNumber: i + 1,
       level: level,
       isTotalRow: isTotalRow || false,
       isSectionHeader: false,
-      children: []
+      children: [],
     };
 
     topLevelNodes.push(entry);
@@ -222,20 +229,20 @@ noandtitles.push('S.No.', 'Description')
   topLevelNodes.sort((a, b) => {
     if (a.isTotalRow && !b.isTotalRow) return 1;
     if (!a.isTotalRow && b.isTotalRow) return -1;
-    
+
     const aNum = parseInt(a.sNo);
     const bNum = parseInt(b.sNo);
     if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
     return 0;
   });
 
-  console.log('Total entries:', topLevelNodes.length);
+  console.log("Total entries:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles
+    noandtitles,
   };
 };
-export default extractDigitalLendingData
+export default extractDigitalLendingData;

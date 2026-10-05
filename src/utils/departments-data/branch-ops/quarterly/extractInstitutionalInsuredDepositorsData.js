@@ -36,7 +36,10 @@ export const extractInstitutionalInsuredDepositorsMetadata = (data) => {
       metadata.ReturnKey = firstCell;
 
       // Adjust the code below to the real report code when you know it
-      if (firstCell.includes("0016IN05001") || firstCell.includes("INSTITUTIONAL")) {
+      if (
+        firstCell.includes("0016IN05001") ||
+        firstCell.includes("INSTITUTIONAL")
+      ) {
         metadata.reportType = "branchOps-institutional-insured-depositors";
         metadata.reportTypeId = "branchOps institutional insured depositors";
         metadata.departmentId = "branchOps";
@@ -78,7 +81,11 @@ export const extractInstitutionalInsuredDepositorsMetadata = (data) => {
     }
 
     // End Date
-    if (i === 5 && secondCell && secondCell.toLowerCase().includes("end date")) {
+    if (
+      i === 5 &&
+      secondCell &&
+      secondCell.toLowerCase().includes("end date")
+    ) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
   }
@@ -161,7 +168,11 @@ const extractInstitutionalInsuredDepositorsData = (data) => {
 
     // Skip empty / footer rows
     if (!no) continue;
-    if (fullName.toLowerCase().includes("note") || fullName.toLowerCase().includes("total")) continue;
+    if (
+      fullName.toLowerCase().includes("note") ||
+      fullName.toLowerCase().includes("total")
+    )
+      continue;
 
     const values = {
       Full_Name: getStringValue(FULL_NAME_COL, row),

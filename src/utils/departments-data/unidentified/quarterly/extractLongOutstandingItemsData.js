@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractLongOutstandingItemsMetadata =(data)=>{
+export const extractLongOutstandingItemsMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -15,12 +15,11 @@ export const extractLongOutstandingItemsMetadata =(data)=>{
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-   
+
     if (!row || row.length === 0) continue;
 
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
- 
 
     const labelValue = (() => {
       for (let c = 1; c <= 5; c++) {
@@ -31,12 +30,11 @@ export const extractLongOutstandingItemsMetadata =(data)=>{
       }
       return "";
     })();
-    
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("LON_OUT_ITELI001") ) {
+      if (firstCell.includes("LON_OUT_ITELI001")) {
         metadata.reportType = "unidentified-quarterly_long-outstanding-items";
         metadata.reportTypeId = "unidentified-quarterly_long-outstanding-items";
         metadata.departmentId = "unidentified";
@@ -86,7 +84,7 @@ export const extractLongOutstandingItemsMetadata =(data)=>{
   }
   return metadata;
 };
-const extractLongOutstandingItemsData=(data)=>{
+const extractLongOutstandingItemsData = (data) => {
   let dataTableStart = -1;
   let noandtitles = [];
 
@@ -101,13 +99,18 @@ const extractLongOutstandingItemsData=(data)=>{
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || "").trim();
     if (firstCell === "Code") {
-      dataTableStart =  i + 1 ;
+      dataTableStart = i + 1;
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
@@ -120,7 +123,12 @@ const extractLongOutstandingItemsData=(data)=>{
   }
 
   if (dataTableStart === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
   // Column indices matching the screenshot
   const NO_COL = 0;
@@ -132,7 +140,6 @@ const extractLongOutstandingItemsData=(data)=>{
   const PROVISION_HELD = 6;
   const DESCRIPTION = 7;
 
-
   const columns = [
     "Age_91_180_Days",
     "Age_181_365_Days",
@@ -140,7 +147,6 @@ const extractLongOutstandingItemsData=(data)=>{
     "Total",
     "Provision_Held",
     "Description",
-    
   ];
 
   const getStringValue = (index, row) => {
@@ -149,16 +155,16 @@ const extractLongOutstandingItemsData=(data)=>{
     }
     return "";
   };
-      const getValue = (index, row) => {
-      if (index !== undefined && index < row.length) {
-        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
-        if (!isNaN(val) && val !== 0) {
-          return val.toFixed(2);
-        }
-        return '0';
+  const getValue = (index, row) => {
+    if (index !== undefined && index < row.length) {
+      const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+      if (!isNaN(val) && val !== 0) {
+        return val.toFixed(2);
       }
-      return '0';
-    };
+      return "0";
+    }
+    return "0";
+  };
 
   const topLevelNodes = [];
 
@@ -171,7 +177,6 @@ const extractLongOutstandingItemsData=(data)=>{
 
     // Skip empty / footer rows
     if (!desc) continue;
-   
 
     const values = {
       Age_91_180_Days: getValue(AGE_91_180, row),
@@ -179,7 +184,7 @@ const extractLongOutstandingItemsData=(data)=>{
       Age_Gt_365_Days: getValue(AGE_365, row),
       Total: getValue(TOTAL, row),
       Provision_Held: getStringValue(PROVISION_HELD, row),
-      Description: getStringValue(DESCRIPTION, row)
+      Description: getStringValue(DESCRIPTION, row),
     };
 
     topLevelNodes.push({
@@ -211,5 +216,5 @@ const extractLongOutstandingItemsData=(data)=>{
     additionalColumns: [],
     noandtitles,
   };
-}
-export default extractLongOutstandingItemsData
+};
+export default extractLongOutstandingItemsData;

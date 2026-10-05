@@ -32,7 +32,6 @@ export const extractQuarterlyDepositSectorRegionMetadata = (data) => {
     const thirdCell = String(row[2] || "").trim();
     const eleventhCell = String(row[10] || "").trim();
 
-
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
@@ -110,7 +109,12 @@ export const extractQuarterlyDepositSectorRegionData = (data) => {
   }
 
   if (dataTableStart === -1) {
-    return { hierarchicalData: [], columns: [], additionalColumns: [], noandtitles: [] };
+    return {
+      hierarchicalData: [],
+      columns: [],
+      additionalColumns: [],
+      noandtitles: [],
+    };
   }
 
   const depositCategories = [
@@ -124,7 +128,7 @@ export const extractQuarterlyDepositSectorRegionData = (data) => {
 
   const topLevelNodes = [];
   const nodeMap = new Map();
-  const uncodedSubNodes = []; 
+  const uncodedSubNodes = [];
   let currentRegionCode = null;
 
   for (let i = dataTableStart; i < data.length; i++) {
@@ -199,8 +203,10 @@ export const extractQuarterlyDepositSectorRegionData = (data) => {
     } else if (isTotalRow) {
       topLevelNodes.push(entry);
     } else if (currentRegionCode) {
-
-      uncodedSubNodes.push({ parentRegionCode: currentRegionCode, node: entry });
+      uncodedSubNodes.push({
+        parentRegionCode: currentRegionCode,
+        node: entry,
+      });
     }
 
     if (isTotalRow) {

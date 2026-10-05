@@ -2,7 +2,6 @@ import * as XLSX from "xlsx";
 import { detectReportType } from "./detectReportType";
 import { extractReport } from "./reportRegistry";
 
-
 const readWorkbookRows = (arrayBuffer) => {
   const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
     type: "array",
@@ -14,7 +13,13 @@ const readWorkbookRows = (arrayBuffer) => {
 };
 
 const buildReport = ({ file, reportType, extracted }) => {
-  const { hierarchicalData, columns, additionalColumns, noandtitles, metadata } = extracted;
+  const {
+    hierarchicalData,
+    columns,
+    additionalColumns,
+    noandtitles,
+    metadata,
+  } = extracted;
 
   return {
     id: `${reportType}-${new Date().toISOString().split("T")[0].replace(/-/g, "")}`,
@@ -52,14 +57,17 @@ export const parseExcelReport = (file, reportTypeIn) =>
 
         if (reportTypeIn !== reportType) {
           throw new Error(
-            `Selected report type "${reportTypeIn}" does not match the file, which looks like "${reportType}".`
+            `Selected report type "${reportTypeIn}" does not match the file, which looks like "${reportType}".`,
           );
         }
 
         const extracted = extractReport(reportType, jsonData);
         console.log("Extracted metadata:", extracted.metadata);
         console.log("Extracted columns:", extracted.columns);
-        console.log("hierarchicalData (first 5):", extracted.hierarchicalData.slice(0, 5));
+        console.log(
+          "hierarchicalData (first 5):",
+          extracted.hierarchicalData.slice(0, 5),
+        );
         console.log("noandtitles:", extracted.noandtitles);
 
         resolve(buildReport({ file, reportType, extracted }));
@@ -72,8 +80,6 @@ export const parseExcelReport = (file, reportTypeIn) =>
     reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsArrayBuffer(file);
   });
-
-
 
 const flattenData = (nodes) => {
   const result = [];

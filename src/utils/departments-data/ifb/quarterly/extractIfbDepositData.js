@@ -38,7 +38,9 @@ export const extractDepositBankIFBMetadata = (data) => {
     if (!row || row.length === 0) continue;
 
     const firstCell = String(row[0] ?? "").trim();
-    const label = String(row[1] ?? "").trim().toLowerCase();
+    const label = String(row[1] ?? "")
+      .trim()
+      .toLowerCase();
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
@@ -96,12 +98,14 @@ const extractDepositBankIFBData = (data) => {
   }
 
   const columns = [...regions.map((r) => r.name), "Total"];
-  const lastCol = totalColumnIndex !== -1
-    ? totalColumnIndex
-    : regions[regions.length - 1].index;
+  const lastCol =
+    totalColumnIndex !== -1
+      ? totalColumnIndex
+      : regions[regions.length - 1].index;
 
   // ---- helpers ----
-  const isEmpty = (v) => v === undefined || v === null || String(v).trim() === "";
+  const isEmpty = (v) =>
+    v === undefined || v === null || String(v).trim() === "";
 
   const getValue = (index, row) => {
     if (index !== undefined && index >= 0 && index < row.length) {
@@ -161,7 +165,8 @@ const extractDepositBankIFBData = (data) => {
     }
 
     const values = {};
-    for (const region of regions) values[region.name] = getValue(region.index, row);
+    for (const region of regions)
+      values[region.name] = getValue(region.index, row);
     values["Total"] = getValue(totalColumnIndex, row);
 
     rowNo += 1;

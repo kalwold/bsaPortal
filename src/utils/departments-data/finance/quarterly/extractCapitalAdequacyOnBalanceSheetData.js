@@ -1,6 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractCapitalAdequacyOnBalanceSheetMetadata =(data)=>{
-
+export const extractCapitalAdequacyOnBalanceSheetMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -17,15 +16,15 @@ export const extractCapitalAdequacyOnBalanceSheetMetadata =(data)=>{
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
-    const firstCell = String(row[0]?row[0]:'').trim();
-    const secondCell = String(row[1]?row[1]:'').trim();
-    const thirdCell = String(row[2]?row[2]:'').trim();
-    const fourthCell = String(row[5]?row[5]:'').trim();
+    const firstCell = String(row[0] ? row[0] : "").trim();
+    const secondCell = String(row[1] ? row[1] : "").trim();
+    const thirdCell = String(row[2] ? row[2] : "").trim();
+    const fourthCell = String(row[5] ? row[5] : "").trim();
 
     if (i === 0 && firstCell) {
-   metadata.ReturnKey = firstCell;
+      metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("CAP_ADQ_ITEM_QI001") ) {
+      if (firstCell.includes("CAP_ADQ_ITEM_QI001")) {
         metadata.reportType = "finance-quarterly_onbalance-sheet";
         metadata.reportTypeId = "finance-quarterly_onbalance-sheet";
         metadata.departmentName = "Finance";
@@ -33,8 +32,8 @@ export const extractCapitalAdequacyOnBalanceSheetMetadata =(data)=>{
       }
     }
 
-      if (( i === 3 ) && (firstCell || secondCell)) {
-      metadata.reportTitle = firstCell || '';
+    if (i === 3 && (firstCell || secondCell)) {
+      metadata.reportTitle = firstCell || "";
       //console.log("Found Report Title:", metadata.reportTitle);
     }
 
@@ -60,19 +59,19 @@ export const extractCapitalAdequacyOnBalanceSheetMetadata =(data)=>{
 
   return metadata;
 };
-const extractCapitalAdequacyOnBalanceSheetData=(data)=>{
-    const sanitizeKey = (text) => {
-  return text
-    .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-zA-Z0-9_]/g, '')
-    .replace(/_+/g, '_');
-};
+const extractCapitalAdequacyOnBalanceSheetData = (data) => {
+  const sanitizeKey = (text) => {
+    return text
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_]/g, "")
+      .replace(/_+/g, "_");
+  };
   const additionalColumns = [];
   let noandtitles = [];
-  let dataTableStartIndex = -1
+  let dataTableStartIndex = -1;
 
- for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
     const firstCell = String(row[0]).trim();
@@ -87,58 +86,55 @@ const extractCapitalAdequacyOnBalanceSheetData=(data)=>{
   for (let i = 0; i < Math.min(data.length, 20); i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-  
+
     const firstCell = String(row[0]).trim();
-     if (firstCell.includes("Code")) {
+    if (firstCell.includes("Code")) {
       console.log("Found data table header at row", i);
       dataTableStartIndex = i + 2;
       break;
     }
   }
-if (dataTableStartIndex === -1) {
-      console.log("Could not find data table");
-      return { hierarchicalData: [], columns: [], additionalColumns: [] };
-    }
-  
-     const headerRow = data[dataTableStartIndex - 2];
-    console.log(
-      "Header row:",
-      headerRow.map((c) => String(c || "").trim()),
-    );
+  if (dataTableStartIndex === -1) {
+    console.log("Could not find data table");
+    return { hierarchicalData: [], columns: [], additionalColumns: [] };
+  }
 
-    const columnMap = {
+  const headerRow = data[dataTableStartIndex - 2];
+  console.log(
+    "Header row:",
+    headerRow.map((c) => String(c || "").trim()),
+  );
+
+  const columnMap = {
     code: 0,
     description: 1,
     amount_A: 2,
-    weight_B:3,
-    riskWeightedAssets_C:4,
+    weight_B: 3,
+    riskWeightedAssets_C: 4,
+  };
 
-    };
-
-      const columnNames = [
-
-    "Amount_A",
-   "Weight_B",
-   "Risk_Weighted_Assets_C"
-  ];
+  const columnNames = ["Amount_A", "Weight_B", "Risk_Weighted_Assets_C"];
 
   const topLevelNodes = [];
- const nodeMap = new Map();
+  const nodeMap = new Map();
 
-    for (let i = dataTableStartIndex; i < data.length; i++) {
+  for (let i = dataTableStartIndex; i < data.length; i++) {
     const row = data[i];
     if (row.length === 0) continue;
 
-   
     const sNo = String(row[columnMap.code] || "").trim();
     const description = String(row[columnMap.description] || "").trim();
 
-    if (!description || sNo==='* Total Amount on Column "C"  should be equal to total assets on balance sheet') continue;
+    if (
+      !description ||
+      sNo ===
+        '* Total Amount on Column "C"  should be equal to total assets on balance sheet'
+    )
+      continue;
 
- 
     const getValue = (index) => {
       if (index !== undefined && index < row.length) {
-       const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+        const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
         if (!isNaN(val) && val !== 0) {
           return val.toFixed(2);
         }
@@ -147,17 +143,12 @@ if (dataTableStartIndex === -1) {
       return "0";
     };
 
-    
     const values = {};
-    values["Amount_A"] = getValue(
-      columnMap.amount_A,
-    );
+    values["Amount_A"] = getValue(columnMap.amount_A);
     values["Weight_B"] = getValue(columnMap.weight_B);
-    values["Risk_Weighted_Assets_C"] = getValue(
-      columnMap.riskWeightedAssets_C
-    );
+    values["Risk_Weighted_Assets_C"] = getValue(columnMap.riskWeightedAssets_C);
 
-    const isTotalRow = (description === "Total *");
+    const isTotalRow = description === "Total *";
 
     const entry = {
       id: sNo,
@@ -170,43 +161,41 @@ if (dataTableStartIndex === -1) {
       isSectionHeader: false,
       children: [],
     };
-   
-if(sNo)
-    {
+
+    if (sNo) {
       nodeMap.set(sNo, entry);
     }
 
     //topLevelNodes.push(entry);
   }
 
-// topLevelNodes.sort((a, b) => {
-//     const aSNo = parseInt(a.sNo);
-//     const bSNo = parseInt(b.sNo);
-//     if (isNaN(aSNo) && isNaN(bSNo)) return 0;
-//     if (isNaN(aSNo)) return 1;
-//     if (isNaN(bSNo)) return -1;
-//     return aSNo - bSNo;
-//   });
+  // topLevelNodes.sort((a, b) => {
+  //     const aSNo = parseInt(a.sNo);
+  //     const bSNo = parseInt(b.sNo);
+  //     if (isNaN(aSNo) && isNaN(bSNo)) return 0;
+  //     if (isNaN(aSNo)) return 1;
+  //     if (isNaN(bSNo)) return -1;
+  //     return aSNo - bSNo;
+  //   });
 
   // Build hierarchy for nodes with codes
   for (const [normalizedCode, node] of nodeMap) {
+    const codeParts = normalizedCode.split(".");
 
-    const codeParts = normalizedCode.split('.');
-    
-    if (codeParts.length === 1 ) {
+    if (codeParts.length === 1) {
       // Region nodes (1, 2, 3, ...)
-      const existing = topLevelNodes.find(n => n.id === normalizedCode);
+      const existing = topLevelNodes.find((n) => n.id === normalizedCode);
       if (!existing) {
         topLevelNodes.push(node);
         //consol.log(`Added region node: ${normalizedCode} - ${node.label}`);
       }
     } else if (codeParts.length > 1) {
       // Loan type nodes (1.1, 1.2, etc.)
-      const parentCode = codeParts.slice(0, -1).join('.');
+      const parentCode = codeParts.slice(0, -1).join(".");
       const parent = nodeMap.get(parentCode);
-      
+
       if (parent) {
-        const exists = parent.children.some(child => child.id === node.id);
+        const exists = parent.children.some((child) => child.id === node.id);
         if (!exists) {
           parent.children.push(node);
           //consol.log(`Added node ${normalizedCode} as child of ${parentCode}`);
@@ -216,7 +205,9 @@ if(sNo)
         const baseCode = codeParts[0];
         const baseParent = nodeMap.get(baseCode);
         if (baseParent) {
-          const exists = baseParent.children.some(child => child.id === node.id);
+          const exists = baseParent.children.some(
+            (child) => child.id === node.id,
+          );
           if (!exists) {
             baseParent.children.push(normalizedCode);
             //consol.log(`Added node ${normalizedCode} as child of ${baseCode} (fallback)`);
@@ -235,10 +226,10 @@ if(sNo)
     nodes.sort((a, b) => {
       if (a.isTotalRow && !b.isTotalRow) return 1;
       if (!a.isTotalRow && b.isTotalRow) return -1;
-      
+
       if (a.sNo && b.sNo) {
-        const aParts = a.sNo.split('.').map(Number);
-        const bParts = b.sNo.split('.').map(Number);
+        const aParts = a.sNo.split(".").map(Number);
+        const bParts = b.sNo.split(".").map(Number);
         for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
           if (aParts[i] !== bParts[i]) {
             return aParts[i] - bParts[i];
@@ -249,7 +240,7 @@ if(sNo)
       return 0;
     });
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length > 0) {
         sortChildren(node.children);
       }
@@ -260,7 +251,7 @@ if(sNo)
 
   // Clean up - remove empty children arrays
   const cleanData = (nodes) => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children && node.children.length === 0) {
         delete node.children;
       } else if (node.children) {
@@ -270,15 +261,11 @@ if(sNo)
   };
   cleanData(topLevelNodes);
 
-  
-
   return {
     hierarchicalData: topLevelNodes,
     columns: columnNames,
     additionalColumns,
     noandtitles,
   };
-
-
-}
-export default extractCapitalAdequacyOnBalanceSheetData
+};
+export default extractCapitalAdequacyOnBalanceSheetData;

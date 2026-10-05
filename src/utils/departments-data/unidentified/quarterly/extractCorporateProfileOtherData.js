@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractCorporateProfileOtherMetadata =(data)=>{
+export const extractCorporateProfileOtherMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -15,12 +15,11 @@ export const extractCorporateProfileOtherMetadata =(data)=>{
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-   
+
     if (!row || row.length === 0) continue;
 
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
- 
 
     const labelValue = (() => {
       for (let c = 1; c <= 5; c++) {
@@ -31,14 +30,14 @@ export const extractCorporateProfileOtherMetadata =(data)=>{
       }
       return "";
     })();
-    
 
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("CP6_CO001") ) {
+      if (firstCell.includes("CP6_CO001")) {
         metadata.reportType = "unidentified-quarterly_corporate-profile-other";
-        metadata.reportTypeId = "unidentified-quarterly_corporate-profile-other";
+        metadata.reportTypeId =
+          "unidentified-quarterly_corporate-profile-other";
         metadata.departmentId = "unidentified";
         metadata.departmentName = "Unidentified";
       }
@@ -86,8 +85,8 @@ export const extractCorporateProfileOtherMetadata =(data)=>{
   }
   return metadata;
 };
-const extractCorporateProfileOtherData=(data)=>{
-      const columns = ["Data"];
+const extractCorporateProfileOtherData = (data) => {
+  const columns = ["Data"];
   let dataTableStart = -1;
 
   // Find the header row: "S.No." | "Description"
@@ -96,55 +95,59 @@ const extractCorporateProfileOtherData=(data)=>{
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || "").trim();
     if (firstCell.toLowerCase().includes("number of atms")) {
-      dataTableStart = i ;
+      dataTableStart = i;
       break;
     }
   }
-if (dataTableStart === -1) {
+  if (dataTableStart === -1) {
     return { hierarchicalData: [], columns, additionalColumns: [] };
   }
   const getValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
+      let raw = String(row[index] ?? "").trim();
+      const isNegative = /^\(.*\)$/.test(raw);
+      raw = raw.replace(/[(),%\s]/g, "");
+      let val = parseFloat(raw);
       if (!isNaN(val) && val !== 0) {
+        if (isNegative) {
+          val = -Math.abs(val);
+        }
         return val.toFixed(2);
       }
-      return '0';
+      return "0";
     }
-    return '0';
+    return "0";
   };
   const nodeMap = new Map();
   const topLevelNodes = [];
 
-for (let i = dataTableStart; i < data.length; i++) {
+  for (let i = dataTableStart; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    
     const description = String(row[0] || "").trim();
     if (!description) continue;
 
-    const value = getValue(2,row)
+    const value = getValue(2, row);
 
- 
     const entry = {
-      id: '' ,
-      sNo: '' ,
+      id: "",
+      sNo: "",
       label: description,
-      values: { 'Data': value },
+      values: { Data: value },
       rowNumber: i + 1,
       isTotalRow: false,
       children: [],
     };
 
-
-        topLevelNodes.push(entry);
-      
-    
+    topLevelNodes.push(entry);
   }
 
-
-  return { hierarchicalData: topLevelNodes, columns, additionalColumns: [], noandtitles:['Description']};
-}
-export default extractCorporateProfileOtherData
-
+  return {
+    hierarchicalData: topLevelNodes,
+    columns,
+    additionalColumns: [],
+    noandtitles: ["Description"],
+  };
+};
+export default extractCorporateProfileOtherData;

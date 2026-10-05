@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractInsuredDepositorIfbMetadata =(data)=>{
+export const extractInsuredDepositorIfbMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -43,7 +43,7 @@ export const extractInsuredDepositorIfbMetadata =(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("0015IN04001") ) {
+      if (firstCell.includes("0015IN04001")) {
         metadata.reportType = "branchOps-quarterly_insured-depositor-ifb";
         metadata.reportTypeId = "branchOps-quarterly_insured-depositor-ifb";
         metadata.departmentId = "branchOps";
@@ -80,7 +80,11 @@ export const extractInsuredDepositorIfbMetadata =(data)=>{
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    if (i === 5 && secondCell && secondCell.toLowerCase().includes("end date")) {
+    if (
+      i === 5 &&
+      secondCell &&
+      secondCell.toLowerCase().includes("end date")
+    ) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
@@ -98,13 +102,16 @@ const extractInsuredDepositorIfbData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
-  console.log('=== Extracting Insured Depositor Data (0015IN04001) ===');
+  console.log("=== Extracting Insured Depositor Data (0015IN04001) ===");
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -112,16 +119,16 @@ const extractInsuredDepositorIfbData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'No.') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "No.") {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -146,16 +153,16 @@ const extractInsuredDepositorIfbData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'National_ID',
-    'TIN_Number',
-    'Account_Number',
-    'Deposit_Type',
-    'Insured_Deposit_Balance',
-    'Collateral_Compulsory_Saving',
-    'Past_Due_Loans',
-    'Net_Insurable_Deposits',
-    'Compensable_Deposit_Amount',
-    'Remark'
+    "National_ID",
+    "TIN_Number",
+    "Account_Number",
+    "Deposit_Type",
+    "Insured_Deposit_Balance",
+    "Collateral_Compulsory_Saving",
+    "Past_Due_Loans",
+    "Net_Insurable_Deposits",
+    "Compensable_Deposit_Amount",
+    "Remark",
   ];
 
   const topLevelNodes = [];
@@ -163,22 +170,22 @@ const extractInsuredDepositorIfbData = (data) => {
   // Helper functions
   const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return '';
+    return "";
   };
 
   const getNumericValue = (index, row) => {
     if (index !== undefined && index < row.length) {
       const raw = row[index];
-      if (raw === null || raw === undefined || raw === '') return '0';
+      if (raw === null || raw === undefined || raw === "") return "0";
       const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
       if (!isNaN(val)) {
         return val.toFixed(2);
       }
       return String(raw).trim();
     }
-    return '0';
+    return "0";
   };
 
   // Parse each row
@@ -186,31 +193,29 @@ const extractInsuredDepositorIfbData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const no = String(row[NO_COL] || '').trim();
-    const depositorName = String(row[DEPOSITOR_NAME_COL] || '').trim();
+    const no = String(row[NO_COL] || "").trim();
+    const depositorName = String(row[DEPOSITOR_NAME_COL] || "").trim();
 
     // Skip if no number
     if (!no) continue;
 
     // Skip footer/note rows
-    if (depositorName.includes('Note') || depositorName.includes('Total')) continue;
+    if (depositorName.includes("Note") || depositorName.includes("Total"))
+      continue;
 
     // Extract values
     const values = {
-      
-      'National_ID': getStringValue(NATIONAL_ID_COL, row),
-      'TIN_Number': getStringValue(TIN_NUMBER_COL, row),
-      'Account_Number': getStringValue(ACCOUNT_NUMBER_COL, row),
-      'Deposit_Type': getStringValue(DEPOSIT_TYPE_COL, row),
-      'Insured_Deposit_Balance': getNumericValue(INSURED_BALANCE_COL, row),
-      'Collateral_Compulsory_Saving': getNumericValue(COLLATERAL_AMOUNT_COL, row),
-      'Past_Due_Loans': getNumericValue(PAST_DUE_LOANS_COL, row),
-      'Net_Insurable_Deposits': getNumericValue(NET_INSURABLE_COL, row),
-      'Compensable_Deposit_Amount': getNumericValue(COMPENSABLE_AMOUNT_COL, row),
-      'Remark': getStringValue(REMARK_COL, row)
+      National_ID: getStringValue(NATIONAL_ID_COL, row),
+      TIN_Number: getStringValue(TIN_NUMBER_COL, row),
+      Account_Number: getStringValue(ACCOUNT_NUMBER_COL, row),
+      Deposit_Type: getStringValue(DEPOSIT_TYPE_COL, row),
+      Insured_Deposit_Balance: getNumericValue(INSURED_BALANCE_COL, row),
+      Collateral_Compulsory_Saving: getNumericValue(COLLATERAL_AMOUNT_COL, row),
+      Past_Due_Loans: getNumericValue(PAST_DUE_LOANS_COL, row),
+      Net_Insurable_Deposits: getNumericValue(NET_INSURABLE_COL, row),
+      Compensable_Deposit_Amount: getNumericValue(COMPENSABLE_AMOUNT_COL, row),
+      Remark: getStringValue(REMARK_COL, row),
     };
-
-    
 
     const entry = {
       id: no || ``,
@@ -221,7 +226,7 @@ const extractInsuredDepositorIfbData = (data) => {
       level: 1,
       isTotalRow: false,
       isSectionHeader: false,
-      children: []
+      children: [],
     };
 
     topLevelNodes.push(entry);
@@ -235,13 +240,13 @@ const extractInsuredDepositorIfbData = (data) => {
     return 0;
   });
 
-  console.log('Total entries:', topLevelNodes.length);
+  console.log("Total entries:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles:['No.', "Depositor's Full Name"]
+    noandtitles: ["No.", "Depositor's Full Name"],
   };
 };
-export default extractInsuredDepositorIfbData
+export default extractInsuredDepositorIfbData;

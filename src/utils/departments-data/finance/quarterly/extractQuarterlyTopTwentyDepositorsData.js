@@ -101,7 +101,10 @@ const extractQuarterlyTopTwentyDepositorsData = (data) => {
     if (!row || row.length === 0) continue;
     const firstCell = String(row[0] || "").trim();
     const secondCell = String(row[1] || "").trim();
-    if (firstCell === "S.No" && secondCell.toLowerCase().includes("name of depositor")) {
+    if (
+      firstCell === "S.No" &&
+      secondCell.toLowerCase().includes("name of depositor")
+    ) {
       dataTableStart = i + 2; // skip both header rows
       break;
     }
@@ -121,24 +124,24 @@ const extractQuarterlyTopTwentyDepositorsData = (data) => {
     const secondCell = String(row[1] || "").trim();
 
     if (secondCell.toLowerCase().includes("note")) continue;
-    if ( !secondCell) continue;
-if (secondCell.includes('Note:'))continue
+    if (!secondCell) continue;
+    if (secondCell.includes("Note:")) continue;
     const isSubTotal = secondCell.toLowerCase().includes("sub total");
     const isGrandTotal = secondCell.toLowerCase().includes("grand total");
 
     const getVal = (idx) => {
       const raw = row[idx];
-      if (raw === undefined || raw === null || String(raw).trim() === "") return "0";
+      if (raw === undefined || raw === null || String(raw).trim() === "")
+        return "0";
       const cleaned = String(raw).replace(/,/g, "").trim();
       const val = parseFloat(cleaned);
       return !isNaN(val) ? val.toFixed(2) : "0";
     };
-  
 
     const entry = {
       id: firstCell || "",
       sNo: firstCell || "",
-      label: isSubTotal || isGrandTotal ? secondCell : secondCell || '',
+      label: isSubTotal || isGrandTotal ? secondCell : secondCell || "",
       values: {
         Demand_Current: getVal(2),
         Saving: getVal(3),

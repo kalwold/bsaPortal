@@ -26,12 +26,11 @@ const DepartmentReportPage = () => {
   const reportType = getReportTypeById(deptId, reportTypeId);
   //console.log("report type", reportTypeId)
 
-  useEffect(() => { 
-  
-  return () => {
-    setShowUpload(false)
-  };
-}, [reportType]);
+  useEffect(() => {
+    return () => {
+      setShowUpload(false);
+    };
+  }, [reportType]);
 
   const {
     data: reports,
@@ -44,9 +43,7 @@ const DepartmentReportPage = () => {
       //   departmentId: deptId,
       //   typeId: reportTypeId,
       // }),
-       reportService.getReports(
-         reportTypeId,
-  ),
+      reportService.getReports(reportTypeId),
   });
 
   const handleRefresh = () => {
@@ -54,12 +51,12 @@ const DepartmentReportPage = () => {
     refetch();
   };
 
-    const handleReportClick = (report) => {
+  const handleReportClick = (report) => {
     // Navigate to report viewer with report data in state
 
     //console.log("report in report click",)
     navigate(`/report/${report.id}`, {
-      state: { report: report }
+      state: { report: report },
     });
   };
 
@@ -182,7 +179,7 @@ const DepartmentReportPage = () => {
                 key={report.id}
                 className="px-6 py-4 hover:bg-gray-50 cursor-pointer"
                 //onClick={() => navigate(`/report/${report.id}`)}
-                 onClick={() => handleReportClick(report)}
+                onClick={() => handleReportClick(report)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">

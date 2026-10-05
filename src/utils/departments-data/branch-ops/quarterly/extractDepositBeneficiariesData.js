@@ -1,5 +1,5 @@
 import { excelDateToISO } from "../../../utils";
-export const extractDepositBeneficiariesMetadata =(data)=>{
+export const extractDepositBeneficiariesMetadata = (data) => {
   const metadata = {
     reportTitle: "",
     ReturnKey: "",
@@ -43,7 +43,7 @@ export const extractDepositBeneficiariesMetadata =(data)=>{
     if (i === 0 && firstCell) {
       metadata.ReturnKey = firstCell;
 
-      if (firstCell.includes("0016IN05001") ) {
+      if (firstCell.includes("0016IN05001")) {
         metadata.reportType = "branchOps-quarterly_deposit-beneficiaries";
         metadata.reportTypeId = "branchOps-quarterly_deposit-beneficiaries";
         metadata.departmentId = "branchOps";
@@ -80,7 +80,11 @@ export const extractDepositBeneficiariesMetadata =(data)=>{
       metadata.startDate = excelDateToISO(labelValue) || "";
     }
 
-    if (i === 5 && secondCell && secondCell.toLowerCase().includes("end date")) {
+    if (
+      i === 5 &&
+      secondCell &&
+      secondCell.toLowerCase().includes("end date")
+    ) {
       metadata.endDate = excelDateToISO(labelValue) || "";
     }
 
@@ -97,13 +101,18 @@ const extractDepositBeneficiariesData = (data) => {
   const hierarchicalData = [];
   let dataTableStart = -1;
 
-  console.log('=== Extracting Deposit Account Beneficiaries Data (0016IN05001) ===');
+  console.log(
+    "=== Extracting Deposit Account Beneficiaries Data (0016IN05001) ===",
+  );
 
   // Log first few rows to understand structure
   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (row) {
-      console.log(`Row ${i}:`, row.map(c => String(c || '').trim()));
+      console.log(
+        `Row ${i}:`,
+        row.map((c) => String(c || "").trim()),
+      );
     }
   }
 
@@ -111,16 +120,16 @@ const extractDepositBeneficiariesData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const firstCell = String(row[0] || '').trim();
-    if (firstCell === 'No.') {
+    const firstCell = String(row[0] || "").trim();
+    if (firstCell === "No.") {
       dataTableStart = i + 1;
-      console.log('Found data table at row:', dataTableStart);
+      console.log("Found data table at row:", dataTableStart);
       break;
     }
   }
 
   if (dataTableStart === -1) {
-    console.log('Could not find data table');
+    console.log("Could not find data table");
     return { hierarchicalData: [], columns: [], additionalColumns: [] };
   }
 
@@ -147,18 +156,18 @@ const extractDepositBeneficiariesData = (data) => {
 
   // Define the columns for this report
   const columns = [
-    'Depositors_National_ID',
-    'Depositors_TIN_Number',
-    'Depositors_Account_Number',
-    'Full_Name_of_Beneficiary',
-    'Beneficiarys_National_ID',
-    'Beneficiarys_TIN_Number',
-    'Region',
-    'Sub_City_Zone',
-    'Woreda',
-    'Cell_Phone',
-    'Percent_Share',
-    'Amount_in_Birr'
+    "Depositors_National_ID",
+    "Depositors_TIN_Number",
+    "Depositors_Account_Number",
+    "Full_Name_of_Beneficiary",
+    "Beneficiarys_National_ID",
+    "Beneficiarys_TIN_Number",
+    "Region",
+    "Sub_City_Zone",
+    "Woreda",
+    "Cell_Phone",
+    "Percent_Share",
+    "Amount_in_Birr",
   ];
 
   const topLevelNodes = [];
@@ -166,22 +175,22 @@ const extractDepositBeneficiariesData = (data) => {
   // Helper functions
   const getStringValue = (index, row) => {
     if (index !== undefined && index < row.length) {
-      return String(row[index] || '').trim();
+      return String(row[index] || "").trim();
     }
-    return '';
+    return "";
   };
 
   const getNumericValue = (index, row) => {
     if (index !== undefined && index < row.length) {
       const raw = row[index];
-      if (raw === null || raw === undefined || raw === '') return '0';
+      if (raw === null || raw === undefined || raw === "") return "0";
       const val = parseFloat(String(row[index] ?? "").replace(/[,%\s]/g, ""));
       if (!isNaN(val)) {
         return val.toFixed(2);
       }
       return String(raw).trim();
     }
-    return '0';
+    return "0";
   };
 
   // Parse each row
@@ -189,8 +198,8 @@ const extractDepositBeneficiariesData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const no = String(row[NO_COL] || '').trim();
-    const depositorName = String(row[DEPOSITOR_NAME_COL] || '').trim();
+    const no = String(row[NO_COL] || "").trim();
+    const depositorName = String(row[DEPOSITOR_NAME_COL] || "").trim();
 
     // Skip if no number
     if (!no) continue;
@@ -199,29 +208,30 @@ const extractDepositBeneficiariesData = (data) => {
     if (!no && !depositorName) continue;
 
     // Skip footer/note rows
-    if (depositorName.includes('Note') || depositorName.includes('Total')) continue;
+    if (depositorName.includes("Note") || depositorName.includes("Total"))
+      continue;
 
     // Extract values - all as strings since they are identifiers/text
     const values = {
-     
-      'Depositors_National_ID': getStringValue(DEPOSITOR_NATIONAL_ID_COL, row),
-      'Depositors_TIN_Number': getStringValue(DEPOSITOR_TIN_COL, row),
-      'Depositors_Account_Number': getStringValue(DEPOSITOR_ACCOUNT_COL, row),
-      'Full_Name_of_Beneficiary': getStringValue(BENEFICIARY_NAME_COL, row),
-      'Beneficiarys_National_ID': getStringValue(BENEFICIARY_NATIONAL_ID_COL, row),
-      'Beneficiarys_TIN_Number': getStringValue(BENEFICIARY_TIN_COL, row),
-      'Region': getStringValue(REGION_COL, row),
-      'Sub_City_Zone': getStringValue(SUBCITY_COL, row),
-      'Woreda': getStringValue(WOREDA_COL, row),
-      'Cell_Phone': getStringValue(CELL_PHONE_COL, row),
-      'Percent_Share': getNumericValue(PERCENT_SHARE_COL, row),
-      'Amount_in_Birr': getNumericValue(AMOUNT_COL, row)
+      Depositors_National_ID: getStringValue(DEPOSITOR_NATIONAL_ID_COL, row),
+      Depositors_TIN_Number: getStringValue(DEPOSITOR_TIN_COL, row),
+      Depositors_Account_Number: getStringValue(DEPOSITOR_ACCOUNT_COL, row),
+      Full_Name_of_Beneficiary: getStringValue(BENEFICIARY_NAME_COL, row),
+      Beneficiarys_National_ID: getStringValue(
+        BENEFICIARY_NATIONAL_ID_COL,
+        row,
+      ),
+      Beneficiarys_TIN_Number: getStringValue(BENEFICIARY_TIN_COL, row),
+      Region: getStringValue(REGION_COL, row),
+      Sub_City_Zone: getStringValue(SUBCITY_COL, row),
+      Woreda: getStringValue(WOREDA_COL, row),
+      Cell_Phone: getStringValue(CELL_PHONE_COL, row),
+      Percent_Share: getNumericValue(PERCENT_SHARE_COL, row),
+      Amount_in_Birr: getNumericValue(AMOUNT_COL, row),
     };
 
- 
-
     const entry = {
-      id: no || '',
+      id: no || "",
       sNo: no,
       label: depositorName || ``,
       values: values,
@@ -229,7 +239,7 @@ const extractDepositBeneficiariesData = (data) => {
       level: 1,
       isTotalRow: false,
       isSectionHeader: false,
-      children: []
+      children: [],
     };
 
     topLevelNodes.push(entry);
@@ -243,14 +253,13 @@ const extractDepositBeneficiariesData = (data) => {
     return 0;
   });
 
-  console.log('Total entries:', topLevelNodes.length);
+  console.log("Total entries:", topLevelNodes.length);
 
   return {
     hierarchicalData: topLevelNodes,
     columns: columns,
     additionalColumns: [],
-    noandtitles:['No.', "Depositor's Full Name"]
-
+    noandtitles: ["No.", "Depositor's Full Name"],
   };
 };
-export default extractDepositBeneficiariesData
+export default extractDepositBeneficiariesData;

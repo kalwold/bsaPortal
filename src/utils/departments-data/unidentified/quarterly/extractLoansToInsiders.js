@@ -100,7 +100,9 @@ const extractLoansToInsidersData = (data) => {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
-    const first = String(row[0] ?? "").toLowerCase().replace(/\s+/g, "");
+    const first = String(row[0] ?? "")
+      .toLowerCase()
+      .replace(/\s+/g, "");
     if (first === "s.no." || first === "s.no" || first === "sno") {
       headerRowIdx = i;
       break;
@@ -161,7 +163,9 @@ const extractLoansToInsidersData = (data) => {
     const row = data[i];
     if (!row || row.length === 0) continue;
 
-    const rawCode = String(row[0] ?? "").trim().replace(/\.$/, ""); // "2." -> "2"
+    const rawCode = String(row[0] ?? "")
+      .trim()
+      .replace(/\.$/, ""); // "2." -> "2"
     const label = String(row[1] ?? "").trim();
 
     // Stop at footer notes
