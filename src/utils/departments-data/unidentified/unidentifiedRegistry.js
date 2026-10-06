@@ -25,4 +25,6 @@ export const unidentifiedRegistry = {
     "unidentified/quarterly/extractCorporateProfileOtherData",
   [REPORT_TYPES.MONTHLY_COMPLAINT_HANDLING]:
     "unidentified/monthly/extractComplaintHandlingReportData",
+  [REPORT_TYPES.MONTHLY_CREDIT_ACCOUNT_AMOUNT]:
+    "unidentified/monthly/extractCreditAccountAmountData",
 };

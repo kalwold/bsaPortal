@@ -84,6 +84,12 @@ export const unidentifiedConfig = {
           name: "Complaints Handling Report",
           detect: ["CHFCPE001"],
         },
+        {
+          key: "MONTHLY_CREDIT_ACCOUNT_AMOUNT",
+          id: "unidentified-credit-account-amount-con-bank",
+          name: "Credit Account & Amount Con Bank",
+          detect: ["CRECON001"],
+        },
       ],
     },
   ],
