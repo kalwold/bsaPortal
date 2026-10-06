@@ -71,6 +71,18 @@ export const unidentifiedConfig = {
           id: "unidentified-quarterly_high-impact-it-incident",
           name: "High Impact IT Incident Report",
           detect: ["ITRHITI001"],
+        }
+      ],
+    },
+    {
+      id: "monthly",
+      name: "Monthly",
+      reportTypes: [
+        {
+          key: "MONTHLY_COMPLAINT_HANDLING",
+          id: "unidentified-monthly_complaint-handling",
+          name: "Complaints Handling Report",
+          detect: ["CHFCPE001"],
         },
       ],
     },
