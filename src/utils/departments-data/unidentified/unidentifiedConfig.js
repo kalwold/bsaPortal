@@ -71,7 +71,7 @@ export const unidentifiedConfig = {
           id: "unidentified-quarterly_high-impact-it-incident",
           name: "High Impact IT Incident Report",
           detect: ["ITRHITI001"],
-        }
+        },
       ],
     },
     {
@@ -89,6 +89,18 @@ export const unidentifiedConfig = {
           id: "unidentified-credit-account-amount-con-bank",
           name: "Credit Account & Amount Con Bank",
           detect: ["CRECON001"],
+        },
+        {
+          key: "MONTHLY_DOMESTIC_CASH_FLOW",
+          id: "unidentified-monthly_domestic-cash-flow",
+          name: "Domestic Cash Flow of Commercial Banks",
+          detect: ["CASHFLOWSTD001"],
+        },
+        {
+          key: "MONTHLY_NID_UNIQUE_DEPOSIT_ACCOUNTS",
+          id: "unidentified-nid-unique-deposit-accounts",
+          name: "National ID uniquely identified account owners list",
+          detect: ["UQNID001"],
         },
       ],
     },

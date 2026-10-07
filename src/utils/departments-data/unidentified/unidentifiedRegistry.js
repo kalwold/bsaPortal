@@ -27,4 +27,8 @@ export const unidentifiedRegistry = {
     "unidentified/monthly/extractComplaintHandlingReportData",
   [REPORT_TYPES.MONTHLY_CREDIT_ACCOUNT_AMOUNT]:
     "unidentified/monthly/extractCreditAccountAmountData",
+  [REPORT_TYPES.MONTHLY_DOMESTIC_CASH_FLOW]:
+    "unidentified/monthly/extractDomesticCashFlowData",
+  [REPORT_TYPES.MONTHLY_NID_UNIQUE_DEPOSIT_ACCOUNTS]:
+    "unidentified/monthly/extractNidUniqueDepositAccountsData",
 };
