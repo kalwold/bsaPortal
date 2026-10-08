@@ -1,12 +1,17 @@
 import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL;
+const SUBMISSION_API_URL = process.env.REACT_APP_SUBMISSION_API_URL;
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+const submissionApi = axios.create({
+  baseURL: SUBMISSION_API_URL,
 });
 
 api.interceptors.request.use(
@@ -31,4 +36,5 @@ api.interceptors.response.use(
   },
 );
 
+export { submissionApi };
 export default api;

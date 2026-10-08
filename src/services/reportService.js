@@ -1,4 +1,4 @@
-import api from "./api";
+import api, { submissionApi } from "./api";
 import { DEPARTMENT_DATA } from "../utils/departments";
 
 export const getDepartmentById = (deptId) => {
@@ -47,6 +47,11 @@ export const reportService = {
   getReport: (reportId) => {
     return api.get(`/reports/${reportId}`).then((res) => res.data);
   },
+
+  getSubmissionStatus: (fileName) =>
+    submissionApi
+      .get("/get-submission-status/", { params: { fileName } })
+      .then((res) => res.data),
 
   approveReport: (reportType, data) => {
     return api.put(`/${reportType}/approve`, data).then((res) => res.data);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { reportService } from "../../services/reportService";
 import StatusBadge from "../common/StatusBadge";
@@ -16,11 +16,38 @@ import {
 } from "react-icons/fi";
 import { BsFillBuildingFill } from "react-icons/bs";
 
+const getSubmissionStatus = (response, requestedFileName) => {
+  const payload =
+    response?.data && typeof response.data === "object"
+      ? response.data
+      : response;
+  const { filename, fileName: alternateFileName, status } = payload ?? {};
+  const responseFileName = filename ?? alternateFileName;
+  const fileName =
+    typeof responseFileName === "string" &&
+    responseFileName.trim() &&
+    responseFileName.toLowerCase() !== "null"
+      ? responseFileName
+      : requestedFileName;
+  const statusText =
+    typeof status === "string" || typeof status === "number"
+      ? String(status)
+      : "No status returned";
+
+  return {
+    fileName,
+    status: statusText,
+    isError: /does not exist(?:s)?|not found|failed|error/i.test(statusText),
+  };
+};
+
 const ReportViewer = () => {
   const { reportId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const [comment, setComment] = useState("");
+  const [approvalCompleted, setApprovalCompleted] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState(null);
   const locationReport = location.state?.report;
   const report = locationReport;
   const columns = report.columns || [];
@@ -51,8 +78,43 @@ const ReportViewer = () => {
     },
     onSuccess: () => {
       toast.success("Report approved successfully!");
-      navigate(-1);
-      // refetch();
+      setApprovalCompleted(true);
+      const filename = report.fileName;
+      if (filename) {
+        setSubmissionStatus({ state: "loading" });
+        reportService
+          .getSubmissionStatus(filename)
+          .then((response) => {
+            const result = getSubmissionStatus(response, filename);
+            setSubmissionStatus({
+              state: result.isError ? "error" : "complete",
+              ...result,
+            });
+            if (result.isError) {
+              toast.error(result.status);
+            }
+          })
+          .catch((error) => {
+            const result = getSubmissionStatus(error.response?.data, filename);
+            const message =
+              result.status === "No status returned"
+                ? error.message
+                : result.status;
+            setSubmissionStatus({
+              state: "error",
+              fileName: result.fileName,
+              status: message,
+            });
+            toast.error(
+              `Approval succeeded, but submission status could not be checked: ${message}`,
+            );
+          });
+      } else {
+        setSubmissionStatus({
+          state: "error",
+          message: "No submission filename is available for the status check.",
+        });
+      }
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to approve report");
@@ -305,7 +367,7 @@ const ReportViewer = () => {
           )}
 
           {/* Approval Actions */}
-          {report.status === "PENDING" && (
+          {report.status === "PENDING" && !approvalCompleted && (
             <div className="border-t pt-6 mt-4">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -350,6 +412,40 @@ const ReportViewer = () => {
                   </button>
                 </>
                 {/* )} */}
+              </div>
+            </div>
+          )}
+
+          {approvalCompleted && (
+            <div className="border-t pt-6 mt-4">
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                <p className="font-medium text-green-800">
+                  Report approved successfully.
+                </p>
+                <p className="mt-2 text-sm text-gray-700">
+                  <span className="font-medium">Submission status: </span>
+                  {submissionStatus?.state === "loading" && "Checking..."}
+                  {["complete", "error"].includes(submissionStatus?.state) && (
+                    <span>
+                      {submissionStatus.fileName && (
+                        <>
+                          <span className="font-medium">File: </span>
+                          {submissionStatus.fileName}
+                          <span className="mx-2">•</span>
+                        </>
+                      )}
+                      <span
+                        className={
+                          submissionStatus.state === "error"
+                            ? "text-red-700"
+                            : ""
+                        }
+                      >
+                        {submissionStatus.status || submissionStatus.message}
+                      </span>
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           )}
