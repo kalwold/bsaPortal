@@ -2,6 +2,7 @@ import { branchOpsRegistry } from "./departments-data/branch-ops/branchOpsRegist
 import { creditRegistry } from "./departments-data/credit/creditRegistry";
 import { digitalRegistry } from "./departments-data/digital/digitalRegistry";
 import { financeRegistry } from "./departments-data/finance/financeRegistry";
+import { ibdRegistry } from "./departments-data/ibd/ibdRegistry";
 import { ifbRegistry } from "./departments-data/ifb/ifbRegistry";
 import { unidentifiedRegistry } from "./departments-data/unidentified/unidentifiedRegistry";
 import { shareRegistry } from "./departments-data/share/shareRegistry";
@@ -17,6 +18,7 @@ const REPORT_FILES = {
   ...financeRegistry,
   ...creditRegistry,
   ...ifbRegistry,
+  ...ibdRegistry,
   ...shareRegistry,
   ...digitalRegistry,
   ...branchOpsRegistry,

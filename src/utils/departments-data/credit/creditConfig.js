@@ -9,7 +9,7 @@ export const creditConfig = {
         {
           key: "LOAN_RELATED_PARTIES",
           id: "credit-monthly_loan-related",
-          name: "Loans to Related Parties Report",
+          name: "Monthly Returns on Related Party Transactions List of Related Party Exposures",
           detect: ["BSD_LOAN_PART13002"],
         },
         {
