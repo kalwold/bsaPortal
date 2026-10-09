@@ -4,9 +4,11 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { reportService } from "../../services/reportService";
 import { findReportType } from "../../utils/departments";
-import { submitAndCheckNbeReport } from "../../utils/nbeSubmission";
 import {
-  removePendingNbeSubmission,
+  checkNbeSubmissionStatus,
+  triggerNbeSubmission,
+} from "../../utils/nbeSubmission";
+import {
   savePendingNbeSubmission,
   updatePendingNbeSubmission,
 } from "../../utils/pendingNbeSubmissions";
@@ -55,30 +57,37 @@ const ReportViewer = () => {
   // Try to get report from location state (passed from navigation)
 
   const submissionMutation = useMutation({
-    mutationFn: ({ fileName } = {}) =>
-      submitAndCheckNbeReport({
-        endpoint: nbeSubmissionEndpoint,
-        fileName,
-      }),
+    mutationFn: () => triggerNbeSubmission(nbeSubmissionEndpoint),
     onSuccess: (result) => {
+      if (result.isDuplicate) {
+        setSubmissionStatus({
+          state: "complete",
+          fileName: "",
+          status: result.status,
+          isDuplicate: true,
+          submissionData: result.submissionData,
+        });
+        updatePendingNbeSubmission(report.id, {
+          submissionState: "duplicate",
+          lastStatus: result.status,
+          lastError: "",
+          submissionData: result.submissionData,
+        });
+        toast.success(result.status);
+        return;
+      }
+
       setSubmissionStatus({
-        state: result.isError ? "error" : "complete",
+        state: "submitted",
         fileName: result.fileName,
         status: result.status,
-        isDuplicate: result.isDuplicate,
-        submissionData: result.submissionData,
       });
-      if (result.isError) {
-        updatePendingNbeSubmission(report.id, {
-          fileName: result.fileName,
-          retryStatusCheck: false,
-          lastError: result.status,
-        });
-        toast.error(result.status);
-      } else {
-        removePendingNbeSubmission(report.id);
-        if (result.isDuplicate) toast.success(result.status);
-      }
+      updatePendingNbeSubmission(report.id, {
+        fileName: result.fileName,
+        submissionState: "awaiting-status",
+        lastStatus: result.status,
+        lastError: "",
+      });
     },
     onError: (error) => {
       const message =
@@ -89,14 +98,55 @@ const ReportViewer = () => {
         state: "error",
         fileName: error.fileName,
         status: message,
-        retryStatusCheck: error.retryStatusCheck,
+        retrySubmission: true,
       });
       updatePendingNbeSubmission(report.id, {
-        fileName: error.fileName,
-        retryStatusCheck: error.retryStatusCheck,
+        submissionState: "submission-error",
         lastError: message,
       });
       toast.error(`Report approved, but submission failed: ${message}`);
+    },
+  });
+
+  const statusCheckMutation = useMutation({
+    mutationFn: (fileName) => checkNbeSubmissionStatus(fileName),
+    onSuccess: (result) => {
+      setSubmissionStatus({
+        state: result.isError ? "error" : "complete",
+        fileName: result.fileName,
+        status: result.status,
+        retrySubmission: false,
+      });
+      if (result.isError) {
+        updatePendingNbeSubmission(report.id, {
+          submissionState: "status-failed",
+          lastStatus: result.status,
+          lastError: result.status,
+        });
+        toast.error(result.status);
+      } else {
+        updatePendingNbeSubmission(report.id, {
+          submissionState: "status-checked",
+          lastStatus: result.status,
+          lastError: "",
+          statusCheckedAt: new Date().toISOString(),
+        });
+        toast.success(result.status);
+      }
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || error.message;
+      setSubmissionStatus((previous) => ({
+        ...previous,
+        state: "error",
+        status: message,
+        retrySubmission: false,
+      }));
+      updatePendingNbeSubmission(report.id, {
+        submissionState: "status-error",
+        lastError: message,
+      });
+      toast.error(`Could not check submission status: ${message}`);
     },
   });
 
@@ -120,7 +170,8 @@ const ReportViewer = () => {
               metadata.reportTitle || report.reportTypeName || report.fileName,
             endpoint: nbeSubmissionEndpoint,
             createdAt: new Date().toISOString(),
-            retryStatusCheck: false,
+            submissionState: "submitting",
+            lastStatus: "Submitting to NBE...",
           });
         } catch (error) {
           toast.error(`Could not save the submission retry: ${error.message}`);
@@ -437,13 +488,21 @@ const ReportViewer = () => {
                 </p>
                 {nbeSubmissionEndpoint && (
                   <>
-                    {submissionStatus?.state === "loading" ? (
+                    {submissionMutation.isPending ||
+                    submissionStatus?.state === "loading" ? (
                       <p className="mt-2 text-sm text-gray-700">
-                        Submission status: Submitting...
+                        Submission: Sending request to NBE...
+                      </p>
+                    ) : statusCheckMutation.isPending ||
+                      submissionStatus?.state === "checking" ? (
+                      <p className="mt-2 text-sm text-gray-700">
+                        Submission status: Checking...
                       </p>
                     ) : (
                       submissionStatus &&
-                      ["complete", "error"].includes(submissionStatus.state) && (
+                      ["submitted", "complete", "error"].includes(
+                        submissionStatus.state,
+                      ) && (
                         <div className="mt-2 space-y-1 text-sm text-gray-700">
                           <p className="break-all">
                             <span className="font-medium">Filename: </span>
@@ -493,22 +552,38 @@ const ReportViewer = () => {
                         </div>
                       )
                     )}
-                    {submissionStatus?.state === "error" && (
+                    {submissionStatus?.fileName && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSubmissionStatus((previous) => ({
+                              ...previous,
+                              state: "checking",
+                            }));
+                            statusCheckMutation.mutate(
+                              submissionStatus.fileName,
+                            );
+                          }}
+                          disabled={statusCheckMutation.isPending}
+                          className="mt-3 rounded-md border border-[#48198B] px-4 py-2 text-sm font-medium text-[#48198B] hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {statusCheckMutation.isPending
+                            ? "Checking status..."
+                            : "Check submission status"}
+                        </button>
+                      )}
+                    {submissionStatus?.retrySubmission && (
                       <button
                         type="button"
                         onClick={() => {
                           setSubmissionStatus({ state: "loading" });
-                          submissionMutation.mutate(
-                            submissionStatus.retryStatusCheck
-                              ? { fileName: submissionStatus.fileName }
-                              : undefined,
-                          );
+                          submissionMutation.mutate();
                         }}
                         disabled={submissionMutation.isPending}
-                        className="mt-3 rounded-md bg-[#48198B] px-4 py-2 text-sm font-medium text-white hover:bg-[#37136a] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="ml-2 mt-3 rounded-md bg-[#48198B] px-4 py-2 text-sm font-medium text-white hover:bg-[#37136a] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {submissionMutation.isPending
-                          ? "Retrying..."
+                          ? "Submitting..."
                           : "Retry submission"}
                       </button>
                     )}

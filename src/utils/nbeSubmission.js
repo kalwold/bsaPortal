@@ -6,22 +6,6 @@ const isSubmissionFilename = (value) =>
   value.trim().toLowerCase() !== "null" &&
   !/^https?:\/\//i.test(value.trim());
 
-const createMissingFilenameError = () => {
-  const error = new Error("No filename returned by NBE.");
-  error.fileName = "";
-  error.retryStatusCheck = false;
-  return error;
-};
-
-const getGatewayFilename = (response) => {
-  const payload = response?.data ?? response;
-  const responsePayload = payload?.responsePayload ?? payload;
-  const filename = responsePayload?.filename ?? responsePayload?.fileName;
-
-  if (!isSubmissionFilename(filename)) throw createMissingFilenameError();
-  return filename.trim();
-};
-
 const getGatewayValidationErrors = (response) => {
   const payload = response?.data ?? response;
   const responsePayload = payload?.responsePayload;
@@ -35,8 +19,7 @@ const getGatewayValidationErrors = (response) => {
 
 const getDuplicateSubmissionResult = (response) => {
   const payload = response?.data ?? response;
-  const validationErrors = getGatewayValidationErrors(payload);
-  const duplicateError = validationErrors.find((message) =>
+  const duplicateError = getGatewayValidationErrors(payload).find((message) =>
     /duplicat/i.test(message),
   );
 
@@ -46,7 +29,6 @@ const getDuplicateSubmissionResult = (response) => {
   return {
     fileName: "",
     status: "File is already submitted",
-    isError: false,
     isDuplicate: true,
     submissionData: {
       returnKey: requestPayload.ReturnKey,
@@ -61,57 +43,75 @@ const getDuplicateSubmissionResult = (response) => {
   };
 };
 
-export const submitAndCheckNbeReport = async ({
-  endpoint,
-  fileName: existingFileName,
-}) => {
-  if (existingFileName && !isSubmissionFilename(existingFileName)) {
-    throw createMissingFilenameError();
+const getGatewayFilename = (response) => {
+  const payload = response?.data ?? response;
+  const responsePayload = payload?.responsePayload ?? payload;
+  const filename = responsePayload?.filename ?? responsePayload?.fileName;
+
+  if (!isSubmissionFilename(filename)) {
+    throw new Error("No filename returned by NBE.");
   }
 
-  let fileName = existingFileName?.trim();
+  return filename.trim();
+};
 
-  if (!fileName) {
-    if (!endpoint) {
-      throw new Error("No NBE submission endpoint is configured for this report.");
-    }
+export const triggerNbeSubmission = async (endpoint) => {
+  if (!endpoint) {
+    throw new Error("No NBE submission endpoint is configured for this report.");
+  }
 
-    let gatewayResponse;
-    try {
-      gatewayResponse = await reportService.submitNbeReport(endpoint);
-      console.log("NBE gateway response:", gatewayResponse);
-    } catch (error) {
-      const duplicateResult = getDuplicateSubmissionResult(
-        error.response?.data,
-      );
-      if (duplicateResult) return duplicateResult;
-
-      console.error("NBE gateway request failed:", {
-        endpoint,
-        status: error.response?.status,
-        response: error.response?.data,
-        message: error.message,
-      });
-      throw error;
-    }
-
-    const duplicateResult = getDuplicateSubmissionResult(gatewayResponse);
+  let gatewayResponse;
+  try {
+    gatewayResponse = await reportService.submitNbeReport(endpoint);
+    console.log("NBE gateway response:", gatewayResponse);
+  } catch (error) {
+    const duplicateResult = getDuplicateSubmissionResult(error.response?.data);
     if (duplicateResult) return duplicateResult;
 
-    const validationErrors = getGatewayValidationErrors(gatewayResponse);
-    if (validationErrors.length) {
-      throw new Error(validationErrors.join("; "));
-    }
-
-    fileName = getGatewayFilename(gatewayResponse);
+    console.error("NBE gateway request failed:", {
+      endpoint,
+      status: error.response?.status,
+      response: error.response?.data,
+      message: error.message,
+    });
+    throw error;
   }
 
-  let statusResponse;
+  const duplicateResult = getDuplicateSubmissionResult(gatewayResponse);
+  if (duplicateResult) return duplicateResult;
 
-  console.log(`Checking submission status for file: ${fileName}`);
+  const validationErrors = getGatewayValidationErrors(gatewayResponse);
+  if (validationErrors.length) {
+    throw new Error(validationErrors.join("; "));
+  }
+
+  return {
+    fileName: getGatewayFilename(gatewayResponse),
+    status: "Submission request sent. Check status separately.",
+  };
+};
+
+export const checkNbeSubmissionStatus = async (fileName) => {
+  if (!isSubmissionFilename(fileName)) {
+    throw new Error("A valid NBE filename is required to check submission status.");
+  }
 
   try {
-    statusResponse = await reportService.getSubmissionStatus(fileName);
+    const response = await reportService.getSubmissionStatus(fileName);
+    const payload = response?.data ?? response;
+    const status = payload?.status ?? payload?.responsePayload?.status;
+    const statusText =
+      typeof status === "string" || typeof status === "number"
+        ? String(status)
+        : "No status returned";
+
+    return {
+      fileName,
+      status: statusText,
+      isError:
+        statusText === "No status returned" ||
+        /does not exist(?:s)?|not found|failed|error|rejected/i.test(statusText),
+    };
   } catch (error) {
     console.error("Submission status request failed:", {
       fileName,
@@ -119,24 +119,6 @@ export const submitAndCheckNbeReport = async ({
       response: error.response?.data,
       message: error.message,
     });
-    const statusError = new Error(error.message);
-    statusError.fileName = fileName;
-    statusError.retryStatusCheck = true;
-    throw statusError;
+    throw error;
   }
-
-  const statusPayload = statusResponse?.data ?? statusResponse;
-  const status = statusPayload?.status ?? statusPayload?.responsePayload?.status;
-  const statusText =
-    typeof status === "string" || typeof status === "number"
-      ? String(status)
-      : "No status returned";
-
-  return {
-    fileName,
-    status: statusText,
-    isError:
-      statusText === "No status returned" ||
-      /does not exist(?:s)?|not found|failed|error|rejected/i.test(statusText),
-  };
 };
