@@ -3,6 +3,13 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { reportService } from "../../services/reportService";
+import { findReportType } from "../../utils/departments";
+import { submitAndCheckNbeReport } from "../../utils/nbeSubmission";
+import {
+  removePendingNbeSubmission,
+  savePendingNbeSubmission,
+  updatePendingNbeSubmission,
+} from "../../utils/pendingNbeSubmissions";
 import StatusBadge from "../common/StatusBadge";
 import ReportDataTable from "./ReportDataTable";
 import {
@@ -16,31 +23,6 @@ import {
 } from "react-icons/fi";
 import { BsFillBuildingFill } from "react-icons/bs";
 
-const getSubmissionStatus = (response, requestedFileName) => {
-  const payload =
-    response?.data && typeof response.data === "object"
-      ? response.data
-      : response;
-  const { filename, fileName: alternateFileName, status } = payload ?? {};
-  const responseFileName = filename ?? alternateFileName;
-  const fileName =
-    typeof responseFileName === "string" &&
-    responseFileName.trim() &&
-    responseFileName.toLowerCase() !== "null"
-      ? responseFileName
-      : requestedFileName;
-  const statusText =
-    typeof status === "string" || typeof status === "number"
-      ? String(status)
-      : "No status returned";
-
-  return {
-    fileName,
-    status: statusText,
-    isError: /does not exist(?:s)?|not found|failed|error/i.test(statusText),
-  };
-};
-
 const ReportViewer = () => {
   const { reportId } = useParams();
   const navigate = useNavigate();
@@ -50,6 +32,9 @@ const ReportViewer = () => {
   const [submissionStatus, setSubmissionStatus] = useState(null);
   const locationReport = location.state?.report;
   const report = locationReport;
+  const reportTypeId = report?.reportTypeId || report?.metadata?.reportType;
+  const nbeSubmissionEndpoint = findReportType(reportTypeId)?.report
+    ?.nbeSubmissionEndpoint;
   const columns = report.columns || [];
   const reportData = report.data || [];
   const metadata = report.metadata || {};
@@ -69,6 +54,49 @@ const ReportViewer = () => {
   );
   // Try to get report from location state (passed from navigation)
 
+  const submissionMutation = useMutation({
+    mutationFn: ({ fileName } = {}) =>
+      submitAndCheckNbeReport({
+        endpoint: nbeSubmissionEndpoint,
+        fileName,
+      }),
+    onSuccess: (result) => {
+      setSubmissionStatus({
+        state: result.isError ? "error" : "complete",
+        fileName: result.fileName,
+        status: result.status,
+      });
+      if (result.isError) {
+        updatePendingNbeSubmission(report.id, {
+          fileName: result.fileName,
+          retryStatusCheck: false,
+          lastError: result.status,
+        });
+        toast.error(result.status);
+      } else {
+        removePendingNbeSubmission(report.id);
+      }
+    },
+    onError: (error) => {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Submission could not be completed.";
+      setSubmissionStatus({
+        state: "error",
+        fileName: error.fileName,
+        status: message,
+        retryStatusCheck: error.retryStatusCheck,
+      });
+      updatePendingNbeSubmission(report.id, {
+        fileName: error.fileName,
+        retryStatusCheck: error.retryStatusCheck,
+        lastError: message,
+      });
+      toast.error(`Report approved, but submission failed: ${message}`);
+    },
+  });
+
   const approveMutation = useMutation({
     mutationFn: (data) => {
       // Use report type from the report data
@@ -79,42 +107,24 @@ const ReportViewer = () => {
     onSuccess: () => {
       toast.success("Report approved successfully!");
       setApprovalCompleted(true);
-      const filename = report.fileName;
-      if (filename) {
+      if (nbeSubmissionEndpoint) {
         setSubmissionStatus({ state: "loading" });
-        reportService
-          .getSubmissionStatus(filename)
-          .then((response) => {
-            const result = getSubmissionStatus(response, filename);
-            setSubmissionStatus({
-              state: result.isError ? "error" : "complete",
-              ...result,
-            });
-            if (result.isError) {
-              toast.error(result.status);
-            }
-          })
-          .catch((error) => {
-            const result = getSubmissionStatus(error.response?.data, filename);
-            const message =
-              result.status === "No status returned"
-                ? error.message
-                : result.status;
-            setSubmissionStatus({
-              state: "error",
-              fileName: result.fileName,
-              status: message,
-            });
-            toast.error(
-              `Approval succeeded, but submission status could not be checked: ${message}`,
-            );
+        try {
+          savePendingNbeSubmission({
+            id: report.id,
+            reportId: report.id,
+            reportName:
+              metadata.reportTitle || report.reportTypeName || report.fileName,
+            endpoint: nbeSubmissionEndpoint,
+            createdAt: new Date().toISOString(),
+            retryStatusCheck: false,
           });
-      } else {
-        setSubmissionStatus({
-          state: "error",
-          message: "No submission filename is available for the status check.",
-        });
+        } catch (error) {
+          toast.error(`Could not save the submission retry: ${error.message}`);
+        }
+        submissionMutation.mutate();
       }
+
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to approve report");
@@ -422,30 +432,55 @@ const ReportViewer = () => {
                 <p className="font-medium text-green-800">
                   Report approved successfully.
                 </p>
-                <p className="mt-2 text-sm text-gray-700">
-                  <span className="font-medium">Submission status: </span>
-                  {submissionStatus?.state === "loading" && "Checking..."}
-                  {["complete", "error"].includes(submissionStatus?.state) && (
-                    <span>
-                      {submissionStatus.fileName && (
-                        <>
-                          <span className="font-medium">File: </span>
-                          {submissionStatus.fileName}
-                          <span className="mx-2">•</span>
-                        </>
+                {nbeSubmissionEndpoint && (
+                  <>
+                    <p className="mt-2 text-sm text-gray-700">
+                      <span className="font-medium">Submission status: </span>
+                      {submissionStatus?.state === "loading" && "Submitting..."}
+                      {["complete", "error"].includes(
+                        submissionStatus?.state,
+                      ) && (
+                        <span>
+                          {submissionStatus.fileName && (
+                            <>
+                              <span className="font-medium">File: </span>
+                              {submissionStatus.fileName}
+                              <span className="mx-2">•</span>
+                            </>
+                          )}
+                          <span
+                            className={
+                              submissionStatus.state === "error"
+                                ? "text-red-700"
+                                : ""
+                            }
+                          >
+                            {submissionStatus.status}
+                          </span>
+                        </span>
                       )}
-                      <span
-                        className={
-                          submissionStatus.state === "error"
-                            ? "text-red-700"
-                            : ""
-                        }
+                    </p>
+                    {submissionStatus?.state === "error" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSubmissionStatus({ state: "loading" });
+                          submissionMutation.mutate(
+                            submissionStatus.retryStatusCheck
+                              ? { fileName: submissionStatus.fileName }
+                              : undefined,
+                          );
+                        }}
+                        disabled={submissionMutation.isPending}
+                        className="mt-3 rounded-md bg-[#48198B] px-4 py-2 text-sm font-medium text-white hover:bg-[#37136a] disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {submissionStatus.status || submissionStatus.message}
-                      </span>
-                    </span>
+                        {submissionMutation.isPending
+                          ? "Retrying..."
+                          : "Retry submission"}
+                      </button>
+                    )}
+                  </>
                   )}
-                </p>
               </div>
             </div>
           )}

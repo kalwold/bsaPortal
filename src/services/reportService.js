@@ -53,6 +53,9 @@ export const reportService = {
       .get("/get-submission-status/", { params: { fileName } })
       .then((res) => res.data),
 
+  submitNbeReport: (endpoint) =>
+    submissionApi.post(`/${endpoint}`).then((res) => res.data),
+
   approveReport: (reportType, data) => {
     return api.put(`/${reportType}/approve`, data).then((res) => res.data);
   },

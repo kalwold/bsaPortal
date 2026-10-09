@@ -23,6 +23,7 @@ export const financeConfig = {
           id: "finance-monthly_balance-sheet",
           name: "Balance Sheet",
           detect: ["FASDBSFABS001"],
+          nbeSubmissionEndpoint: "balance-sheet",
         },
         {
           key: "RESERVE_BASE",

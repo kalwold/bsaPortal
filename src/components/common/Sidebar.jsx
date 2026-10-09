@@ -14,6 +14,7 @@ import {
   FiTrendingUp,
   FiShare,
   FiSmartphone,
+  FiRefreshCw,
 } from "react-icons/fi";
 import { DEPARTMENTS } from "../../utils/departments";
 
@@ -112,6 +113,11 @@ const Sidebar = () => {
     { to: "/upload", icon: FiUpload, label: "Upload Report" },
     // { to: '/review', icon: FiCheckCircle, label: 'Review' },
     { to: "/reports", icon: FiFileText, label: "All Reports" },
+    {
+      to: "/pending-submissions",
+      icon: FiRefreshCw,
+      label: "Submission retries",
+    },
   ];
 
   return (

@@ -17,6 +17,7 @@ import ReportsPage from "./pages/ReportsPage";
 import Login from "./components/auth/Login";
 import ReportViewer from "./components/reports/ReportViewer";
 import DepartmentReportPage from "./pages/DepartmentReportPage";
+import PendingSubmissionsPage from "./pages/PendingSubmissionsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,10 @@ function App() {
                 <Route path="upload" element={<UploadPage />} />
                 {/* <Route path="review" element={<ReviewPage />} /> */}
                 <Route path="reports" element={<ReportsPage />} />
+                <Route
+                  path="pending-submissions"
+                  element={<PendingSubmissionsPage />}
+                />
                 <Route path="report/:reportId" element={<ReportViewer />} />
                 <Route
                   path="department/:deptId/report/:reportTypeId"
