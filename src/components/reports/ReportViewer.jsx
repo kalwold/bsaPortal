@@ -65,6 +65,8 @@ const ReportViewer = () => {
         state: result.isError ? "error" : "complete",
         fileName: result.fileName,
         status: result.status,
+        isDuplicate: result.isDuplicate,
+        submissionData: result.submissionData,
       });
       if (result.isError) {
         updatePendingNbeSubmission(report.id, {
@@ -75,6 +77,7 @@ const ReportViewer = () => {
         toast.error(result.status);
       } else {
         removePendingNbeSubmission(report.id);
+        if (result.isDuplicate) toast.success(result.status);
       }
     },
     onError: (error) => {
@@ -434,32 +437,62 @@ const ReportViewer = () => {
                 </p>
                 {nbeSubmissionEndpoint && (
                   <>
-                    <p className="mt-2 text-sm text-gray-700">
-                      <span className="font-medium">Submission status: </span>
-                      {submissionStatus?.state === "loading" && "Submitting..."}
-                      {["complete", "error"].includes(
-                        submissionStatus?.state,
-                      ) && (
-                        <span>
-                          {submissionStatus.fileName && (
-                            <>
-                              <span className="font-medium">File: </span>
-                              {submissionStatus.fileName}
-                              <span className="mx-2">•</span>
-                            </>
-                          )}
-                          <span
+                    {submissionStatus?.state === "loading" ? (
+                      <p className="mt-2 text-sm text-gray-700">
+                        Submission status: Submitting...
+                      </p>
+                    ) : (
+                      submissionStatus &&
+                      ["complete", "error"].includes(submissionStatus.state) && (
+                        <div className="mt-2 space-y-1 text-sm text-gray-700">
+                          <p className="break-all">
+                            <span className="font-medium">Filename: </span>
+                            {submissionStatus.fileName || "Not returned by NBE"}
+                          </p>
+                          <p
                             className={
                               submissionStatus.state === "error"
                                 ? "text-red-700"
                                 : ""
                             }
                           >
+                            <span className="font-medium">Status: </span>
                             {submissionStatus.status}
-                          </span>
-                        </span>
-                      )}
-                    </p>
+                          </p>
+                          {submissionStatus.isDuplicate && (
+                            <div className="mt-2 rounded-md bg-white/70 p-3">
+                              <p className="mb-1 font-medium">
+                                Existing submission details
+                              </p>
+                              {[
+                                ["Return key", submissionStatus.submissionData?.returnKey],
+                                [
+                                  "Institution code",
+                                  submissionStatus.submissionData?.institutionCode,
+                                ],
+                                [
+                                  "Financial year",
+                                  submissionStatus.submissionData?.financialYear,
+                                ],
+                                ["Start date", submissionStatus.submissionData?.startDate],
+                                ["End date", submissionStatus.submissionData?.endDate],
+                                [
+                                  "Return items",
+                                  submissionStatus.submissionData?.returnItemCount,
+                                ],
+                              ]
+                                .filter(([, value]) => value !== undefined && value !== "")
+                                .map(([label, value]) => (
+                                  <p key={label}>
+                                    <span className="font-medium">{label}: </span>
+                                    {value}
+                                  </p>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
                     {submissionStatus?.state === "error" && (
                       <button
                         type="button"

@@ -47,7 +47,7 @@ const PendingSubmissionsPage = () => {
         toast.error(result.status);
       } else {
         removePendingNbeSubmission(submission.id);
-        toast.success("Report submission succeeded.");
+        toast.success(result.status);
       }
     } catch (error) {
       updatePendingNbeSubmission(submission.id, {
@@ -95,14 +95,16 @@ const PendingSubmissionsPage = () => {
                 <h2 className="font-semibold text-gray-900">
                   {submission.reportName || submission.reportId}
                 </h2>
-                {submission.fileName && (
-                  <p className="mt-1 break-all text-sm text-gray-600">
-                    File: {submission.fileName}
+                <div className="mt-2 space-y-1 text-sm">
+                  <p className="break-all text-gray-600">
+                    <span className="font-medium">Filename: </span>
+                    {submission.fileName || "Not returned by NBE"}
                   </p>
-                )}
-                <p className="mt-2 text-sm text-red-700">
-                  {submission.lastError || "Submission needs to be retried."}
-                </p>
+                  <p className="text-red-700">
+                    <span className="font-medium">Status: </span>
+                    {submission.lastError || "Submission needs to be retried."}
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => retrySubmission(submission)}
